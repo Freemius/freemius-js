@@ -21,5 +21,11 @@ export default {
                 tabWidth: 2,
             },
         },
+        {
+            files: '*.{yaml,yml}',
+            options: {
+                tabWidth: 2,
+            },
+        },
     ],
 };
