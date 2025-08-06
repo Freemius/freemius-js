@@ -7,6 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: fs_nodejs_nextjs
+      POSTGRES_MAX_CONNECTIONS: 200
     ports:
       - '5480:5432'
     volumes:

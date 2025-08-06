@@ -1,3 +1,16 @@
+# Vova - Feedback
+
+1. Don't use license terminology in the UI.
+
+# Dror - Feedback
+
+1. In confirm-purchase/route.ts have some sort of a `if` check before calling `processNewFreemiusLicense` to ensure that
+   it is not called all the time. (eg, have auth required, also some signature etc.)
+2. Follow up with the Checkout JS/iFrame with a way to authenticate the postMessage payload and pass all needed data
+   (license, subscription, user, etc.) to the frontend with the signature.
+3. Talk with Vova to see if we use pricing page to solve the credit problem or just go with monthly or create another
+   plan with annual credits. (Two separate plans, one for monthly and one for annual)
+
 # POC - Proof of Concept
 
 The following features will be implemented in this POC:
@@ -99,7 +112,7 @@ const licenseUpgradeParams = freemius.checkout.getLicenseUpgradeParams(licenseId
 ### Webhook Handler
 
 ```ts
-const listener = freemius.webhooks.createListener();
+const listener = freemius.createWebhookListener();
 
 listener.on('license.created', async ({ license, user }) => {
     // Handle license created event

@@ -2,6 +2,9 @@ import AppMain from '@/components/app-main';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import DummyAiGenerator from './dummy-ai-generator';
+import { freemius } from '@/lib/freemius';
+import { splitName } from '@/lib/utils';
 
 export default async function Dashboard() {
     const session = await auth.api.getSession({
@@ -11,6 +14,8 @@ export default async function Dashboard() {
     if (!session) {
         redirect('/login');
     }
+
+    const { firstName, lastName } = splitName(session.user.name);
 
     return (
         <AppMain title="Dashboard">
@@ -27,6 +32,21 @@ export default async function Dashboard() {
                     subscription, including credit management and plan upgrades.
                 </p>
             </article>
+            <div className="mt-8">
+                <p className="text-lg font-semibold">AI Asset Generator</p>
+                <p className="text-sm text-muted-foreground">
+                    This feature is available only to users with an active license and sufficient credits.
+                </p>
+                <DummyAiGenerator
+                    checkoutOptions={await freemius.checkout.getParams({
+                        user_email: session.user.email,
+                        user_firstname: firstName,
+                        user_lastname: lastName,
+                        readonly_user: true,
+                        sandbox: true,
+                    })}
+                />
+            </div>
         </AppMain>
     );
 }

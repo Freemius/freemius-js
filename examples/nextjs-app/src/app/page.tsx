@@ -3,7 +3,7 @@ import Link from 'next/link';
 import FSLogoFull from '@/components/fs-logo-full';
 import { Button } from '@/components/ui/button';
 import FSSymbol from '@/components/fs-symbol';
-import { IconLogin, IconUserPlus } from '@tabler/icons-react';
+import { IconSignRight } from '@tabler/icons-react';
 
 export default function Home() {
     return (
@@ -29,14 +29,8 @@ export default function Home() {
                 <div className="flex gap-4 items-center flex-col sm:flex-row w-full sm:w-auto">
                     <Button variant="default" asChild>
                         <span>
-                            <IconUserPlus size={16} />
-                            <Link href="/register">Register</Link>
-                        </span>
-                    </Button>
-                    <Button variant="outline" asChild>
-                        <span>
-                            <IconLogin size={16} />
-                            <Link href="/login">Login</Link>
+                            <IconSignRight size={16} />
+                            <Link href="/dashboard">Start Demonstration</Link>
                         </span>
                     </Button>
                 </div>
@@ -80,7 +74,7 @@ export default function Home() {
                 </a>
                 <a
                     className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-                    href="https://docs.freemius.com"
+                    href="https://freemius.com/help/documentation/saas/saas-integration/"
                     target="_blank"
                     rel="noopener noreferrer"
                 >

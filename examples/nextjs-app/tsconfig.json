@@ -20,7 +20,9 @@
         ],
         "paths": {
             "@generated/*": ["./generated/*"],
-            "@/*": ["./src/*"]
+            "@/*": ["./src/*"],
+            "@freemius/sdk": ["../../src/index.ts"],
+            "@freemius/sdk/*": ["../../src/*"]
         }
     },
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
