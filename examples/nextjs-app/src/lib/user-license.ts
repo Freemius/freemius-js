@@ -10,7 +10,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { PurchaseInfo } from '@freemius/sdk';
+import { LicenseEntity, parseDateTime, PurchaseInfo, SubscriptionEntity } from '@freemius/sdk';
 import { UserLicense, User } from '@generated/prisma';
 import { freemius } from './freemius';
 import { RouteError } from './route-error';
@@ -72,7 +72,7 @@ export async function authenticateAndGetFreemiusPurchase(fsLicenseId: string): P
         throw new RouteError('License not found or does not belong to the user', 'license_not_found', 404);
     }
 
-    if (!freemiusPurchase.isActive()) {
+    if (!freemiusPurchase.isActive) {
         throw new RouteError('License is not active', 'license_not_active', 403);
     }
 
@@ -81,38 +81,112 @@ export async function authenticateAndGetFreemiusPurchase(fsLicenseId: string): P
     return freemiusPurchase;
 }
 
-export async function processPurchaseInfo(freemiusPurchase: PurchaseInfo): Promise<void> {
-    const user = await prisma.user.findUnique({ where: { email: freemiusPurchase.email } });
+export async function processPurchaseInfo(fsPurchase: PurchaseInfo): Promise<void> {
+    const user = await prisma.user.findUnique({ where: { email: fsPurchase.email } });
 
     if (!user) {
+        // We can also register the user here if needed.
+        console.warn(`User with email ${fsPurchase.email} not found. Cannot process purchase.`);
         return;
     }
 
-    // @note - Check in README.md (Feedback from Dror)
-    if (freemiusPurchase.quota && freemiusPurchase.quota > 0) {
-        await addCredits(user.id, freemiusPurchase.quota);
+    const existingLicense = await getLicense(user.id);
+
+    // If license already exists and the current purchase info is from the same license and plan, don't add the credit
+    if (
+        !existingLicense ||
+        existingLicense.fsLicenseId !== fsPurchase.licenseId ||
+        existingLicense.fsUserId !== fsPurchase.userId ||
+        existingLicense.fsPlanId !== fsPurchase.planId
+    ) {
+        if (fsPurchase.quota && fsPurchase.quota > 0) {
+            // Add credits only if the purchase has a quota
+            await addCredits(user.id, fsPurchase.quota);
+
+            console.log(`Added ${fsPurchase.quota} credits to user ${user.id} for purchase ${fsPurchase.licenseId}`);
+        } else {
+            console.log(`No credits added for user ${user.id} for purchase ${fsPurchase.licenseId} as it has no quota`);
+        }
+    } else {
+        console.log(`User ${user.id} already has an active license for purchase ${fsPurchase.licenseId}`);
     }
 
-    if (freemiusPurchase.isPlan(process.env.NEXT_PUBLIC_FS__PLAN_SUBSCRIPTION!)) {
+    // There could still be manual updates to the license, so process the expiration.
+    const allSubscriptionPlans = process.env.NEXT_PUBLIC_FS_PLAN_ALL_SUBSCRIPTIONS?.split(',') ?? [
+        process.env.NEXT_PUBLIC_FS__PLAN_SUBSCRIPTION!,
+    ];
+
+    if (fsPurchase.isFromPlans(allSubscriptionPlans)) {
         await prisma.userLicense.upsert({
             where: {
                 userId: user.id,
             },
             update: {
-                fsUserId: freemiusPurchase.userId,
-                fsPlanId: freemiusPurchase.planId,
-                fsLicenseId: freemiusPurchase.licenseId,
-                expiration: freemiusPurchase.expiration,
-                canceled: freemiusPurchase.canceled,
+                fsUserId: fsPurchase.userId,
+                fsPlanId: fsPurchase.planId,
+                fsLicenseId: fsPurchase.licenseId,
+                expiration: fsPurchase.expiration,
+                canceled: fsPurchase.canceled,
             },
             create: {
                 userId: user.id,
-                fsUserId: freemiusPurchase.userId,
-                fsPlanId: freemiusPurchase.planId,
-                fsLicenseId: freemiusPurchase.licenseId,
-                expiration: freemiusPurchase.expiration,
-                canceled: freemiusPurchase.canceled,
+                fsUserId: fsPurchase.userId,
+                fsPlanId: fsPurchase.planId,
+                fsLicenseId: fsPurchase.licenseId,
+                expiration: fsPurchase.expiration,
+                canceled: fsPurchase.canceled,
             },
         });
     }
+}
+
+export async function syncLicenseFromWebhook(fsLicense: LicenseEntity): Promise<void> {
+    const userLicense = await prisma.userLicense.findUnique({ where: { fsLicenseId: fsLicense.id } });
+
+    // Process if this is a new purchase.
+    if (!userLicense) {
+        const purchaseInfo = await freemius.purchase.retrievePurchase(fsLicense.id!);
+        if (purchaseInfo) {
+            await processPurchaseInfo(purchaseInfo);
+        }
+
+        return;
+    }
+
+    // Synchronize the existing license with the Freemius data.
+    await prisma.userLicense.update({
+        where: { id: userLicense.id },
+        data: {
+            fsUserId: fsLicense.user_id!,
+            fsPlanId: fsLicense.plan_id!,
+            fsLicenseId: fsLicense.id!,
+            expiration: parseDateTime(fsLicense.expiration),
+            canceled: fsLicense.is_cancelled ?? false,
+        },
+    });
+}
+
+export async function deleteLicense(fsLicenseId: string): Promise<void> {
+    await prisma.userLicense.delete({ where: { fsLicenseId: fsLicenseId } });
+}
+
+export async function sendRenewalFailureEmail(subscription: SubscriptionEntity): Promise<void> {
+    // This is a placeholder for sending an email to the user about the renewal failure.
+    // You can use your preferred email service here.
+    console.log('Sending renewal failure email for subscription:', subscription);
+    // Example: await sendEmailToUser(subscription.user, 'Renewal failed', 'Your subscription renewal has failed.');
+}
+
+export async function syncLicenseByEmail(email: string): Promise<PurchaseInfo | null> {
+    const purchases = await freemius.purchase.retrieveActiveSubscriptionByEmail(email, { count: 1 });
+
+    if (!purchases || purchases.length === 0) {
+        return null;
+    }
+
+    const purchaseInfo = purchases[0]!;
+
+    await processPurchaseInfo(purchaseInfo);
+
+    return purchaseInfo;
 }

@@ -1,10 +1,9 @@
 'use client';
 
-import { IconCirclePlusFilled, IconMail, type Icon } from '@tabler/icons-react';
+import { type Icon } from '@tabler/icons-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { Button } from '@/components/ui/button';
 import {
     SidebarGroup,
     SidebarGroupContent,
@@ -15,12 +14,14 @@ import {
 
 export function NavMain({
     items,
+    children,
 }: {
     items: {
         title: string;
         url: string;
         icon?: Icon;
     }[];
+    children?: React.ReactNode;
 }) {
     const pathname = usePathname();
 
@@ -42,6 +43,7 @@ export function NavMain({
                             </SidebarMenuItem>
                         );
                     })}
+                    {children}
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>

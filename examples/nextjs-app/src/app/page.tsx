@@ -30,35 +30,39 @@ export default function Home() {
                     <Button variant="default" asChild>
                         <span>
                             <IconSignRight size={16} />
-                            <Link href="/dashboard">Start Demonstration</Link>
+                            <Link href="/chat">Start Demonstration</Link>
                         </span>
                     </Button>
                 </div>
 
                 <div className="mt-8">
-                    <h2 className="text-2xl font-semibold mb-4">What You'll Experience:</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                        <div className="flex items-start gap-2">
-                            <span>
-                                <strong>Secure Checkout:</strong> Freemius overlay integration with sandbox mode
-                            </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                            <span>
-                                <strong>Real-time Webhooks:</strong> License events and subscription updates
-                            </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                            <span>
-                                <strong>Credit Management:</strong> Credit subscription and top-ups
-                            </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                            <span>
-                                <strong>API Integration:</strong> Call to the Freemius API for subscription & user
-                                management
-                            </span>
-                        </div>
+                    <h2 className="text-2xl font-semibold mb-4">What You&apos;ll Experience:</h2>
+                    <div className="prose max-w-2xl">
+                        <p>
+                            We will be making a very simple UI clone of a famous AI chat app, but with a focus on the
+                            Freemius Node.js SDK integration. The UX flow will be as follows:
+                        </p>
+                        <ul>
+                            <li>
+                                <strong>Dummy AI Chat</strong> - A dummy UI featuring a AI chat app.
+                            </li>
+                            <li>
+                                <strong>PayWall</strong> - A popup to register and/or pay when interacting with the AI
+                                app.
+                            </li>
+                            <li>
+                                <strong>Checkout</strong> - Freemius Checkout in overlay mode to help with the
+                                subscription.
+                            </li>
+                            <li>
+                                <strong>Purchase API</strong> - Usage of the <code>freemius.purchase</code> from the SDK
+                                to easily get all information of a purchase and sync with your app.
+                            </li>
+                            <li>
+                                <strong>Webhook</strong> - Handle purchase upgrades/downgrades asynchronously via the
+                                <code>freemius.webhook.createListener()</code> from the SDK.
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </main>

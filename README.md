@@ -1,6 +1,48 @@
+# Project wide @todo (after webinar)
+
+1. Implement the testing framework.
+2. Go through all components and ensure they have proper BEM like class names.
+3. Make sure all public methods have proper JSDoc comments.
+
+# Question for Vova
+
+- The `dispute_won` is reversed for the buyer?
+
 # Vova - Feedback
 
 1. Don't use license terminology in the UI.
+
+## Priority & Webinar:
+
+**SDK/SaaS Starter Kit**:
+
+1. ✅ Customer Portal - https://drive.google.com/drive/u/0/folders/1FooXNfTD1vhMlNqgKn5bIyzKRBzvOejz
+2. ✅ PayWall
+3. Checkout
+    1. ✅ Open in full screen
+    2. When they complete we don't show the second screen. (Let's aim for it).
+4. ✅ Webhooks
+5. ✅ License management with webhooks.
+6. ✅ Finish Find User By Email & Get Purchase Info and create a sync action.
+7. ✅ Refactor the checkout config builder.
+8. ✅ Create Checkout Redirection Processer.
+9. Create the mono repo
+10. Create the Shadcn registry
+11. Make the SDK work with the UI starter kit (`@freemius/saas-kit`).
+    1. Finish the action parts of the customer portal.
+    2. See if the paywall can be ported to the UI starter kit (minimalist pricing table).
+    3. See if restore action can be ported to the UI starter kit.
+
+**Webinar**:
+
+1. How to setup the starter kit (nextjs).
+2. Building a simple SaaS AI chat app (with copy-paste code).
+    1. Explain the starter kit
+    2. Explain the backend (Node, DB, ORM)
+3. How to add payments using Freemius SDK & Checkout & SaaS starter kit.
+    1. Create SaaS app in Freemius.
+    2. Configure the product in Freemius.
+4. Where to deploy (Vercel & Prisma).
 
 # Dror - Feedback
 
@@ -51,6 +93,11 @@ to the application.
   secret key & public key is also an option)???
 - Upon completion, the user will see a confirmation message and the action will be performed.
 
+## Simple User Profile (Customer Portal)
+
+- Show the current subscription status.
+- Allow to upgrade to a different plan.
+
 ## Webhooks
 
 We will have a simple webhook listener at `/webhooks` that will handle incoming webhook events. The handler will:
@@ -61,6 +108,11 @@ We will have a simple webhook listener at `/webhooks` that will handle incoming 
 - `license.expired`: Sync the user's subscription status to expired.
 - `license.deleted`, `license-cancelled`: Sync the user's subscription status to cancelled.
 
+> Example:
+>
+> 1. Customer asks for a refund, maker does it from the Developer Dashboard and the SaaS is syncronized.
+> 2. When payments are made for a subscription, the webhook will notify the SaaS to update user's license.
+
 ## Credit Based Workflow
 
 - Some Plans will give recurring credits per billing cycle.
@@ -68,12 +120,8 @@ We will have a simple webhook listener at `/webhooks` that will handle incoming 
 - Clicking the dummy button will check if the user has enough credits, if so will perform the action, otherwise will
   show a dialog prompting the user to top up their credits.
 
-## Simple User Profile
-
-> Only if time permits.
-
-- Show the current subscription status.
-- Allow to upgrade to a different plan.
+> Note: Show the monthly credit susbcription along with the topup plans, don't demo the annual because the UX doesn't
+> support it yet.
 
 ## Sample SDK Code
 

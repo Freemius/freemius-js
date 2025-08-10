@@ -37,10 +37,7 @@ model User {
 
 // For the sake of this example, we are using a single active subscription license per user.
 // But the schema can handle multiple licenses per user.
-// You will need to add `licenseId` as the composite/compound for the @@id field and update the business logic inside user-license.ts file.
-// @see https://www.prisma.io/docs/orm/prisma-client/special-fields-and-types/working-with-composite-ids-and-constraints
 // For example: @@unique([userId, fsLicenseId])
-// @todo - Rename to `Entitlement`
 model UserLicense {
     id     String @id @default(cuid())
     userId String @unique
@@ -50,11 +47,10 @@ model UserLicense {
     // You can also use these fields as BigInt if you prefer, and in that case you will need to convert the String to BigInt in your application.
     fsUserId    String
     fsPlanId    String
-    fsLicenseId String
+    fsLicenseId String    @unique
     expiration  DateTime?
     canceled    Boolean
 
-    @@index([fsLicenseId])
     @@map("user_license")
 }
 

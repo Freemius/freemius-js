@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
-export default function SignIn() {
+export default function SignIn({ onSuccess }: { onSuccess?: () => void }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -79,18 +79,19 @@ export default function SignIn() {
                                     password,
                                 },
                                 {
-                                    onRequest: (ctx) => {
+                                    onRequest: () => {
                                         setLoading(true);
                                     },
-                                    onResponse: (ctx) => {
+                                    onResponse: () => {
                                         setLoading(false);
                                     },
                                     onError: (ctx) => {
                                         toast.error(`Login failed: ${ctx.error.message}`);
                                     },
                                     onSuccess: () => {
+                                        onSuccess?.();
                                         toast.success('Login successful!');
-                                        router.push('/dashboard');
+                                        router.push('/chat');
                                     },
                                 }
                             );

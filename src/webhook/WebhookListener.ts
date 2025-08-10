@@ -1,0 +1,193 @@
+import crypto from 'crypto';
+import { EventHandler, FreemiusEventType, FreemiusEvent } from './events';
+import { EventEntity } from '../api/types';
+
+export interface NormalizedRequest {
+    headers: Record<string, string | string[] | undefined> | Headers;
+    rawBody: string | Buffer; // MUST be the exact raw body Freemius sent
+}
+
+export type WebhookListenerResponse = {
+    status: number;
+} & ({ success: true } | { success: false; error: string });
+
+const SIGNATURE_HEADER = 'x-signature';
+
+export class WebhookListener {
+    private eventHandlers: Map<FreemiusEventType, Set<EventHandler<FreemiusEventType>>> = new Map();
+
+    constructor(
+        private readonly secretKey: string,
+        private readonly onError: (error: unknown) => void = console.error
+    ) {}
+
+    on<T extends FreemiusEventType>(type: T, handler: EventHandler<T>): this {
+        if (!this.eventHandlers.has(type)) {
+            this.eventHandlers.set(type, new Set());
+        }
+
+        const existingHandlers = this.eventHandlers.get(type)!;
+
+        existingHandlers?.add(handler as EventHandler<FreemiusEventType>);
+        return this;
+    }
+
+    off<T extends FreemiusEventType>(type: T, handler: EventHandler<T>): this {
+        const currentHandlers = this.eventHandlers.get(type);
+        if (!currentHandlers) {
+            return this;
+        }
+
+        // Set.delete() returns true if the element was in the set
+        currentHandlers.delete(handler as EventHandler<FreemiusEventType>);
+
+        // Remove the entire entry if no handlers remain
+        if (currentHandlers.size === 0) {
+            this.eventHandlers.delete(type);
+        }
+
+        return this;
+    }
+
+    onMultiple<T extends FreemiusEventType>(handlers: Partial<Record<T, EventHandler<T>>>): this {
+        for (const [type, handler] of Object.entries(handlers) as [T, EventHandler<T>][]) {
+            if (handler) {
+                this.on(type, handler);
+            }
+        }
+
+        return this;
+    }
+
+    // Remove all handlers for a specific event type
+    removeAll<T extends FreemiusEventType>(type: T): this {
+        this.eventHandlers.delete(type);
+        return this;
+    }
+
+    // Get handler count for debugging
+    getHandlerCount<T extends FreemiusEventType>(type: T): number {
+        return this.eventHandlers.get(type)?.size ?? 0;
+    }
+
+    // Get total number of event types with handlers
+    getEventTypeCount(): number {
+        return this.eventHandlers.size;
+    }
+
+    // Get all registered event types
+    getRegisteredEventTypes(): FreemiusEventType[] {
+        return Array.from(this.eventHandlers.keys());
+    }
+
+    // Check if a specific event type has any handlers
+    hasHandlers<T extends FreemiusEventType>(type: T): boolean {
+        const handlers = this.eventHandlers.get(type);
+        return handlers !== undefined && handlers.size > 0;
+    }
+
+    // Check if a specific handler is registered for an event type
+    hasHandler<T extends FreemiusEventType>(type: T, handler: EventHandler<T>): boolean {
+        const handlers = this.eventHandlers.get(type);
+        return handlers ? handlers.has(handler as EventHandler<FreemiusEventType>) : false;
+    }
+
+    // Get all handlers for a specific event type (useful for debugging)
+    getHandlers<T extends FreemiusEventType>(type: T): Set<EventHandler<FreemiusEventType>> {
+        return this.eventHandlers.get(type) || new Set();
+    }
+
+    // Get total count of all handlers across all event types
+    getTotalHandlerCount(): number {
+        let total = 0;
+        for (const handlers of this.eventHandlers.values()) {
+            total += handlers.size;
+        }
+        return total;
+    }
+
+    /**
+     * Verify hex HMAC signature against the raw body.
+     */
+    verifySignature(rawBody: string | Buffer, signature: string | null): boolean {
+        if (!signature) {
+            return false;
+        }
+
+        const mac = crypto.createHmac('sha256', this.secretKey).update(rawBody).digest('hex');
+
+        try {
+            return crypto.timingSafeEqual(Buffer.from(mac, 'hex'), Buffer.from(signature, 'hex'));
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Process a normalized request.
+     * Returns an object you can map to your framework's response easily.
+     */
+    async process(input: NormalizedRequest): Promise<WebhookListenerResponse> {
+        const sig = this.getHeader(SIGNATURE_HEADER, input.headers);
+
+        if (!this.verifySignature(input.rawBody, sig)) {
+            return { status: 401, success: false, error: 'Invalid signature' };
+        }
+
+        let evt: EventEntity;
+        try {
+            const parsed = JSON.parse(
+                typeof input.rawBody === 'string' ? input.rawBody : input.rawBody.toString('utf8')
+            );
+
+            if (!parsed || typeof parsed.type !== 'string') {
+                return { status: 400, success: false, error: 'Invalid payload' };
+            }
+
+            evt = parsed as EventEntity;
+        } catch {
+            return { status: 400, success: false, error: 'Malformed JSON' };
+        }
+
+        const eventType = evt.type as FreemiusEventType;
+        const eventHandlers = this.eventHandlers.get(eventType);
+
+        if (!eventHandlers || eventHandlers.size === 0) {
+            // Optionally log unhandled events
+            console.warn(`No handlers registered for event type: ${eventType}`);
+        }
+
+        try {
+            // Execute handlers with proper type casting
+            const promises = Array.from(eventHandlers || []).map((handler) => {
+                const typedHandler = handler as EventHandler<typeof eventType>;
+                const typedEvent = evt as FreemiusEvent<typeof eventType>;
+                return typedHandler(typedEvent);
+            });
+
+            // Execute handlers in parallel for better performance
+            await Promise.all(promises);
+        } catch (error) {
+            this.onError?.(error as Error);
+            return { status: 500, success: false, error: 'Internal Server Error' };
+        }
+
+        return { status: 200, success: true };
+    }
+
+    private getHeader(name: string, headers: NormalizedRequest['headers']): string | null {
+        const lname = name.toLowerCase();
+
+        if (headers instanceof Headers) {
+            return headers.get(lname);
+        }
+
+        const v = headers[lname] ?? headers[name];
+
+        if (Array.isArray(v)) {
+            return v[0] ?? null;
+        }
+
+        return (v as string | undefined) ?? null;
+    }
+}

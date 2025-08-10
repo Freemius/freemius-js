@@ -3060,6 +3060,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    '/products/{product_id}/users/{user_id}/billing.json': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the User.
+                 * @example 1234
+                 */
+                user_id: components['parameters']['user_id'];
+            };
+            cookie?: never;
+        };
+        /**
+         * Retrieve billing
+         * @description Retrieves the billing information of a user for a specific product.
+         */
+        get: operations['users/retrieve-billing'];
+        /**
+         * Update or create billing
+         * @description Update or create the billing information for a user.
+         */
+        put: operations['users/update-or-create-billing'];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/products/{product_id}/users/{user_id}/events.json': {
         parameters: {
             query?: never;
@@ -4337,6 +4372,7 @@ export interface components {
         };
         /** @description A record of an event logged in the system. */
         EventLog: {
+            state?: components['schemas']['CommonEnums']['EventLogState'];
             id?: components['schemas']['CommonProperties']['id'];
             created?: components['schemas']['CommonProperties']['created'];
             updated?: components['schemas']['CommonProperties']['updated'];
@@ -4824,6 +4860,9 @@ export interface components {
             id?: components['schemas']['CommonProperties']['id'];
             created?: components['schemas']['CommonProperties']['created'];
             updated?: components['schemas']['CommonProperties']['updated'];
+            currency?: components['schemas']['CommonEnums']['Currency'];
+            /** @example Refunded due to a bug in the plugin. */
+            refund_reason?: string | null;
             subscription_id?: components['schemas']['CommonProperties']['subscription_id_nullable'];
             /**
              * Format: float
@@ -5601,6 +5640,18 @@ export interface components {
              */
             last_login_at?: string | null;
             email_status?: components['schemas']['CommonEnums']['EmailStatus'];
+        };
+        UserPluginEnriched: components['schemas']['User'] & {
+            plugin_id?: components['schemas']['CommonProperties']['plugin_id'];
+            user_id?: components['schemas']['CommonProperties']['user_id'];
+            /**
+             * Format: float
+             * @description Gross payments made by the user for the product
+             * @example 999
+             */
+            gross?: number;
+            /** @description Whether the user has consented for marketing notifications. */
+            is_marketing_allowed?: boolean;
         };
         /** @description An affiliate is individual or businesses that promotes and sells products or services in exchange for a commission on each sale. */
         Affiliate: {
@@ -7218,7 +7269,7 @@ export interface operations {
                     'application/json': components['schemas']['EventLog'] & {
                         /** @description A map of related objects keyed by their type or ID, such as Payment, User, Install, or License. */
                         objects?: {
-                            user?: components['schemas']['User'] | null;
+                            user?: components['schemas']['UserPluginEnriched'] | null;
                             install?: components['schemas']['Install'] | null;
                             payment?: components['schemas']['Payment'] | null;
                             subscription?: components['schemas']['Subscription'] | null;
@@ -10692,6 +10743,19 @@ export interface operations {
                         } & {
                             features?: components['schemas']['Feature'][];
                         })[];
+                        /** @description The label used for the selling unit of the product, e.g., 'Credit', 'Activation', etc. The resulting object will have both singular and plural. */
+                        selling_unit_label?: {
+                            /**
+                             * @description The singular form of the selling unit label.
+                             * @example Credit
+                             */
+                            singular?: string;
+                            /**
+                             * @description The plural form of the selling unit label.
+                             * @example Credits
+                             */
+                            plural?: string;
+                        };
                         /** @description Verified and featured reviews of the product. */
                         reviews?: components['schemas']['PluginReview'][];
                         /**
@@ -11869,6 +11933,99 @@ export interface operations {
             404: components['responses']['404'];
         };
     };
+    'users/retrieve-billing': {
+        parameters: {
+            query?: {
+                /**
+                 * @description Comma separated list of fields to return in the response. If not specified, all fields are returned.
+                 * @example id,name,slug
+                 */
+                fields?: components['parameters']['fields'];
+            };
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the User.
+                 * @example 1234
+                 */
+                user_id: components['parameters']['user_id'];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Billing Information retrieved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Billing'];
+                };
+            };
+            401: components['responses']['401'];
+            402: components['responses']['402'];
+            404: components['responses']['404'];
+        };
+    };
+    'users/update-or-create-billing': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the User.
+                 * @example 1234
+                 */
+                user_id: components['parameters']['user_id'];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                'application/json': {
+                    business_name?: components['schemas']['Billing']['business_name'];
+                    first?: components['schemas']['Billing']['first'];
+                    last?: components['schemas']['Billing']['last'];
+                    email?: components['schemas']['Billing']['email'];
+                    phone?: components['schemas']['Billing']['phone'];
+                    website?: components['schemas']['Billing']['website'];
+                    tax_id?: components['schemas']['Billing']['tax_id'];
+                    address_street?: components['schemas']['Billing']['address_street'];
+                    address_apt?: components['schemas']['Billing']['address_apt'];
+                    address_city?: components['schemas']['Billing']['address_city'];
+                    address_country?: components['schemas']['Billing']['address_country'];
+                    address_country_code?: components['schemas']['Billing']['address_country_code'];
+                    address_state?: components['schemas']['Billing']['address_state'];
+                    address_zip?: components['schemas']['Billing']['address_zip'];
+                };
+            };
+        };
+        responses: {
+            /** @description Billing information updated. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Billing'];
+                };
+            };
+            401: components['responses']['401'];
+            402: components['responses']['402'];
+            404: components['responses']['404'];
+        };
+    };
     'users/list-events': {
         parameters: {
             query?: {
@@ -12027,6 +12184,12 @@ export interface operations {
                  * @example 10
                  */
                 offset?: components['parameters']['offset'];
+                /** @description Search user by email address. */
+                email?: string;
+                /** @description Filter user by their financial status */
+                filter?: 'all' | 'never_paid' | 'paid' | 'paying' | 'beta';
+                /** @description Search by user ID, email or name */
+                search?: string;
             };
             header?: never;
             path: {

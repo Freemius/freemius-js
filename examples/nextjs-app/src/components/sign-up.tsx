@@ -11,7 +11,7 @@ import { signUp } from '@/lib/auth-client';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
-export default function SignUp() {
+export default function SignUp({ onSuccess }: { onSuccess?: () => void }) {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -143,7 +143,7 @@ export default function SignUp() {
                                 password,
                                 name: `${firstName} ${lastName}`,
                                 image: image ? await convertImageToBase64(image) : '',
-                                callbackURL: '/dashboard',
+                                callbackURL: '/chat',
                                 fetchOptions: {
                                     onResponse: () => {
                                         setLoading(false);
@@ -155,8 +155,9 @@ export default function SignUp() {
                                         toast.error(ctx.error.message);
                                     },
                                     onSuccess: async () => {
+                                        onSuccess?.();
                                         toast.success('Account created successfully!');
-                                        router.push('/dashboard');
+                                        router.push('/chat');
                                     },
                                 },
                             });

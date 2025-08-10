@@ -1,16 +1,9 @@
 import createClient from 'openapi-fetch';
 import type { paths } from './schema';
 
-const API_ENDPOINT_PRODUCTION = 'https://api.freemius.com/v1/';
-const API_ENDPOINT_TEST = 'http://api.freemius-local.com:8080/v1/';
-
-export function createApiClient(bearerToken?: string) {
-    const isTestServer = process.env.FS__INTERNAL__IS_DEVELOPMENT_MODE === 'true';
-
-    const apiEndpoint = isTestServer ? API_ENDPOINT_TEST : API_ENDPOINT_PRODUCTION;
-
+export function createApiClient(baseUrl: string, bearerToken?: string) {
     return createClient<paths>({
-        baseUrl: apiEndpoint,
+        baseUrl,
         headers: {
             Authorization: bearerToken ? `Bearer ${bearerToken}` : undefined,
         },

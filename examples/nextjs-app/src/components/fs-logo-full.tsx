@@ -12,7 +12,7 @@ export default function FSLogoFull(props: SVGProps<SVGSVGElement>) {
             fill="none"
             className={cn(className, 'max-h-10 w-auto')}
             viewBox="0 0 487 107"
-            {...props}
+            {...rest}
         >
             <path
                 fill="#E62A97"

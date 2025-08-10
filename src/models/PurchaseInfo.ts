@@ -1,83 +1,64 @@
-import { BILLING_CYCLE } from '../contracts/types';
-import { components } from '../api/schema';
-import { parseFreemiusDate } from '../utils/date';
-import { FSId, idToString } from '../utils/id';
+import { BILLING_CYCLE, CURRENCY } from '../contracts/types';
+import {
+    parseBillingCycle,
+    parseNumber,
+    idToString,
+    isIdsEqual,
+    parseDateTime,
+    parseCurrency,
+    parsePaymentMethod,
+} from '../api/parser';
+import { PurchaseData } from '../contracts/purchase';
+import { PricingTableData, FSId, UserEntity, LicenseEntity, SubscriptionEntity } from '../api/types';
 
-export class PurchaseInfo {
-    /**
-     * Email address of the user associated with the license. This is unique to the user and is used for communication regarding the license.
-     */
-    email: string;
-    /**
-     * First name of the user associated with the license.
-     */
-    firstName: string;
-    /**
-     * Last name of the user associated with the license.
-     */
-    lastName: string;
-    /**
-     * ID of the Freemius user.
-     */
-    userId: string;
-    /**
-     * ID of the Freemius plan the license is associated with.
-     */
-    planId: string;
-    /**
-     * ID of the Freemius license.
-     *
-     * Use this ID to make additional API calls related to the license and associated subscriptions.
-     */
-    licenseId: string;
-    /**
-     * Expiration date of the license.
-     *
-     * If `null` then the license never expires (for one-off purchases).
-     */
-    expiration: Date | null;
-    /**
-     * Indicates if the license is canceled.
-     */
-    canceled: boolean;
-    /**
-     * ID of the Freemius subscription associated with the license, if any.
-     *
-     * This is optional and may be `null` if the license is not associated with a subscription (for one-off purchases or if the subscription is cancelled already).
-     */
-    subscriptionId: string | null;
-    /**
-     * Billing cycle of the subscription, if applicable.
-     *
-     * This is optional and may be `null` if the license is not associated with a subscription.
-     * The billing cycle could be `oneoff`, in case a subscription was created against a one-off trial.
-     */
-    billingCycle: BILLING_CYCLE | null;
-    /**
-     * Quota/Units associated with the license. If `null`, then it means the license has unlimited quota.
-     */
-    quota: number | null;
+export class PurchaseInfo implements PurchaseData {
+    readonly email: string;
+    readonly firstName: string;
+    readonly lastName: string;
+    readonly userId: string;
+    readonly planId: string;
+    readonly pricingId: string;
+    readonly licenseId: string;
+    readonly expiration: Date | null;
+    readonly canceled: boolean;
+    readonly subscriptionId: string | null;
+    readonly billingCycle: BILLING_CYCLE | null;
+    readonly quota: number | null;
+    readonly initialAmount: number | null;
+    readonly renewalAmount: number | null;
+    readonly currency: CURRENCY | null;
+    readonly renewalDate: Date | null;
+    readonly paymentMethod: 'card' | 'paypal' | 'ideal' | null;
+    readonly created: Date;
 
-    constructor(
-        user: components['schemas']['User'],
-        license: components['schemas']['License'],
-        subscription: components['schemas']['Subscription'] | null
-    ) {
+    constructor(user: UserEntity, license: LicenseEntity, subscription: SubscriptionEntity | null) {
         this.email = user.email!;
         this.firstName = user.first ?? '';
         this.lastName = user.last ?? '';
         this.userId = idToString(license.user_id!);
         this.canceled = license.is_cancelled ?? false;
-        this.expiration = license.expiration ? parseFreemiusDate(license.expiration) : null;
+        this.expiration = license.expiration ? parseDateTime(license.expiration) : null;
         this.licenseId = idToString(license.id!);
         this.planId = idToString(license.plan_id!);
         this.subscriptionId = null;
         this.billingCycle = null;
         this.quota = license.quota ?? null;
+        this.pricingId = idToString(license.pricing_id!);
+        this.initialAmount = null;
+        this.renewalAmount = null;
+        this.currency = null;
+        this.renewalDate = null;
+        this.paymentMethod = null;
+        this.created = parseDateTime(license.created) ?? new Date();
 
         if (subscription) {
             this.subscriptionId = idToString(subscription.id!);
-            this.billingCycle = this.getBillingCycle(subscription);
+            this.billingCycle = parseBillingCycle(subscription.billing_cycle);
+            this.initialAmount = parseNumber(subscription.initial_amount);
+            this.renewalAmount = parseNumber(subscription.renewal_amount);
+            this.currency = parseCurrency(subscription.currency);
+            this.renewalDate = subscription.next_payment ? parseDateTime(subscription.next_payment) : null;
+            this.paymentMethod = parsePaymentMethod(subscription.gateway);
         }
     }
 
@@ -85,7 +66,35 @@ export class PurchaseInfo {
         return this.planId === idToString(planId);
     }
 
-    isActive(): boolean {
+    isFromPlans(planIds: FSId[]): boolean {
+        return planIds.some((planId) => this.isPlan(planId));
+    }
+
+    toData(): PurchaseData {
+        return {
+            email: this.email,
+            firstName: this.firstName,
+            lastName: this.lastName,
+            userId: this.userId,
+            planId: this.planId,
+            pricingId: this.pricingId,
+            licenseId: this.licenseId,
+            expiration: this.expiration,
+            canceled: this.canceled,
+            subscriptionId: this.subscriptionId,
+            billingCycle: this.billingCycle,
+            quota: this.quota,
+            isActive: this.isActive,
+            initialAmount: this.initialAmount,
+            renewalAmount: this.renewalAmount,
+            currency: this.currency,
+            renewalDate: this.renewalDate,
+            paymentMethod: this.paymentMethod,
+            created: this.created,
+        };
+    }
+
+    get isActive(): boolean {
         if (this.canceled) {
             return false;
         }
@@ -95,6 +104,10 @@ export class PurchaseInfo {
         }
 
         return true;
+    }
+
+    hasSubscription(): boolean {
+        return this.subscriptionId !== null;
     }
 
     isAnnual(): boolean {
@@ -109,17 +122,9 @@ export class PurchaseInfo {
         return this.billingCycle === BILLING_CYCLE.ONEOFF || this.billingCycle === null;
     }
 
-    private getBillingCycle(subscription: components['schemas']['Subscription']): BILLING_CYCLE {
-        const billingCycle = Number.parseInt(subscription.billing_cycle?.toString() ?? '', 10);
+    getPlanTitle(pricingData: PricingTableData | null): string {
+        const plan = pricingData?.plans?.find((p) => isIdsEqual(p.id!, this.planId));
 
-        if (billingCycle === 1) {
-            return BILLING_CYCLE.MONTHLY;
-        }
-
-        if (billingCycle === 12) {
-            return BILLING_CYCLE.YEARLY;
-        }
-
-        return BILLING_CYCLE.ONEOFF;
+        return plan?.title ?? plan?.name ?? 'Deleted Plan';
     }
 }

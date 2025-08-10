@@ -1,9 +1,9 @@
 'use client';
 
 import { ComponentProps, useCallback, useState } from 'react';
-import { IconDashboard, IconLogout, IconCoins, IconUser, IconShoppingCart } from '@tabler/icons-react';
+import { IconSparkles, IconLogout, IconCoins, IconShoppingCart, IconUserPlus, IconLogin2 } from '@tabler/icons-react';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { Loader2, SparkleIcon } from 'lucide-react';
 
 import { NavMain } from '@/components/nav-main';
 import {
@@ -15,32 +15,44 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import FSSymbol from '@/components/fs-symbol';
-import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/lib/auth-client';
 
 const data = {
     navMain: [
         {
-            title: 'Dashboard',
-            url: '/dashboard',
-            icon: IconDashboard,
+            title: 'New Chat',
+            url: '/chat',
+            icon: IconSparkles,
         },
+    ],
+    navFooterLoggedIn: [
         {
-            title: 'Billing & Credits',
+            title: 'Billing & Payments',
             url: '/billing',
             icon: IconCoins,
         },
         {
-            title: 'Checkout Testing',
-            url: '/checkout-testing',
+            title: 'Purchase Credits',
+            url: '/purchase',
             icon: IconShoppingCart,
+        },
+    ],
+    navFooterLoggedOut: [
+        {
+            title: 'Login',
+            url: '/login',
+            icon: IconLogin2,
+        },
+        {
+            title: 'Register',
+            url: '/register',
+            icon: IconUserPlus,
         },
     ],
 };
 
-export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ isLoggedIn, ...props }: ComponentProps<typeof Sidebar> & { isLoggedIn?: boolean }) {
     const router = useRouter();
     const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
 
@@ -59,11 +71,11 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
-                            <Link href="/dashboard">
+                            <Link href="/chat">
                                 <span className="w-8 h-8 flex items-center justify-center rounded-md bg-primary text-primary-foreground">
-                                    <FSSymbol className="!size-5" />
+                                    <SparkleIcon className="!size-5" />
                                 </span>
-                                <span className="text-base font-semibold">Node SDK</span>
+                                <span className="text-base font-semibold">Awesome AI</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -73,22 +85,24 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                 <NavMain items={data.navMain} />
             </SidebarContent>
             <SidebarFooter>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton asChild>
-                            <Button variant="ghost" className="w-full justify-start" onClick={logout}>
-                                {isLoggingOut ? (
-                                    <span className="animate-spin">
+                {isLoggedIn ? (
+                    <>
+                        <NavMain items={data.navFooterLoggedIn}>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton onClick={logout}>
+                                    {isLoggingOut ? (
                                         <Loader2 size={16} className="animate-spin" />
-                                    </span>
-                                ) : (
-                                    <IconLogout size={16} />
-                                )}
-                                Log out
-                            </Button>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
+                                    ) : (
+                                        <IconLogout size={16} />
+                                    )}
+                                    Log out
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </NavMain>
+                    </>
+                ) : (
+                    <NavMain items={data.navFooterLoggedOut} />
+                )}
             </SidebarFooter>
         </Sidebar>
     );
