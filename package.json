@@ -1,16 +1,13 @@
 {
-  "name": "@freemius/sdk",
+  "name": "freemius-js",
+  "private": true,
   "version": "0.0.1",
   "description": "NodeJS SDK for integrating your SaaS with Freemius",
-  "main": "dist/index.js",
   "directories": {
     "example": "examples"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "typecheck": "tsc --noEmit",
-    "openapi:generate": "openapi-typescript https://freemius.com/help/documentation/api/openapi.yaml -o ./src/api/schema.d.ts",
-    "openapi:generate:local": "openapi-typescript http://api-doc.freemius-local.com:8080/openapi.yaml -o ./src/api/schema.d.ts",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "prepare": "husky"
   },
@@ -25,9 +22,9 @@
   "author": "Freemius Inc",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Freemius/freemius-node/issues"
+    "url": "https://github.com/Freemius/freemius-js/issues"
   },
-  "homepage": "https://github.com/Freemius/freemius-node#readme",
+  "homepage": "https://github.com/Freemius/freemius-js#readme",
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@next/eslint-plugin-next": "^15.4.6",
@@ -53,5 +50,9 @@
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": "eslint",
     "**/*": "prettier --write --ignore-unknown"
-  }
+  },
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ]
 }

@@ -1,0 +1,21 @@
+{
+    "extends": "../sdk/tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "jsx": "react-jsx",
+        "lib": ["ES2020", "DOM", "DOM.Iterable"],
+        "target": "ES2020",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "strict": true
+    },
+    "include": ["**/*.ts", "**/*.tsx"],
+    "exclude": ["node_modules", "dist"]
+}

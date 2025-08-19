@@ -15,7 +15,7 @@ export default tseslint.config(
     eslintConfigPrettier,
     {
         ignores: [
-            'src/api/schema.d.ts',
+            'packages/sdk/api/schema.d.ts',
             'examples/nextjs-app/generated/**/*',
             'examples/nextjs-app/.next/**/*',
             'examples/nextjs-app/src/components/ai-elements/**/*',
@@ -28,6 +28,9 @@ export default tseslint.config(
                 version: 'detect',
             },
         },
+        rules: {
+            'react/react-in-jsx-scope': 'off', // Next.js has automatic JSX runtime
+        },
     },
     // Next.js specific configuration for examples/nextjs-app
     {
@@ -38,7 +41,6 @@ export default tseslint.config(
         rules: {
             ...nextPlugin.configs.recommended.rules,
             ...nextPlugin.configs['core-web-vitals'].rules,
-            'react/react-in-jsx-scope': 'off', // Next.js has automatic JSX runtime
         },
         settings: {
             next: {

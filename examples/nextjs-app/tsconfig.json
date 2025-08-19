@@ -20,9 +20,7 @@
         ],
         "paths": {
             "@generated/*": ["./generated/*"],
-            "@freemius/sdk": ["../../src/index.ts"],
-            "@freemius/sdk/*": ["../../src/*"],
-            "@freemius/saas-starter/*": ["./src/saas-starter/*"],
+            "@freemius/saas-starter/*": ["../../packages/saas-kit/*"],
             "@/*": ["./src/*"]
         }
     },

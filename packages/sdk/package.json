@@ -1,0 +1,40 @@
+{
+  "name": "@freemius/sdk",
+  "version": "0.0.1",
+  "description": "NodeJS SDK for integrating your SaaS with Freemius",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "openapi:generate": "openapi-typescript https://freemius.com/help/documentation/api/openapi.yaml -o ./api/schema.d.ts",
+    "openapi:generate:local": "openapi-typescript http://api-doc.freemius-local.com:8080/openapi.yaml -o ./api/schema.d.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:Freemius/freemius-js.git"
+  },
+  "keywords": [
+    "node.js",
+    "freemius",
+    "sdk",
+    "saas"
+  ],
+  "author": "Freemius Inc",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Freemius/freemius-node/issues"
+  },
+  "homepage": "https://github.com/Freemius/freemius-node#readme",
+  "dependencies": {
+    "@freemius/checkout": "^1.3.1-alpha.3",
+    "openapi-fetch": "^0.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.0",
+    "typescript": "^5.9.2"
+  }
+}

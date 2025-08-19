@@ -3,7 +3,7 @@
     "exclude": ["examples"],
     "compilerOptions": {
         // File Layout
-        "rootDir": "./src",
+        "rootDir": "./",
         "outDir": "./dist",
 
         // Environment Settings
