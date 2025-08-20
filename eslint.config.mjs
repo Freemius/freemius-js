@@ -17,9 +17,9 @@ export default tseslint.config(
         ignores: [
             'packages/sdk/api/schema.d.ts',
             'packages/**/dist/**/*',
-            'examples/nextjs-app/generated/**/*',
-            'examples/nextjs-app/.next/**/*',
-            'examples/nextjs-app/src/components/ai-elements/**/*',
+            'packages/saas-kit/generated/**/*',
+            'packages/saas-kit/.next/**/*',
+            'packages/saas-kit/src/components/ai-elements/**/*',
         ],
     },
     // React settings for auto-detection
@@ -33,9 +33,9 @@ export default tseslint.config(
             'react/react-in-jsx-scope': 'off', // Next.js has automatic JSX runtime
         },
     },
-    // Next.js specific configuration for examples/nextjs-app
+    // Next.js specific configuration for packages/saas-kit
     {
-        files: ['examples/nextjs-app/**/*.{js,jsx,ts,tsx}'],
+        files: ['packages/saas-kit/**/*.{js,jsx,ts,tsx}'],
         plugins: {
             '@next/next': nextPlugin,
         },

@@ -41,17 +41,15 @@
     "react": "^19.1.1",
     "tsx": "^4.20.3",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.39.0"
-  },
-  "dependencies": {
-    "@freemius/checkout": "^1.3.1-alpha.3",
-    "openapi-fetch": "^0.14.0"
+    "typescript-eslint": "^8.39.0",
+    "@freemius/checkout": "^1.3.1-alpha.3"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": "eslint",
     "**/*": "prettier --write --ignore-unknown"
   },
   "workspaces": [
-    "packages/sdk"
+    "packages/sdk",
+    "packages/saas-kit"
   ]
 }

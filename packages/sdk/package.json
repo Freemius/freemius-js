@@ -43,8 +43,10 @@
   },
   "homepage": "https://github.com/Freemius/freemius-node#readme",
   "dependencies": {
-    "@freemius/checkout": "^1.3.1-alpha.3",
     "openapi-fetch": "^0.14.0"
+  },
+  "peerDependencies": {
+    "@freemius/checkout": "*"
   },
   "devDependencies": {
     "@types/node": "^24.2.0",
