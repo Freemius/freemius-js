@@ -25,6 +25,7 @@ export type LicenseEntity = components['schemas']['License'];
 export type LicenseFilterOptions = ApiEntitiesFilter<operations['licenses/list']['parameters']['query']>;
 
 export type PaymentEntity = components['schemas']['Payment'];
+export type PaymentFilterOptions = ApiEntitiesFilter<operations['payments/list']['parameters']['query']>;
 
 export type ProductEntity = components['schemas']['Plugin'];
 

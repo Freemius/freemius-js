@@ -6,6 +6,7 @@ import { Product } from '../api/Product';
 import { Subscription } from '../api/Subscription';
 import { User } from '../api/User';
 import { idToString } from '../api/parser';
+import { Payment } from '../api/Payment';
 
 const API_ENDPOINT_PRODUCTION = 'https://api.freemius.com/v1/';
 const API_ENDPOINT_TEST = 'http://api.freemius-local.com:8080/v1/';
@@ -22,6 +23,8 @@ export class ApiService {
     public readonly product: Product;
 
     public readonly subscription: Subscription;
+
+    public readonly payment: Payment;
 
     public readonly baseUrl: string;
 
@@ -41,6 +44,7 @@ export class ApiService {
         this.license = new License(this.productId, this.client);
         this.product = new Product(this.productId, this.client);
         this.subscription = new Subscription(this.productId, this.client);
+        this.payment = new Payment(this.productId, this.client);
     }
 
     /**
@@ -51,6 +55,10 @@ export class ApiService {
      */
     get __unstable_ApiClient(): FsApiClient {
         return this.client;
+    }
+
+    public createSignedUrl(path: string): string {
+        return this.getSignedUrl(this.createUrl(path));
     }
 
     public createUrl(path: string): string {

@@ -1,6 +1,6 @@
 import { ApiService } from './ApiService';
 import { PricingTableData, FSId, PricingEntity } from '../api/types';
-import { PortalData, PortalSubscription, PortalPayment } from '../contracts/portal';
+import { PortalData, PortalSubscription, PortalPayment, PortalAction } from '../contracts/portal';
 import {
     parseBillingCycle,
     parseNumber,
@@ -13,12 +13,21 @@ import {
 import { CURRENCY } from '../contracts/types';
 import { CheckoutService } from './CheckoutService';
 import { CheckoutOptions } from '@freemius/checkout';
+import { AuthService } from './AuthService';
+import { InvoiceAction } from '../customer-portal/InvoiceAction';
 
 export class CustomerPortalService {
+    private readonly action: { invoice: PortalAction };
+
     constructor(
         private readonly api: ApiService,
-        private readonly checkout: CheckoutService
-    ) {}
+        private readonly checkout: CheckoutService,
+        private readonly authService: AuthService
+    ) {
+        this.action = {
+            invoice: new InvoiceAction(this.api, this.authService),
+        };
+    }
 
     /**
      * Retrieves the customer portal data for a user, including subscriptions, billing, and payments.
@@ -28,6 +37,7 @@ export class CustomerPortalService {
      */
     async retrieveData(
         userId: FSId,
+        endpoint: string,
         primaryLicenseId: FSId | null = null,
         sandbox: boolean = false
     ): Promise<PortalData | null> {
@@ -49,8 +59,7 @@ export class CustomerPortalService {
 
         const portalPayments: PortalPayment[] = payments.map((payment) => ({
             ...payment,
-            // @todo - Add invoice URL directly from the API by signing the URL.
-            invoiceUrl: this.api.getSignedUrl(this.api.createUrl(`payments/${payment.id}/invoice.pdf`)),
+            invoiceUrl: this.action.invoice.createAuthenticatedUrl(payment.id!, user.id!, endpoint),
             paymentMethod: parsePaymentMethod(payment.gateway)!,
             createdAt: parseDateTime(payment.created) ?? new Date(),
             planTitle: planTitles[payment.plan_id!] ?? `Plan ${payment.plan_id!}`,
@@ -66,9 +75,15 @@ export class CustomerPortalService {
         }
 
         const billingData: PortalData = {
+            endpoint,
             user,
             checkoutOptions,
-            billing,
+            billing: billing
+                ? {
+                      ...billing,
+                      updateToken: this.authService.createActionToken('update_billing', user.id!),
+                  }
+                : null,
             subscriptions: {
                 primary: null,
                 active: [],
@@ -102,6 +117,7 @@ export class CustomerPortalService {
                 cancelledAt: subscription.canceled_at ? parseDateTime(subscription.canceled_at) : null,
                 quota: allPricingsById[subscription.pricing_id!]?.licenses ?? null,
                 paymentMethod: parsePaymentMethod(subscription.gateway),
+                upgradeToken: this.authService.createActionToken(`subscription_upgrade_${subscription.id!}`, user.id!),
             };
 
             if (isActive) {
@@ -137,9 +153,30 @@ export class CustomerPortalService {
     }
 
     /**
-     * @todo - Implement this method to handle actions like get cancel coupon, cancel subscription, update billing, get upgrade auth for Checkout etc.
+     * Process actions done by the user in the customer portal.
      */
-    // async processAction(request: Request) {}
+    async processAction(request: Request): Promise<Response> {
+        const url = new URL(request.url);
+        const action = url.searchParams.get('action');
+
+        if (!action) {
+            return Response.json({ error: 'Action parameter is required' }, { status: 400 });
+        }
+
+        const actionHandlers = Object.values(this.action);
+
+        for (const actionHandler of actionHandlers) {
+            if (actionHandler.canHandle(request)) {
+                if (actionHandler.verifyAuthentication(request)) {
+                    return await actionHandler.processAction(request);
+                } else {
+                    return Response.json({ error: 'Invalid authentication token' }, { status: 401 });
+                }
+            }
+        }
+
+        return Response.json({ error: 'Invalid action' }, { status: 400 });
+    }
 
     private getPlanTitleById(pricingData: PricingTableData): Record<string, string> {
         const planTitles: Record<string, string> = {};

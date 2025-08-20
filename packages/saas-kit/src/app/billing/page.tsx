@@ -25,6 +25,7 @@ export default async function Billing() {
     if (license) {
         fsPurchase = freemius.customerPortal.retrieveData(
             license.fsUserId,
+            process.env.NEXT_PUBLIC_APP_URL! + '/api/portal',
             license.fsLicenseId,
             process.env.NODE_ENV === 'development'
         );
