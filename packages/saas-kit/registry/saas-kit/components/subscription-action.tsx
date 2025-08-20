@@ -24,9 +24,9 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useCheckout } from '../hooks/checkout';
-import { useLocale } from '../locale';
-import { formatCurrency, formatNumber } from '../utils';
-import { findClosestPricing } from '../pricing/pricing-ops';
+import { useLocale } from '../utils/locale';
+import { formatCurrency, formatNumber } from '../utils/formatter';
+import { findClosestPricing } from '../utils/pricing-ops';
 
 type EnrichedPricing = PricingEntity & {
     updateAmount: string | null;

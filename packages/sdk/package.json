@@ -22,7 +22,9 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
+    "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
+    "test": "echo \"No tests yet\"",
     "openapi:generate": "openapi-typescript https://freemius.com/help/documentation/api/openapi.yaml -o ./api/schema.d.ts",
     "openapi:generate:local": "openapi-typescript http://api-doc.freemius-local.com:8080/openapi.yaml -o ./api/schema.d.ts"
   },

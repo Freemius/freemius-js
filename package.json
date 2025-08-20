@@ -7,8 +7,22 @@
     "example": "examples"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm run build --workspaces",
+    "build:sdk": "npm run build --workspace=@freemius/sdk",
+    "build:saas-kit": "npm run build --workspace=@freemius/saas-kit",
+    "dev": "npm run dev --workspaces",
+    "dev:sdk": "npm run dev --workspace=@freemius/sdk",
+    "dev:saas-kit": "npm run dev --workspace=@freemius/saas-kit",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run test --workspaces",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "clean": "npm run clean --workspaces",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish",
+    "release": "npm run build && npm run changeset:publish",
+    "version-packages": "npm run changeset:version",
     "prepare": "husky"
   },
   "repository": {
@@ -26,7 +40,9 @@
   },
   "homepage": "https://github.com/Freemius/freemius-js#readme",
   "devDependencies": {
+    "@changesets/cli": "^2.29.6",
     "@eslint/js": "^9.32.0",
+    "@freemius/checkout": "^1.3.1-alpha.4",
     "@next/eslint-plugin-next": "^15.4.6",
     "@types/node": "^24.2.0",
     "dotenv": "^17.2.1",
@@ -41,8 +57,7 @@
     "react": "^19.1.1",
     "tsx": "^4.20.3",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.39.0",
-    "@freemius/checkout": "^1.3.1-alpha.3"
+    "typescript-eslint": "^8.39.0"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": "eslint",

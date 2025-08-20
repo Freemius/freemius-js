@@ -16,7 +16,7 @@ export default {
     proseWrap: 'always',
     overrides: [
         {
-            files: '*package{-lock,}.json',
+            files: '*.json',
             options: {
                 tabWidth: 2,
             },

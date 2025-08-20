@@ -1,8 +1,8 @@
 import { PortalPayment, SellingUnit } from '@freemius/sdk';
-import { useLocale } from '../locale';
+import { useLocale } from '../utils/locale';
 import { SectionHeading } from './section-heading';
 import PaymentIcon from './payment-icon';
-import { formatCurrency, formatDate, formatNumber } from '../utils';
+import { formatCurrency, formatDate, formatNumber } from '../utils/formatter';
 import { Button } from '@/components/ui/button';
 import PdfIcon from '../icons/pdf';
 import { PaymentBadge } from './payment-badge';

@@ -1,7 +1,7 @@
 import { PortalPayment } from '@freemius/sdk';
 import { Badge } from '@/components/ui/badge';
 import { ComponentProps, useMemo } from 'react';
-import { useLocale } from '../locale';
+import { useLocale } from '../utils/locale';
 
 export function PaymentBadge(props: { type: PortalPayment['type'] }) {
     const { type } = props;

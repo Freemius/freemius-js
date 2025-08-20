@@ -1,8 +1,8 @@
 import { PortalData } from '@freemius/sdk';
 import { SectionHeading } from './section-heading';
 import { ReactNode } from 'react';
-import { useLocale } from '../locale';
-import { fullName } from '../utils';
+import { useLocale } from '../utils/locale';
+import { fullName } from '../utils/formatter';
 import { Button } from '@/components/ui/button';
 
 export function BillingSection(props: {

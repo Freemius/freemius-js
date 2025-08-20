@@ -26,16 +26,17 @@
 6. ✅ Finish Find User By Email & Get Purchase Info and create a sync action.
 7. ✅ Refactor the checkout config builder.
 8. ✅ Create Checkout Redirection Processer.
-9. Create the mono repo
-10. Create the Shadcn registry
-11. Make the SDK work with the UI starter kit (`@freemius/saas-kit`).
+9. ✅ Create the mono repo
+10. ✅ Create the Shadcn registry
+11. Create deployment tooling with auto version bumping
+12. Make the SDK work with the UI starter kit (`@freemius/saas-kit`).
     1. Finish the action parts of the customer portal.
     2. See if the paywall can be ported to the UI starter kit (minimalist pricing table).
     3. See if restore action can be ported to the UI starter kit.
 
 **Webinar**:
 
-1. How to setup the starter kit (nextjs).
+1. How to setup the starter kit (nextjs official saas starter and nextra for website/doc).
 2. Building a simple SaaS AI chat app (with copy-paste code).
     1. Explain the starter kit
     2. Explain the backend (Node, DB, ORM)

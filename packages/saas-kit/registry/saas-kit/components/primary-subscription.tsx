@@ -1,7 +1,7 @@
 import type { PortalData } from '@freemius/sdk';
 import { SectionHeading } from './section-heading';
-import { useLocale } from '../locale';
-import { formatCurrency, formatDate } from '../utils';
+import { useLocale } from '../utils/locale';
+import { formatCurrency, formatDate } from '../utils/formatter';
 import SubscriptionAction from './subscription-action';
 import PaymentMethodUpdate from './payment-method-update';
 

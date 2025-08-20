@@ -12,9 +12,9 @@ Here are the primary packages in the mono repo:
 
 We also have various example applications and utilities that demonstrate how to use the SDK effectively.
 
-| Example Name | Location              | Description                                                                                                                                     |
-| ------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `nextjs-app` | `examples/nextjs-app` | A simple SaaS application built in NextJS that demonstrates the basic usage of the SDK for any AI like app with credit system and subscription. |
+| Example Name | Location            | Description                                                                                                                                                                                                                                                                |
+| ------------ | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nextjs-app` | `packages/saas-kit` | A simple SaaS application built in NextJS that demonstrates the basic usage of the SDK for any AI like app with credit system and subscription. We use the same package to develop the SaaS kit and the nextjs example for the time being. We might split it in the future |
 
 The following dependencies are handled from the root `package.json`:
 

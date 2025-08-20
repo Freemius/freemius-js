@@ -2,7 +2,7 @@ import { Checkout, CheckoutOptions } from '@freemius/checkout';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { CheckoutContext, PurchaseData, CheckoutProviderProps, PurchaseSyncSuccess } from '../hooks/checkout';
 import Processing from './processing';
-import { useLocale } from '../locale';
+import { useLocale } from '../utils/locale';
 
 function useCreateCheckout(options: CheckoutOptions, success?: PurchaseSyncSuccess) {
     const [fsCheckout, setFSCheckout] = useState<Checkout>(() => new Checkout(options));

@@ -1,7 +1,7 @@
 import { PortalSubscription } from '@freemius/sdk';
 import { useCheckout } from '../hooks/checkout';
 import { Button } from '@/components/ui/button';
-import { useLocale } from '../locale';
+import { useLocale } from '../utils/locale';
 import PaymentIcon from './payment-icon';
 
 export default function PaymentMethodUpdate(props: { subscription: PortalSubscription }) {

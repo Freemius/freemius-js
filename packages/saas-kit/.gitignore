@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 /generated/prisma
+
+# Shadcn registry build (automated through the registry:build script)
+registry.json
+public/r/*
