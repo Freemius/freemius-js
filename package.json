@@ -52,7 +52,6 @@
     "**/*": "prettier --write --ignore-unknown"
   },
   "workspaces": [
-    "packages/*",
-    "examples/*"
+    "packages/sdk"
   ]
 }

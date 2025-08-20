@@ -1,6 +1,5 @@
 {
     // Visit https://aka.ms/tsconfig to read more about this file
-    "exclude": ["examples"],
     "compilerOptions": {
         // File Layout
         "rootDir": "./",

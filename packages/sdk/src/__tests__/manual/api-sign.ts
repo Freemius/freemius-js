@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Freemius } from '../..';
+import { Freemius } from '../../';
 
 const freemius = new Freemius(
     process.env.FS__PRODUCT_ID!,

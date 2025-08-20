@@ -16,6 +16,7 @@ export default tseslint.config(
     {
         ignores: [
             'packages/sdk/api/schema.d.ts',
+            'packages/**/dist/**/*',
             'examples/nextjs-app/generated/**/*',
             'examples/nextjs-app/.next/**/*',
             'examples/nextjs-app/src/components/ai-elements/**/*',

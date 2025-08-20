@@ -28,7 +28,7 @@ listener
     });
 
 // Example Next.js route handler
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
     return await webhookService.processFetch(listener, request);
 }
 
