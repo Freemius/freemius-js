@@ -17,8 +17,6 @@ export type CheckoutBuilderUserOptions =
  * A builder class for constructing checkout parameters. This class provides a fluent
  * API to create Checkout parameters for a product with various configurations.
  *
- *
- *
  * Every method returns a new instance of the builder with the updated options,
  * allowing for method chaining. The final `toOptions()` method returns the constructed
  * `CheckoutOptions` object. So the class itself is immutable and does not modify the original instance.
@@ -449,15 +447,22 @@ export class CheckoutBuilder {
     /**
      * Builds and returns the final checkout options to be used with the `@freemius/checkout` package.
      *
+     * @note - This is async by purpose so that we can allow for future enhancements that might require async operations.
+     *
      * @returns The constructed CheckoutOptions object
      */
-    toOptions(
+    async toOptions(
         additionalOptions?: Omit<CheckoutPopupParams, 'plugin_id'> & CheckoutPopupArbitraryParams
-    ): CheckoutOptions {
+    ): Promise<CheckoutOptions> {
         return { ...this.options, ...additionalOptions, product_id: this.productId };
     }
 
-    toLink(): string {
+    /**
+     * Generates a checkout link based on the current builder state.
+     *
+     * @note - This is async by purpose so that we can allow for future enhancements that might require async operations.
+     */
+    async toLink(): Promise<string> {
         const checkoutOptions = convertCheckoutOptionsToQueryParams(this.options);
 
         const queryParams = buildFreemiusQueryFromOptions(checkoutOptions);

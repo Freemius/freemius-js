@@ -5,6 +5,53 @@ import { CheckoutBuilder, CheckoutBuilderUserOptions } from '../models/CheckoutB
 import { createHash, createHmac, timingSafeEqual } from 'crypto';
 import { CheckoutRedirectInfo } from '../models/CheckoutRedirectInfo';
 
+export type CheckoutSessionOptions = {
+    /**
+     * The user for whom the checkout is being created.
+     * This should be an object containing user details like email, ID, etc.
+     * If not provided, the checkout will be created without user context.
+     */
+    user?: CheckoutBuilderUserOptions;
+    /**
+     * Whether to use sandbox mode for the checkout.
+     *
+     * @default false
+     */
+    isSandbox?: boolean;
+    /**
+     * Whether to include the recommended option in the checkout for maximum conversion.
+     *
+     * @default true
+     */
+    withRecommendation?: boolean;
+    /**
+     * The title of the checkout modal.
+     */
+    title?: string;
+    /**
+     * Image to display in the checkout modal. Must be a valid https URL.
+     */
+    image?: string;
+    /**
+     * Optional plan ID to use for the checkout.
+     * If provided, this will be used as the default plan for the checkout, instead of the first paid plan.
+     */
+    planId?: string;
+    /**
+     * Optional quota to set for the checkout.
+     *
+     * This is useful when purchasing credits or similar resources.
+     */
+    quota?: number;
+    /**
+     * Optional trial period configuration.
+     *
+     * This can be used to set a trial period for the checkout.
+     * If not provided, the checkout will not have a trial period.
+     */
+    trial?: CheckoutOptions['trial'];
+};
+
 export class CheckoutService {
     constructor(
         private readonly productId: FSId,
@@ -80,14 +127,8 @@ export class CheckoutService {
      *
      * Useful for generating recommended checkout options for SaaS.
      */
-    createUserOptions(user: CheckoutBuilderUserOptions, isSandbox: boolean = false): CheckoutOptions {
-        let builder = this.create().withUser(user);
-
-        if (isSandbox) {
-            builder = builder.inSandbox();
-        }
-
-        return builder.toOptions();
+    async createSessionOptions(options: CheckoutSessionOptions = {}): Promise<CheckoutOptions> {
+        return await this.createSession(options).toOptions();
     }
 
     /**
@@ -95,14 +136,45 @@ export class CheckoutService {
      *
      * Useful for generating recommended checkout links for SaaS.
      */
-    createUserLink(user: CheckoutBuilderUserOptions, isSandbox: boolean = false): string {
-        let builder = this.create().withUser(user);
+    async createSessionLink(options: CheckoutSessionOptions = {}): Promise<string> {
+        return await this.createSession(options).toLink();
+    }
+
+    /**
+     * Convenience method to create a checkout session with user context and sandbox mode.
+     *
+     * This method allows you to create a checkout session with the user details and sandbox mode.
+     */
+    createSession(options: CheckoutSessionOptions = {}): CheckoutBuilder {
+        const { user, isSandbox = false, withRecommendation = true, title, image, planId, quota, trial } = options;
+
+        let builder = this.create(withRecommendation).withUser(user);
 
         if (isSandbox) {
             builder = builder.inSandbox();
         }
 
-        return builder.toLink();
+        if (title) {
+            builder = builder.withTitle(title);
+        }
+
+        if (image) {
+            builder = builder.withImage(image);
+        }
+
+        if (planId) {
+            builder = builder.withPlan(planId);
+        }
+
+        if (quota) {
+            builder = builder.withQuota(quota);
+        }
+
+        if (trial) {
+            builder = builder.inTrial(trial);
+        }
+
+        return builder;
     }
 
     /**
