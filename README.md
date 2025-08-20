@@ -28,7 +28,7 @@
 8. ✅ Create Checkout Redirection Processer.
 9. ✅ Create the mono repo
 10. ✅ Create the Shadcn registry
-11. Create deployment tooling with auto version bumping
+11. ✅ Create deployment tooling with auto version bumping
 12. Make the SDK work with the UI starter kit (`@freemius/saas-kit`).
     1. Finish the action parts of the customer portal.
     2. See if the paywall can be ported to the UI starter kit (minimalist pricing table).

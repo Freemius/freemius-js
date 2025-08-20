@@ -10,7 +10,6 @@
     "build": "npm run build --workspaces",
     "build:sdk": "npm run build --workspace=@freemius/sdk",
     "build:saas-kit": "npm run build --workspace=@freemius/saas-kit",
-    "dev": "npm run dev --workspaces",
     "dev:sdk": "npm run dev --workspace=@freemius/sdk",
     "dev:saas-kit": "npm run dev --workspace=@freemius/saas-kit",
     "typecheck": "npm run typecheck --workspaces",
@@ -18,11 +17,7 @@
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "clean": "npm run clean --workspaces",
-    "changeset": "changeset",
-    "changeset:version": "changeset version",
-    "changeset:publish": "changeset publish",
-    "release": "npm run build && npm run changeset:publish",
-    "version-packages": "npm run changeset:version",
+    "release": "npm run build && npx changeset publish",
     "prepare": "husky"
   },
   "repository": {

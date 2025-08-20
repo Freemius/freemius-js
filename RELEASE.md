@@ -10,7 +10,7 @@ When you make changes that should trigger a version bump:
 
 ```bash
 # After making your changes, create a changeset
-npm run changeset
+npx changeset
 ```
 
 This will prompt you to:
@@ -37,7 +37,7 @@ npm run dev:sdk
 
 ```bash
 # Apply all pending changesets and update versions
-npm run changeset:version
+npx changeset version
 ```
 
 This will:
@@ -83,7 +83,7 @@ npm run openapi:generate --workspace=@freemius/sdk
 
 ```bash
 # Build registry
-npm run registry:build --workspace=@freemius/saas-kit
+npm run build --workspace=@freemius/saas-kit
 
 # Development
 npm run dev --workspace=@freemius/saas-kit
@@ -92,33 +92,7 @@ npm run dev --workspace=@freemius/saas-kit
 ## Example Workflow
 
 1. Make changes to the SDK
-2. Run `npm run changeset` and select SDK with appropriate version bump
+2. Run `npx changeset` and select SDK with appropriate version bump
 3. Run `npm run build:sdk` to ensure it builds
 4. Commit your changes including the changeset file
-5. When ready to release: `npm run changeset:version` then `npm run release`
-
-## CI/CD Integration
-
-You can integrate this with GitHub Actions for automated releases:
-
-```yaml
-# .github/workflows/release.yml
-name: Release
-on:
-    push:
-        branches: [main]
-jobs:
-    release:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
-              with:
-                  node-version: 18
-                  registry-url: 'https://registry.npmjs.org'
-            - run: npm ci
-            - run: npm run build
-            - run: npm run changeset:publish
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-```
+5. When ready to release: `npx changeset version` then `npm run release`
