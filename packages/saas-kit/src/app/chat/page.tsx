@@ -10,7 +10,7 @@ export default async function Dashboard() {
         headers: await headers(),
     });
 
-    const options = await freemius.checkout.createSessionOptions({ user: session?.user, isSandbox: true });
+    const options = await freemius.checkout.createOptions({ user: session?.user, isSandbox: true });
     // Or use the long-form builder:
     // const options = freemius.checkout.create()
     //   .withUser(session?.user)

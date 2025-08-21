@@ -70,17 +70,15 @@ export class CheckoutService {
      * @example
      * Basic usage:
      * ```typescript
-     * const options = freemius.checkout.params()
-     *   .withUser(session?.user)
-     *   .inSandbox()
-     *   .withRecommendation()
+     * const options = freemius.checkout.create({user: session?.user})
      *   .toOptions(); // Or .toLink() for a hosted checkout link
      * ```
      *
      * @example
-     * Advanced configuration:
+     * Advanced configuration: You can also skip the convenience options and rather use the builder directly to configure the checkout.
+     *
      * ```typescript
-     * const checkoutOptions = freemius.checkout.params()
+     * const checkoutOptions = freemius.checkout.create()
      *   .withUser(user, true)
      *   .withPlan('1234')
      *   .withQuota(5)
@@ -114,41 +112,14 @@ export class CheckoutService {
      *   .toOptions();
      * ```
      */
-    create(withRecommendation: boolean = true): CheckoutBuilder {
-        const productId = idToString(this.productId);
-
-        const builder = new CheckoutBuilder({}, productId, this.publicKey, this.secretKey);
-
-        return withRecommendation ? builder.withRecommendation() : builder;
-    }
-
-    /**
-     * Convenience method to create checkout options for a specific user with or without sandbox mode.
-     *
-     * Useful for generating recommended checkout options for SaaS.
-     */
-    async createSessionOptions(options: CheckoutSessionOptions = {}): Promise<CheckoutOptions> {
-        return await this.createSession(options).toOptions();
-    }
-
-    /**
-     * Convenience method to create a checkout link for a specific user with or without sandbox mode.
-     *
-     * Useful for generating recommended checkout links for SaaS.
-     */
-    async createSessionLink(options: CheckoutSessionOptions = {}): Promise<string> {
-        return await this.createSession(options).toLink();
-    }
-
-    /**
-     * Convenience method to create a checkout session with user context and sandbox mode.
-     *
-     * This method allows you to create a checkout session with the user details and sandbox mode.
-     */
-    createSession(options: CheckoutSessionOptions = {}): CheckoutBuilder {
+    create(options: CheckoutSessionOptions = {}): CheckoutBuilder {
         const { user, isSandbox = false, withRecommendation = true, title, image, planId, quota, trial } = options;
 
-        let builder = this.create(withRecommendation).withUser(user);
+        let builder = this.createBuilder().withUser(user);
+
+        if (withRecommendation) {
+            builder = builder.withRecommendation();
+        }
 
         if (isSandbox) {
             builder = builder.inSandbox();
@@ -175,6 +146,34 @@ export class CheckoutService {
         }
 
         return builder;
+    }
+
+    /**
+     * Convenience method to create checkout options for a specific user with or without sandbox mode.
+     *
+     * Useful for generating recommended checkout options for SaaS.
+     *
+     * @see create() for more details on the options.
+     */
+    async createOptions(options: CheckoutSessionOptions = {}): Promise<CheckoutOptions> {
+        return await this.create(options).toOptions();
+    }
+
+    /**
+     * Convenience method to create a checkout link for a specific user with or without sandbox mode.
+     *
+     * Useful for generating recommended checkout links for SaaS.
+     *
+     * @see create() for more details on the options.
+     */
+    async createLink(options: CheckoutSessionOptions = {}): Promise<string> {
+        return await this.create(options).toLink();
+    }
+
+    private createBuilder(): CheckoutBuilder {
+        const productId = idToString(this.productId);
+
+        return new CheckoutBuilder({}, productId, this.publicKey, this.secretKey);
     }
 
     /**
