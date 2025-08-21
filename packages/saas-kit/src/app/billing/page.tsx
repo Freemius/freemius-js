@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { ErrorBoundary } from '@/components/error';
 import { PortalData } from '@freemius/sdk';
+import { CustomerPortalSkeleton } from '@freemius/saas-starter/components/customer-portal';
 
 export default async function Billing() {
     const session = await auth.api.getSession({
@@ -35,7 +36,7 @@ export default async function Billing() {
         <AppMain title="Billing" isLoggedIn={true}>
             <AppContent>
                 <ErrorBoundary>
-                    <Suspense fallback={<div>Loading purchase data...</div>}>
+                    <Suspense fallback={<CustomerPortalSkeleton />}>
                         <Portal portalData={fsPurchase} />
                     </Suspense>
                 </ErrorBoundary>

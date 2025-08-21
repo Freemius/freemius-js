@@ -11,6 +11,7 @@ import {
     UserSubscriptionFilterOptions,
     UserLicenseFilterOptions,
     UserPaymentFilterOptions,
+    BillingUpdatePayload,
 } from './types';
 
 const USER_FIELDS = 'email,first,last,picture,is_verified,id,created,updated,is_marketing_allowed';
@@ -166,5 +167,23 @@ export class User extends ApiBase<UserEntity, UserFilterOptions> {
         }
 
         return response.data.payments;
+    }
+
+    async updateBilling(userId: FSId, payload: BillingUpdatePayload): Promise<UserBillingEntity | null> {
+        const response = await this.client.PUT(`/products/{product_id}/users/{user_id}/billing.json`, {
+            params: {
+                path: {
+                    product_id: this.productId,
+                    user_id: this.getIdForPath(userId),
+                },
+            },
+            body: payload,
+        });
+
+        if (!this.isGoodResponse(response.response) || !response.data || !response.data) {
+            return null;
+        }
+
+        return response.data;
     }
 }

@@ -61,6 +61,8 @@ export const defaultLocale = {
             },
             action: {
                 update: () => <>Update information</>,
+                cancel: () => <>Cancel</>,
+                save: () => <>Save</>,
             },
         },
         payments: {
@@ -76,6 +78,11 @@ export const defaultLocale = {
             },
             action: {
                 downloadInvoice: () => <>Invoice</>,
+            },
+            type: {
+                oneoff: () => 'One-off purchase',
+                first: () => 'Subscription',
+                renewal: () => 'Renewal',
             },
         },
     },

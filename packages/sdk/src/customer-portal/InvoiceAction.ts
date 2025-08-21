@@ -2,6 +2,7 @@ import { PortalAction } from '../contracts/portal';
 import { ApiService } from '../services/ApiService';
 import * as zod from 'zod';
 import { AuthService } from '../services/AuthService';
+import { ActionError } from './ActionError';
 
 export class InvoiceAction implements PortalAction {
     private readonly actionName = 'invoice';
@@ -59,21 +60,33 @@ export class InvoiceAction implements PortalAction {
         const invoiceId = url.searchParams.get('invoiceId');
         const userIdParam = url.searchParams.get('userId');
 
-        if (schema.safeParse({ invoiceId, userId: userIdParam }).success) {
-            const pdf = await this.api.payment.retrieveInvoice(invoiceId!);
+        const parseResult = schema.safeParse({ invoiceId, userId: userIdParam });
+
+        if (!parseResult.success) {
+            throw ActionError.validationFailed('Invalid request parameters', parseResult.error.issues);
+        }
+
+        const { invoiceId: validInvoiceId } = parseResult.data;
+
+        try {
+            const pdf = await this.api.payment.retrieveInvoice(validInvoiceId);
 
             if (pdf) {
                 return new Response(pdf, {
                     headers: {
                         'Content-Type': 'application/pdf',
-                        'Content-Disposition': `inline; filename="invoice_${invoiceId}.pdf"`,
+                        'Content-Disposition': `inline; filename="invoice_${validInvoiceId}.pdf"`,
                     },
                 });
             } else {
-                return Response.json({ error: 'Invoice not found' }, { status: 404 });
+                throw ActionError.notFound('Invoice not found');
             }
-        }
+        } catch (error) {
+            if (error instanceof ActionError) {
+                throw error;
+            }
 
-        return Response.json({ error: 'Invoice actions are not implemented yet' }, { status: 501 });
+            throw ActionError.internalError('Failed to retrieve invoice');
+        }
     }
 }

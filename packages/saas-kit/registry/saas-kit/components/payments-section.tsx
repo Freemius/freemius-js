@@ -41,7 +41,12 @@ export function PaymentsSection(props: { payments: PortalPayment[]; unit: Sellin
                         </div>
 
                         <div className="fs-saas-starter-payments-section__badge ml-auto lg:ml-0">
-                            <PaymentBadge type={payment.type} />
+                            <PaymentBadge
+                                type={payment.type}
+                                occurance={
+                                    payment.subscription_id ? (payment.is_renewal ? 'renewal' : 'first') : 'oneoff'
+                                }
+                            />
                         </div>
 
                         <div className="fs-saas-starter-payments-section__plan col-span-2 lg:col-span-1">

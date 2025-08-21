@@ -1,32 +1,28 @@
 import { ApiService } from './ApiService';
-import { PricingTableData, FSId, PricingEntity } from '../api/types';
-import { PortalData, PortalSubscription, PortalPayment, PortalAction } from '../contracts/portal';
-import {
-    parseBillingCycle,
-    parseNumber,
-    idToString,
-    parseDateTime,
-    isIdsEqual,
-    parseCurrency,
-    parsePaymentMethod,
-} from '../api/parser';
-import { CURRENCY } from '../contracts/types';
+import { FSId } from '../api/types';
+import { PortalData, PortalAction } from '../contracts/portal';
 import { CheckoutService } from './CheckoutService';
 import { CheckoutOptions } from '@freemius/checkout';
 import { AuthService } from './AuthService';
 import { InvoiceAction } from '../customer-portal/InvoiceAction';
+import { PortalDataRepository } from '../customer-portal/PortalDataRepository';
+import { ActionError } from '../customer-portal/ActionError';
+import { BillingAction } from '../customer-portal/BillingAction';
 
 export class CustomerPortalService {
-    private readonly action: { invoice: PortalAction };
+    private readonly repository: PortalDataRepository;
+    private readonly invoiceAction: InvoiceAction;
+    private readonly billingAction: BillingAction;
 
     constructor(
         private readonly api: ApiService,
         private readonly checkout: CheckoutService,
         private readonly authService: AuthService
     ) {
-        this.action = {
-            invoice: new InvoiceAction(this.api, this.authService),
-        };
+        this.repository = new PortalDataRepository(this.api);
+
+        this.invoiceAction = new InvoiceAction(this.api, this.authService);
+        this.billingAction = new BillingAction(this.api, this.authService);
     }
 
     /**
@@ -41,30 +37,16 @@ export class CustomerPortalService {
         primaryLicenseId: FSId | null = null,
         sandbox: boolean = false
     ): Promise<PortalData | null> {
-        const [user, pricingData, subscriptions, payments, billing] = await Promise.all([
-            this.api.user.retrieve(userId),
-            this.api.product.retrievePricingData(),
-            this.api.user.retrieveSubscriptions(userId),
-            this.api.user.retrievePayments(userId),
-            this.api.user.retrieveBilling(userId),
-        ]);
+        const data = await this.repository.getApiData(userId);
 
-        if (!user || !pricingData || !subscriptions) {
+        if (!data) {
             return null;
         }
 
-        const planTitles = this.getPlanTitleById(pricingData!);
+        const { user, pricingData, subscriptions, payments, billing } = data;
 
-        const allPricingsById = this.getPricingById(pricingData!);
-
-        const portalPayments: PortalPayment[] = payments.map((payment) => ({
-            ...payment,
-            invoiceUrl: this.action.invoice.createAuthenticatedUrl(payment.id!, user.id!, endpoint),
-            paymentMethod: parsePaymentMethod(payment.gateway)!,
-            createdAt: parseDateTime(payment.created) ?? new Date(),
-            planTitle: planTitles[payment.plan_id!] ?? `Plan ${payment.plan_id!}`,
-            quota: allPricingsById[payment.pricing_id!]?.licenses ?? null,
-        }));
+        const plans = this.repository.getPlansById(pricingData);
+        const pricings = this.repository.getPricingById(pricingData);
 
         const checkoutOptions: CheckoutOptions = {
             product_id: this.api.productId,
@@ -74,22 +56,13 @@ export class CustomerPortalService {
             checkoutOptions.sandbox = await this.checkout.getSandboxParams();
         }
 
-        const billingData: PortalData = {
+        const portalData: PortalData = {
             endpoint,
             user,
             checkoutOptions,
-            billing: billing
-                ? {
-                      ...billing,
-                      updateToken: this.authService.createActionToken('update_billing', user.id!),
-                  }
-                : null,
-            subscriptions: {
-                primary: null,
-                active: [],
-                past: [],
-            },
-            payments: portalPayments,
+            billing: this.repository.getBilling(billing, this.billingAction, userId, endpoint),
+            subscriptions: await this.repository.getSubscriptions(subscriptions, plans, pricings, primaryLicenseId),
+            payments: this.repository.getPayments(payments, plans, pricings, this.invoiceAction, userId, endpoint),
             plans: pricingData.plans ?? [],
             sellingUnit: pricingData.selling_unit_label ?? {
                 singular: 'Unit',
@@ -98,58 +71,7 @@ export class CustomerPortalService {
             productId: this.api.productId,
         };
 
-        subscriptions.forEach((subscription) => {
-            const isActive = null === subscription.canceled_at;
-
-            const subscriptionData: PortalSubscription = {
-                subscriptionId: idToString(subscription.id!),
-                planId: idToString(subscription.plan_id!),
-                pricingId: idToString(subscription.pricing_id!),
-                planTitle: planTitles[subscription.plan_id!] ?? `Plan ${subscription.plan_id!}`,
-                renewalAmount: parseNumber(subscription.renewal_amount)!,
-                initialAmount: parseNumber(subscription.initial_amount)!,
-                billingCycle: parseBillingCycle(subscription.billing_cycle),
-                isActive: isActive,
-                renewalDate: parseDateTime(subscription.next_payment),
-                licenseId: idToString(subscription.license_id!),
-                currency: parseCurrency(subscription.currency) ?? CURRENCY.USD,
-                createdAt: parseDateTime(subscription.created) ?? new Date(),
-                cancelledAt: subscription.canceled_at ? parseDateTime(subscription.canceled_at) : null,
-                quota: allPricingsById[subscription.pricing_id!]?.licenses ?? null,
-                paymentMethod: parsePaymentMethod(subscription.gateway),
-                upgradeToken: this.authService.createActionToken(`subscription_upgrade_${subscription.id!}`, user.id!),
-            };
-
-            if (isActive) {
-                billingData.subscriptions.active.push(subscriptionData);
-            } else {
-                billingData.subscriptions.past.push(subscriptionData);
-            }
-
-            if (isActive && primaryLicenseId && isIdsEqual(subscription.license_id!, primaryLicenseId)) {
-                billingData.subscriptions.primary = subscriptionData;
-            }
-        });
-
-        // Sort subscriptions by created date, most recent first
-        billingData.subscriptions.active.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-        billingData.subscriptions.past.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
-        if (!billingData.subscriptions.primary) {
-            // If no primary subscription is set, use the first active or inactive subscription as primary
-            billingData.subscriptions.primary =
-                billingData.subscriptions.active[0] ?? billingData.subscriptions.past[0] ?? null;
-        }
-
-        // @todo - Right now add the checkout upgrade authorization to the primary subscription if it exists. In the future our API itself can return this data.
-        if (billingData.subscriptions.primary) {
-            billingData.subscriptions.primary.checkoutUpgradeAuthorization =
-                await this.api.license.retrieveCheckoutUpgradeAuthorization(
-                    billingData.subscriptions.primary.licenseId
-                );
-        }
-
-        return billingData;
+        return portalData;
     }
 
     /**
@@ -163,40 +85,27 @@ export class CustomerPortalService {
             return Response.json({ error: 'Action parameter is required' }, { status: 400 });
         }
 
-        const actionHandlers = Object.values(this.action);
+        const actionHandlers: PortalAction[] = [this.invoiceAction, this.billingAction];
 
-        for (const actionHandler of actionHandlers) {
-            if (actionHandler.canHandle(request)) {
-                if (actionHandler.verifyAuthentication(request)) {
-                    return await actionHandler.processAction(request);
-                } else {
-                    return Response.json({ error: 'Invalid authentication token' }, { status: 401 });
+        try {
+            for (const actionHandler of actionHandlers) {
+                if (actionHandler.canHandle(request)) {
+                    if (actionHandler.verifyAuthentication(request)) {
+                        return await actionHandler.processAction(request);
+                    } else {
+                        throw ActionError.unauthorized('Invalid authentication token');
+                    }
                 }
             }
+        } catch (error) {
+            if (error instanceof ActionError) {
+                return error.toResponse();
+            }
+
+            console.error('Error processing action:', error);
+            return Response.json({ error: 'Internal server error' }, { status: 500 });
         }
 
         return Response.json({ error: 'Invalid action' }, { status: 400 });
-    }
-
-    private getPlanTitleById(pricingData: PricingTableData): Record<string, string> {
-        const planTitles: Record<string, string> = {};
-
-        pricingData.plans?.forEach((plan) => {
-            planTitles[plan.id!] = plan.title ?? plan.name ?? 'Unknown Plan';
-        });
-
-        return planTitles;
-    }
-
-    private getPricingById(pricingData: PricingTableData): Record<string, PricingEntity> {
-        const pricing: Record<string, PricingEntity> = {};
-
-        pricingData.plans?.forEach((plan) => {
-            plan.pricing?.forEach((p) => {
-                pricing[p.id!] = p;
-            });
-        });
-
-        return pricing;
     }
 }

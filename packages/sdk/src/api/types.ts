@@ -32,8 +32,11 @@ export type ProductEntity = components['schemas']['Plugin'];
 export type PricingTableData =
     operations['products/retrieve-pricing-table-data']['responses'][200]['content']['application/json'];
 export type PricingEntity = components['schemas']['Pricing'];
+export type PlanEntity = components['schemas']['Plan'];
 
 export type BillingEntity = components['schemas']['Billing'];
+export type BillingUpdatePayload =
+    operations['users/update-or-create-billing']['requestBody']['content']['application/json'];
 
 export type EventEntity = components['schemas']['EventLog'];
 

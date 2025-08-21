@@ -20,7 +20,7 @@ export interface PortalSubscription {
     checkoutUpgradeAuthorization?: string | null;
     quota: number | null;
     paymentMethod: PaymentMethod | null;
-    upgradeToken: string;
+    upgradeUrl?: string;
 }
 
 export type PortalPlans = NonNullable<
@@ -39,15 +39,21 @@ export type SellingUnit = NonNullable<
     operations['products/retrieve-pricing-table-data']['responses']['200']['content']['application/json']['selling_unit_label']
 >;
 
+export type PortalBilling = (BillingEntity | null) & {
+    updateUrl: string;
+};
+
+export type PortalSubscriptions = {
+    primary: PortalSubscription | null;
+    active: PortalSubscription[];
+    past: PortalSubscription[];
+};
+
 export interface PortalData {
     user: UserEntity;
     endpoint: string;
-    subscriptions: {
-        primary: PortalSubscription | null;
-        active: PortalSubscription[];
-        past: PortalSubscription[];
-    };
-    billing: (BillingEntity & { updateToken: string }) | null;
+    subscriptions: PortalSubscriptions;
+    billing: PortalBilling;
     payments: PortalPayment[] | null;
     plans: PortalPlans;
     sellingUnit: SellingUnit;
