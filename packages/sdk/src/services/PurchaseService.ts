@@ -126,7 +126,10 @@ export class PurchaseService {
         return new PurchaseInfo(user, license, subscription);
     }
 
-    async retrieveActiveSubscriptionByEmail(email: string, pagination?: PagingOptions): Promise<PurchaseInfo[] | null> {
+    async retrieveActiveSubscriptionsByEmail(
+        email: string,
+        pagination?: PagingOptions
+    ): Promise<PurchaseInfo[] | null> {
         const user = await this.api.user.retrieveByEmail(email);
 
         if (!user) {

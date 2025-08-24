@@ -1,5 +1,5 @@
 import { ApiService } from './ApiService';
-import { FSId } from '../api/types';
+import { FSId, SellingUnit } from '../api/types';
 import { PortalData, PortalAction } from '../contracts/portal';
 import { CheckoutService } from './CheckoutService';
 import { CheckoutOptions } from '@freemius/checkout';
@@ -64,7 +64,7 @@ export class CustomerPortalService {
             subscriptions: await this.repository.getSubscriptions(subscriptions, plans, pricings, primaryLicenseId),
             payments: this.repository.getPayments(payments, plans, pricings, this.invoiceAction, userId, endpoint),
             plans: pricingData.plans ?? [],
-            sellingUnit: pricingData.selling_unit_label ?? {
+            sellingUnit: (pricingData.selling_unit_label as SellingUnit) ?? {
                 singular: 'Unit',
                 plural: 'Units',
             },

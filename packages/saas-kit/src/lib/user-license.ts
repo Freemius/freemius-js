@@ -178,7 +178,7 @@ export async function sendRenewalFailureEmail(subscription: SubscriptionEntity):
 }
 
 export async function syncLicenseByEmail(email: string): Promise<PurchaseInfo | null> {
-    const purchases = await freemius.purchase.retrieveActiveSubscriptionByEmail(email, { count: 1 });
+    const purchases = await freemius.purchase.retrieveActiveSubscriptionsByEmail(email, { count: 1 });
 
     if (!purchases || purchases.length === 0) {
         return null;

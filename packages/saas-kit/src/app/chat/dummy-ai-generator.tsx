@@ -8,7 +8,7 @@ import PurchaseProvider from '@/components/purchase-provider';
 import { ChatContent } from '@/components/ai-chat';
 import { CheckoutPaywallData } from '@freemius/sdk';
 
-export default function DummyAiGenerator(props: {
+export default function AiApp(props: {
     examples: string[];
     checkoutOptions: CheckoutOptions;
     paywallData: CheckoutPaywallData;

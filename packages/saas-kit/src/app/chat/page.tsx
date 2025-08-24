@@ -1,7 +1,7 @@
 import AppMain from '@/components/app-main';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
-import DummyAiGenerator from './dummy-ai-generator';
+import AiApp from './dummy-ai-generator';
 import { freemius } from '@/lib/freemius';
 import { examples } from '@/lib/ai';
 
@@ -15,7 +15,7 @@ export default async function Dashboard() {
 
     return (
         <AppMain title="New Chat" isLoggedIn={!!session}>
-            <DummyAiGenerator examples={examples} checkoutOptions={options} paywallData={paywallData} />
+            <AiApp examples={examples} checkoutOptions={options} paywallData={paywallData} />
         </AppMain>
     );
 }
