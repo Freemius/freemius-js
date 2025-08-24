@@ -1,3 +1,4 @@
+import * as React from 'react';
 import {
     BILLING_CYCLE,
     PortalSubscription,

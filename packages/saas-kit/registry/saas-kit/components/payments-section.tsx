@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { PortalPayment, SellingUnit } from '@freemius/sdk';
 import { useLocale } from '../utils/locale';
 import { SectionHeading } from './section-heading';

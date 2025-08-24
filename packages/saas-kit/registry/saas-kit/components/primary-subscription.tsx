@@ -1,3 +1,4 @@
+import * as React from 'react';
 import type { PortalData } from '@freemius/sdk';
 import { SectionHeading } from './section-heading';
 import { useLocale } from '../utils/locale';

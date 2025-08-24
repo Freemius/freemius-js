@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { ReactNode, useState, memo, useCallback, Fragment, useEffect } from 'react';
 import {
     Pagination,

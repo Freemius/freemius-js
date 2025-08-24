@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { PortalPayment } from '@freemius/sdk';
 import { Badge } from '@/components/ui/badge';
 import { ComponentProps, useMemo } from 'react';

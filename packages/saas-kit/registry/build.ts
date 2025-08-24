@@ -35,6 +35,44 @@ function getAllFiles(dir: string): string[] {
     return files;
 }
 
+function validateImports(filePath: string): void {
+    try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const relativePath = path.relative(REGISTRY_BASE_PATH, filePath);
+
+        // Check for imports that go outside the saas-kit directory (../../)
+        // but are not from @/components
+        const invalidImportRegex = /from\s+['"]\.\.\/\.\./g;
+        const componentImportRegex = /from\s+['"]@\/components/g;
+
+        const lines = content.split('\n');
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+
+            // Skip if this line imports from @/components (allowed)
+            if (componentImportRegex.test(line)) {
+                continue;
+            }
+
+            // Check for ../../ imports
+            if (invalidImportRegex.test(line)) {
+                throw new Error(
+                    `Invalid import found in ${relativePath} at line ${i + 1}:\n` +
+                        `  ${line.trim()}\n` +
+                        `Registry components should not import from outside the saas-kit directory ` +
+                        `unless they are @/components imports.`
+                );
+            }
+        }
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('Invalid import found')) {
+            throw error;
+        }
+        console.warn(`Warning: Could not validate imports in ${filePath}:`, error);
+    }
+}
+
 function extractRegistryDependencies(filePath: string): string[] {
     const dependencies: string[] = [];
 
@@ -72,6 +110,9 @@ function createRegistryFile(
     file: NonNullable<RegistryItem['files']>[number];
     dependencies: string[];
 } {
+    // Validate imports before processing the file
+    validateImports(filePath);
+
     const relativePath = path.relative(REGISTRY_BASE_PATH, filePath);
     const dependencies = extractRegistryDependencies(filePath);
 
@@ -89,46 +130,53 @@ function buildRegistry(): void {
     const files: RegistryItem['files'] = [];
     const allRegistryDependencies = new Set<string>();
 
-    // Iterate through each directory type
-    for (const [dirName, itemType] of Object.entries(dirToTypeMap)) {
-        const dirPath = path.join(REGISTRY_BASE_PATH, dirName);
-        const sourceFiles = getAllFiles(dirPath);
+    try {
+        console.log('Validating imports and building registry...');
 
-        for (const filePath of sourceFiles) {
-            const { file, dependencies } = createRegistryFile(filePath, itemType);
-            files.push(file);
+        // Iterate through each directory type
+        for (const [dirName, itemType] of Object.entries(dirToTypeMap)) {
+            const dirPath = path.join(REGISTRY_BASE_PATH, dirName);
+            const sourceFiles = getAllFiles(dirPath);
 
-            // Add dependencies to the set
-            dependencies.forEach((dep) => allRegistryDependencies.add(dep));
+            for (const filePath of sourceFiles) {
+                const { file, dependencies } = createRegistryFile(filePath, itemType);
+                files.push(file);
+
+                // Add dependencies to the set
+                dependencies.forEach((dep) => allRegistryDependencies.add(dep));
+            }
         }
+
+        const registry: Registry = {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            $schema: 'https://ui.shadcn.com/schema/registry.json',
+            homepage: 'https://shadcn.freemius.com',
+            name: 'saas-kit',
+            items: [
+                {
+                    name: 'all',
+                    author: 'Freemius Inc',
+                    type: 'registry:ui',
+                    description: 'All components, hooks, icons, and utilities for saas-kit',
+                    dependencies: ['@freemius/checkout', '@freemius/sdk'],
+                    registryDependencies: Array.from(allRegistryDependencies).sort(),
+                    files,
+                },
+            ],
+        };
+
+        // Write the registry to file
+        fs.writeFileSync(OUTPUT_PATH, JSON.stringify(registry, null, 2));
+        console.log(`Registry built successfully! Generated ${files.length} items.`);
+        console.log(
+            `Found ${allRegistryDependencies.size} registry dependencies: ${Array.from(allRegistryDependencies).join(', ')}`
+        );
+        console.log(`Output written to: ${OUTPUT_PATH}`);
+    } catch (error) {
+        console.error('Registry build failed:', error instanceof Error ? error.message : error);
+        process.exit(1);
     }
-
-    const registry: Registry = {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        $schema: 'https://ui.shadcn.com/schema/registry.json',
-        homepage: 'https://shadcn.freemius.com',
-        name: 'saas-kit',
-        items: [
-            {
-                name: 'all',
-                author: 'Freemius Inc',
-                type: 'registry:ui',
-                description: 'All components, hooks, icons, and utilities for saas-kit',
-                dependencies: ['@freemius/checkout', '@freemius/sdk'],
-                registryDependencies: Array.from(allRegistryDependencies).sort(),
-                files,
-            },
-        ],
-    };
-
-    // Write the registry to file
-    fs.writeFileSync(OUTPUT_PATH, JSON.stringify(registry, null, 2));
-    console.log(`Registry built successfully! Generated ${files.length} items.`);
-    console.log(
-        `Found ${allRegistryDependencies.size} registry dependencies: ${Array.from(allRegistryDependencies).join(', ')}`
-    );
-    console.log(`Output written to: ${OUTPUT_PATH}`);
 }
 
 // Run the build if this script is executed directly

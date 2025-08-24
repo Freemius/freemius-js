@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { PortalSubscription } from '@freemius/sdk';
 import { useCheckout } from '../hooks/checkout';
 import { Button } from '@/components/ui/button';

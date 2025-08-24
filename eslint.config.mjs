@@ -48,5 +48,12 @@ export default tseslint.config(
                 rootDir: 'examples/nextjs-app/',
             },
         },
+    },
+    // Turn on react in scope for the saas starter kit
+    {
+        files: ['packages/saas-kit/registry/**/*.{js,jsx,ts,tsx}'],
+        rules: {
+            'react/react-in-jsx-scope': 'error',
+        },
     }
 );

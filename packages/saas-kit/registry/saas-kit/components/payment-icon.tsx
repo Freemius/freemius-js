@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { PaymentMethod } from '@freemius/sdk';
 import PayPalIcon from '../icons/paypal';
 import CardIcon from '../icons/card';

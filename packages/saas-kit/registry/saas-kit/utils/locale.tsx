@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { PaymentMethod, PortalPayment, SellingUnit } from '@freemius/sdk';
 import { useContext, createContext } from 'react';
 
