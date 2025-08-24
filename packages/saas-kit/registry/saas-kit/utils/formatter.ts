@@ -25,10 +25,16 @@ export function fullName(first?: string, last?: string): string {
     return [first, last].filter(Boolean).join(' ').trim();
 }
 
-export function formatCurrency(amount: number, currency: string = 'USD', locale: string = 'en-US'): string {
+export function formatCurrency(
+    amount: number,
+    currency: string = 'USD',
+    locale: string = 'en-US',
+    maxFraction = 2
+): string {
     return new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: currency.toUpperCase(),
+        maximumFractionDigits: maxFraction,
     }).format(amount);
 }
 

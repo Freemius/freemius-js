@@ -4463,6 +4463,14 @@ export interface components {
              */
             is_featured?: boolean;
         };
+        FeatureEnriched: components['schemas']['Feature'] & {
+            /**
+             * @description The value of the feature associated with the plan.
+             * @example 5MB
+             */
+            value?: string;
+            plan_id?: components['schemas']['CommonProperties']['plan_id'];
+        };
         FeaturePlan: {
             id?: components['schemas']['CommonProperties']['id'];
             created?: components['schemas']['CommonProperties']['created'];
@@ -7602,6 +7610,8 @@ export interface operations {
                     accepted_payments?: 0 | 1;
                     /** @description `True` to expose license key to customers upon purchase/subscription. (Available for 'SaaS' products only) */
                     expose_license_key?: boolean;
+                    /** @description `True` to include in the after-purchase emails the customer portal login link. */
+                    enable_after_purchase_email_login_link?: boolean;
                 };
             };
         };
@@ -10813,7 +10823,7 @@ export interface operations {
                         plans?: (components['schemas']['Plan'] & {
                             pricing?: components['schemas']['Pricing'][];
                         } & {
-                            features?: components['schemas']['Feature'][];
+                            features?: components['schemas']['FeatureEnriched'][];
                         })[];
                         /** @description The label used for the selling unit of the product, e.g., 'Credit', 'Activation', etc. The resulting object will have both singular and plural. */
                         selling_unit_label?: {

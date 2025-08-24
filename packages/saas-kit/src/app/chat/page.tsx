@@ -11,22 +11,11 @@ export default async function Dashboard() {
     });
 
     const options = await freemius.checkout.createOptions({ user: session?.user, isSandbox: true });
-    // Or use the long-form builder:
-    // const options = freemius.checkout.create()
-    //   .withUser(session?.user)
-    //   .inSandbox()
-    //   .withPlan('1234')
-    //   .withQuota(5000)
-    //   .withCurrency('eur')
-    //   .withCoupon({
-    //     code: 'DISCOUNT2023',
-    //     hideUI: false
-    //   })
-    //   .toOptions();
+    const paywallData = await freemius.checkout.retrievePaywallData();
 
     return (
         <AppMain title="New Chat" isLoggedIn={!!session}>
-            <DummyAiGenerator examples={examples} checkoutOptions={options} />
+            <DummyAiGenerator examples={examples} checkoutOptions={options} paywallData={paywallData} />
         </AppMain>
     );
 }

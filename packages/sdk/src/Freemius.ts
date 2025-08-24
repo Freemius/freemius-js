@@ -22,7 +22,7 @@ export class Freemius {
     constructor(productId: FSId, apiKey: string, secretKey: string, publicKey: string) {
         this.api = new ApiService(productId, apiKey, secretKey, publicKey);
         this.auth = new AuthService(productId, secretKey);
-        this.checkout = new CheckoutService(productId, publicKey, secretKey);
+        this.checkout = new CheckoutService(productId, publicKey, secretKey, this.api);
         this.purchase = new PurchaseService(this.api);
         this.customerPortal = new CustomerPortalService(this.api, this.checkout, this.auth);
         this.webhook = new WebhookService(secretKey);

@@ -1,62 +1,19 @@
 import { CheckoutPopupParams, CheckoutOptions } from '@freemius/checkout';
-import { FSId } from '../api/types';
-import { idToString } from '../api/parser';
-import { CheckoutBuilder, CheckoutBuilderUserOptions } from '../models/CheckoutBuilder';
+import { FSId, SellingUnit } from '../api/types';
+import { idToString, isIdsEqual } from '../api/parser';
+import { CheckoutBuilder } from '../models/CheckoutBuilder';
 import { createHash, createHmac, timingSafeEqual } from 'crypto';
 import { CheckoutRedirectInfo } from '../models/CheckoutRedirectInfo';
-
-export type CheckoutSessionOptions = {
-    /**
-     * The user for whom the checkout is being created.
-     * This should be an object containing user details like email, ID, etc.
-     * If not provided, the checkout will be created without user context.
-     */
-    user?: CheckoutBuilderUserOptions;
-    /**
-     * Whether to use sandbox mode for the checkout.
-     *
-     * @default false
-     */
-    isSandbox?: boolean;
-    /**
-     * Whether to include the recommended option in the checkout for maximum conversion.
-     *
-     * @default true
-     */
-    withRecommendation?: boolean;
-    /**
-     * The title of the checkout modal.
-     */
-    title?: string;
-    /**
-     * Image to display in the checkout modal. Must be a valid https URL.
-     */
-    image?: string;
-    /**
-     * Optional plan ID to use for the checkout.
-     * If provided, this will be used as the default plan for the checkout, instead of the first paid plan.
-     */
-    planId?: string;
-    /**
-     * Optional quota to set for the checkout.
-     *
-     * This is useful when purchasing credits or similar resources.
-     */
-    quota?: number;
-    /**
-     * Optional trial period configuration.
-     *
-     * This can be used to set a trial period for the checkout.
-     * If not provided, the checkout will not have a trial period.
-     */
-    trial?: CheckoutOptions['trial'];
-};
+import { ApiService } from './ApiService';
+import { CheckoutPaywallData, CheckoutSessionOptions } from '../contracts/checkout';
+import { PortalPlans } from '../contracts/portal';
 
 export class CheckoutService {
     constructor(
         private readonly productId: FSId,
         private readonly publicKey: string,
-        private readonly secretKey: string
+        private readonly secretKey: string,
+        private readonly api: ApiService
     ) {}
 
     /**
@@ -170,6 +127,16 @@ export class CheckoutService {
         return await this.create(options).toLink();
     }
 
+    async retrievePaywallData(topupPlanId?: FSId): Promise<CheckoutPaywallData> {
+        const pricingData = await this.api.product.retrievePricingData();
+
+        return {
+            plans: pricingData?.plans ?? [],
+            topupPlan: this.findTopupPlan(pricingData?.plans, topupPlanId),
+            sellingUnit: (pricingData?.selling_unit_label as SellingUnit) ?? { singular: 'Unit', plural: 'Units' },
+        };
+    }
+
     private createBuilder(): CheckoutBuilder {
         const productId = idToString(this.productId);
 
@@ -268,5 +235,22 @@ export class CheckoutService {
         }
 
         return url.substring(0, signaturePos);
+    }
+
+    private findTopupPlan(plans?: PortalPlans, planId?: FSId): PortalPlans[number] | null {
+        if (!plans) {
+            return null;
+        }
+
+        const topupPlan = plans.find((plan) => {
+            return (
+                // Either search by the explicitly provided plan ID
+                (isIdsEqual(plan.id!, planId ?? '') && !plan.is_hidden) ||
+                // Or try to guess: A topup plan is where all pricing have one-off purchase set
+                plan.pricing?.every((p) => p.lifetime_price)
+            );
+        });
+
+        return topupPlan ?? null;
     }
 }

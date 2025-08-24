@@ -31,7 +31,7 @@
 11. ✅ Create deployment tooling with auto version bumping
 12. Make the SDK work with the UI starter kit (`@freemius/saas-kit`).
     1. Finish the action parts of the customer portal.
-    2. See if the paywall can be ported to the UI starter kit (minimalist pricing table).
+    2. ✅ See if the paywall can be ported to the UI starter kit (minimalist pricing table).
     3. See if restore action can be ported to the UI starter kit.
 
 **Webinar**:

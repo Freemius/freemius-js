@@ -1,6 +1,6 @@
 import { CheckoutOptions } from '@freemius/checkout';
 import { operations } from '../api/schema';
-import { BillingEntity, FSId, PaymentEntity, UserEntity } from '../api/types';
+import { BillingEntity, FSId, PaymentEntity, SellingUnit, UserEntity } from '../api/types';
 import { BILLING_CYCLE, CURRENCY, PaymentMethod } from './types';
 
 export interface PortalSubscription {
@@ -34,10 +34,6 @@ export type PortalPayment = PaymentEntity & {
     quota: number | null;
     planTitle: string;
 };
-
-export type SellingUnit = NonNullable<
-    operations['products/retrieve-pricing-table-data']['responses']['200']['content']['application/json']['selling_unit_label']
->;
 
 export type PortalBilling = (BillingEntity | null) & {
     updateUrl: string;

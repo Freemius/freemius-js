@@ -7,11 +7,7 @@ import {
 } from '@freemius/checkout';
 import { createHash } from 'crypto';
 import { splitName } from '../utils/ops';
-
-export type CheckoutBuilderUserOptions =
-    | { email: string; firstName?: string; lastName?: string; name?: string }
-    | null
-    | undefined;
+import { CheckoutBuilderUserOptions } from '../contracts/checkout';
 
 /**
  * A builder class for constructing checkout parameters. This class provides a fluent

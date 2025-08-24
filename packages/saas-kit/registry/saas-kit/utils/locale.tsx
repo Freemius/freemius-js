@@ -116,6 +116,44 @@ export const defaultLocale = {
     checkout: {
         processing: () => <>Processing your purchase...</>,
     },
+    pricing: {
+        from: () => <>from</>,
+        billingSeparator: () => <>/</>,
+        monthly: () => <>month</>,
+        paidTrial: () => <>Trial</>,
+        freeTrial: () => <>Free Trial</>,
+        action: {
+            upgrade: () => <>Upgrade</>,
+            trial: () => <>Start Trial</>,
+            cancel: () => <>Maybe later</>,
+            purchase: () => <>Purchase</>,
+        },
+        topupUnitPrice: (unitPrice: string, sellingUnit: SellingUnit) => (
+            <>
+                at {unitPrice} / {sellingUnit.singular!.toLowerCase()}
+            </>
+        ),
+    },
+    paywall: {
+        noActivePurchase: {
+            title: () => <>You need to upgrade</>,
+            message: () => (
+                <>
+                    You need to have an active subscription to use this feature. Please choose a plan below to upgrade
+                    your account.
+                </>
+            ),
+        },
+        insufficientCredits: {
+            title: () => <>Insufficient Credits</>,
+            message: () => (
+                <>
+                    You do not have enough credits to perform this action. Please purchase more credits by choosing a
+                    plan below.
+                </>
+            ),
+        },
+    },
     code: 'en-US',
 } as const;
 

@@ -44,3 +44,9 @@ export type InstallEntity = components['schemas']['Install'];
 
 export type BillingCycleApiEnum = components['schemas']['CommonEnums']['BillingCycle'];
 export type CurrencyApiEnum = components['schemas']['CommonEnums']['Currency'];
+
+export type SellingUnit = Required<
+    NonNullable<
+        operations['products/retrieve-pricing-table-data']['responses']['200']['content']['application/json']['selling_unit_label']
+    >
+>;

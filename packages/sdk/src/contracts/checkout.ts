@@ -1,4 +1,7 @@
+import type { CheckoutOptions } from '@freemius/checkout';
 import { BILLING_CYCLE, CURRENCY } from './types';
+import { PortalPlans } from './portal';
+import { SellingUnit } from '../api/types';
 
 /**
  * Data received from Freemius Checkout after redirecting back to the application.
@@ -77,3 +80,70 @@ export interface CheckoutRedirectData {
      */
     payment_id: string | null;
 }
+
+export type CheckoutBuilderUserOptions =
+    | { email: string; firstName?: string; lastName?: string; name?: string }
+    | null
+    | undefined;
+
+export type CheckoutSessionOptions = {
+    /**
+     * The user for whom the checkout is being created.
+     * This should be an object containing user details like email, ID, etc.
+     * If not provided, the checkout will be created without user context.
+     */
+    user?: CheckoutBuilderUserOptions;
+    /**
+     * Whether to use sandbox mode for the checkout.
+     *
+     * @default false
+     */
+    isSandbox?: boolean;
+    /**
+     * Whether to include the recommended option in the checkout for maximum conversion.
+     *
+     * @default true
+     */
+    withRecommendation?: boolean;
+    /**
+     * The title of the checkout modal.
+     */
+    title?: string;
+    /**
+     * Image to display in the checkout modal. Must be a valid https URL.
+     */
+    image?: string;
+    /**
+     * Optional plan ID to use for the checkout.
+     * If provided, this will be used as the default plan for the checkout, instead of the first paid plan.
+     */
+    planId?: string;
+    /**
+     * Optional quota to set for the checkout.
+     *
+     * This is useful when purchasing credits or similar resources.
+     */
+    quota?: number;
+    /**
+     * Optional trial period configuration.
+     *
+     * This can be used to set a trial period for the checkout.
+     * If not provided, the checkout will not have a trial period.
+     */
+    trial?: CheckoutOptions['trial'];
+};
+
+export type CheckoutPaywallData = {
+    /**
+     * Product's pricing plans to display in the paywall.
+     */
+    plans: PortalPlans;
+    /**
+     * Optional plan ID to use for top-up purchases.
+     */
+    topupPlan?: PortalPlans[number] | null;
+    /**
+     * The selling unit label for the product (e.g., "Credits", "Messages", etc.).
+     */
+    sellingUnit: SellingUnit;
+};
