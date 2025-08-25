@@ -1,60 +1,55 @@
+'use client';
+
+import * as React from 'react';
 import type { CheckoutOptions } from '@freemius/checkout';
-import { PurchaseData } from '@freemius/saas-starter/hooks/checkout';
-import { ReactNode, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import ConfettiExplosion from 'react-confetti-explosion';
 import { IconCircleCheck, IconAlertCircle } from '@tabler/icons-react';
-import CheckoutProvider from '@freemius/saas-starter/components/checkout-provider';
+import { CheckoutProvider } from '@freemius/saas-starter/components/checkout-provider';
+import type { PurchaseData } from '@freemius/sdk';
+import { useRouter } from 'next/navigation';
 
 export function useConfirmPurchase() {
-    const [isExploding, setIsExploding] = useState<boolean>(false);
+    const [isExploding, setIsExploding] = React.useState<boolean>(false);
+    const router = useRouter();
 
-    const confirmPurchase = useCallback(
+    const handlePurchase = React.useCallback(
         async (data: PurchaseData) => {
-            const licenseId = data?.purchase?.license_id;
+            const credits = data.quota ?? 0;
 
-            try {
-                const response = await fetch('/api/confirm-purchase', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ fsLicenseId: licenseId }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to sync purchase');
-                } else {
-                    const purchaseData = await response.json();
-                    const credits = purchaseData.credits ?? 0;
-
-                    console.log(purchaseData, data);
-                    toast.success(`Purchase successful with ${credits} credits!`, {
-                        icon: <IconCircleCheck className="w-6 h-6 text-grow" />,
-                        description: 'You can now use the feature you just purchased.',
-                    });
-                    setIsExploding(true);
-                }
-            } catch (error) {
-                console.error('Error syncing purchase:', error);
-                toast.error(`Could not finalize your purchase!`, {
-                    description: `Please contact support. Any money spent will be refunded.`,
-                    icon: <IconAlertCircle className="w-6 h-6 text-destructive" />,
-                });
-            }
+            console.log('purchaseData', data);
+            toast.success(`Purchase successful with ${credits} credits!`, {
+                icon: <IconCircleCheck className="w-6 h-6 text-grow" />,
+                description: 'You can now use the feature you just purchased.',
+            });
+            setIsExploding(true);
+            router.refresh();
         },
-        [setIsExploding]
+        [setIsExploding, router]
     );
 
-    return { isExploding, setIsExploding, confirmPurchase };
+    const handleError = React.useCallback((error: unknown) => {
+        console.error('Error syncing purchase:', error);
+        toast.error(`Could not finalize your purchase!`, {
+            description: `Please contact support. Any money spent will be refunded.`,
+            icon: <IconAlertCircle className="w-6 h-6 text-destructive" />,
+        });
+    }, []);
+
+    return { isExploding, setIsExploding, handlePurchase, handleError };
 }
 
-export default function PurchaseProvider(props: { checkoutOptions: CheckoutOptions; children: ReactNode }) {
+export default function PurchaseProvider(props: { checkoutOptions: CheckoutOptions; children: React.ReactNode }) {
     const { checkoutOptions, children } = props;
-    const { isExploding, setIsExploding, confirmPurchase } = useConfirmPurchase();
+    const { isExploding, setIsExploding, handleError, handlePurchase } = useConfirmPurchase();
 
     return (
-        <CheckoutProvider options={checkoutOptions} onSuccess={confirmPurchase}>
+        <CheckoutProvider
+            endpoint={process.env.NEXT_PUBLIC_APP_URL! + '/api/checkout'}
+            options={checkoutOptions}
+            onError={handleError}
+            onAfterSync={handlePurchase}
+        >
             {children}
             {isExploding ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">

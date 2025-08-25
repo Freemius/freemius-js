@@ -2,7 +2,7 @@ import { BillingUpdatePayload } from '../api/types';
 import { PortalAction } from '../contracts/portal';
 import { ApiService } from '../services/ApiService';
 import { AuthService } from '../services/AuthService';
-import { ActionError } from './ActionError';
+import { ActionError } from '../errors/ActionError';
 import * as zod from 'zod';
 
 export class BillingAction implements PortalAction {

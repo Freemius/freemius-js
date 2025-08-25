@@ -6,14 +6,24 @@
  * 1. We have a table `UserLicense` that maps the user to their Freemius plan/license.
  * 2. The table is kept in sync with the Freemius API using webhooks.
  * 3. The user also has a `credits` field that tracks the user's credits.
+ *
+ * The `use server` directive is just there in case you want to call these functions directly from a react component.
  */
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { LicenseEntity, parseDateTime, PurchaseInfo, SubscriptionEntity } from '@freemius/sdk';
+import {
+    CheckoutRedirectInfo,
+    LicenseEntity,
+    PurchaseInfo,
+    SubscriptionEntity,
+    UserEmailRetriever,
+    UserRetriever,
+} from '@freemius/sdk';
 import { UserLicense, User } from '@generated/prisma';
 import { freemius } from './freemius';
-import { RouteError } from './route-error';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 /**
  * Get the user's active license.
@@ -39,12 +49,18 @@ export async function getLicense(userId: string): Promise<UserLicense | null> {
 }
 
 export async function hasCredits(userId: string, credits: number = 1): Promise<boolean> {
+    const creditsAvailable = await getCredits(userId);
+
+    return creditsAvailable >= credits;
+}
+
+export async function getCredits(userId: string): Promise<number> {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-        return false;
+        return 0;
     }
 
-    return user.credit >= credits;
+    return user.credit;
 }
 
 export async function deductCredits(userId: string, credits: number): Promise<User | null> {
@@ -65,20 +81,18 @@ export async function addCredits(userId: string, credits: number): Promise<User 
     return updatedLicense;
 }
 
-export async function authenticateAndGetFreemiusPurchase(fsLicenseId: string): Promise<PurchaseInfo> {
-    const freemiusPurchase = await freemius.purchase.retrievePurchase(fsLicenseId);
-
-    if (!freemiusPurchase) {
-        throw new RouteError('License not found or does not belong to the user', 'license_not_found', 404);
+export async function processPurchases(purchases: PurchaseInfo[]): Promise<void> {
+    for (const purchase of purchases) {
+        await processPurchaseInfo(purchase);
     }
+}
 
-    if (!freemiusPurchase.isActive) {
-        throw new RouteError('License is not active', 'license_not_active', 403);
+export async function processRedirect(info: CheckoutRedirectInfo): Promise<void> {
+    const purchaseInfo = await freemius.purchase.retrievePurchase(info.license_id);
+
+    if (purchaseInfo) {
+        await processPurchaseInfo(purchaseInfo);
     }
-
-    await processPurchaseInfo(freemiusPurchase);
-
-    return freemiusPurchase;
 }
 
 export async function processPurchaseInfo(fsPurchase: PurchaseInfo): Promise<void> {
@@ -90,28 +104,8 @@ export async function processPurchaseInfo(fsPurchase: PurchaseInfo): Promise<voi
         return;
     }
 
-    const existingLicense = await getLicense(user.id);
-
-    // If license already exists and the current purchase info is from the same license and plan, don't add the credit
-    if (
-        !existingLicense ||
-        existingLicense.fsLicenseId !== fsPurchase.licenseId ||
-        existingLicense.fsUserId !== fsPurchase.userId ||
-        existingLicense.fsPlanId !== fsPurchase.planId
-    ) {
-        if (fsPurchase.quota && fsPurchase.quota > 0) {
-            // Add credits only if the purchase has a quota
-            await addCredits(user.id, fsPurchase.quota);
-
-            console.log(`Added ${fsPurchase.quota} credits to user ${user.id} for purchase ${fsPurchase.licenseId}`);
-        } else {
-            console.log(`No credits added for user ${user.id} for purchase ${fsPurchase.licenseId} as it has no quota`);
-        }
-    } else {
-        console.log(`User ${user.id} already has an active license for purchase ${fsPurchase.licenseId}`);
-    }
-
-    // There could still be manual updates to the license, so process the expiration.
+    // If the purchase is from a subscription then we update the local userLicense table.
+    // Freemius guarantees that there is only one active subscription per user. (This can be configured in Freemius dashboard).
     const allSubscriptionPlans = process.env.NEXT_PUBLIC_FS_PLAN_ALL_SUBSCRIPTIONS?.split(',') ?? [
         process.env.NEXT_PUBLIC_FS__PLAN_SUBSCRIPTION!,
     ];
@@ -121,49 +115,40 @@ export async function processPurchaseInfo(fsPurchase: PurchaseInfo): Promise<voi
             where: {
                 userId: user.id,
             },
-            update: {
-                fsUserId: fsPurchase.userId,
-                fsPlanId: fsPurchase.planId,
-                fsLicenseId: fsPurchase.licenseId,
-                expiration: fsPurchase.expiration,
-                canceled: fsPurchase.canceled,
-            },
-            create: {
-                userId: user.id,
-                fsUserId: fsPurchase.userId,
-                fsPlanId: fsPurchase.planId,
-                fsLicenseId: fsPurchase.licenseId,
-                expiration: fsPurchase.expiration,
-                canceled: fsPurchase.canceled,
-            },
+            update: fsPurchase.toDBData(),
+            create: fsPurchase.toDBData({ userId: user.id }),
         });
+    }
+
+    // Now add the credits if not already added.
+    if ((fsPurchase.quota ?? 0) > 0) {
+        const existingCreditPurchase = await prisma.userCreditPurchase.findUnique({
+            where: { fsLicenseId: fsPurchase.licenseId },
+        });
+
+        if (!existingCreditPurchase) {
+            // Better do the operations in a transaction.
+            prisma.$transaction(async (prisma) => {
+                await prisma.userCreditPurchase.create({
+                    data: fsPurchase.toCreditData({ userId: user.id }),
+                });
+
+                const updatedLicense = await prisma.user.update({
+                    where: { id: user.id },
+                    data: { credit: { increment: fsPurchase.credit ?? 0 } },
+                });
+
+                return updatedLicense;
+            });
+        }
     }
 }
 
 export async function syncLicenseFromWebhook(fsLicense: LicenseEntity): Promise<void> {
-    const userLicense = await prisma.userLicense.findUnique({ where: { fsLicenseId: fsLicense.id } });
-
-    // Process if this is a new purchase.
-    if (!userLicense) {
-        const purchaseInfo = await freemius.purchase.retrievePurchase(fsLicense.id!);
-        if (purchaseInfo) {
-            await processPurchaseInfo(purchaseInfo);
-        }
-
-        return;
+    const purchaseInfo = await freemius.purchase.retrievePurchase(fsLicense.id!);
+    if (purchaseInfo) {
+        await processPurchaseInfo(purchaseInfo);
     }
-
-    // Synchronize the existing license with the Freemius data.
-    await prisma.userLicense.update({
-        where: { id: userLicense.id },
-        data: {
-            fsUserId: fsLicense.user_id!,
-            fsPlanId: fsLicense.plan_id!,
-            fsLicenseId: fsLicense.id!,
-            expiration: parseDateTime(fsLicense.expiration),
-            canceled: fsLicense.is_cancelled ?? false,
-        },
-    });
 }
 
 export async function deleteLicense(fsLicenseId: string): Promise<void> {
@@ -177,16 +162,28 @@ export async function sendRenewalFailureEmail(subscription: SubscriptionEntity):
     // Example: await sendEmailToUser(subscription.user, 'Renewal failed', 'Your subscription renewal has failed.');
 }
 
-export async function syncLicenseByEmail(email: string): Promise<PurchaseInfo | null> {
-    const purchases = await freemius.purchase.retrieveActiveSubscriptionsByEmail(email, { count: 1 });
+export const getUser: UserRetriever = async () => {
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
 
-    if (!purchases || purchases.length === 0) {
-        return null;
+    const license = session ? await getLicense(session.user.id) : null;
+
+    if (license) {
+        return { id: license.fsUserId, primaryLicenseId: license.fsLicenseId };
     }
 
-    const purchaseInfo = purchases[0]!;
+    return null;
+};
 
-    await processPurchaseInfo(purchaseInfo);
+export const getUserEmail: UserEmailRetriever = async () => {
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
 
-    return purchaseInfo;
-}
+    if (session?.user?.email) {
+        return { email: session.user.email };
+    }
+
+    return null;
+};

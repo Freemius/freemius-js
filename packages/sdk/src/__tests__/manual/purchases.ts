@@ -9,7 +9,7 @@ const freemius = new Freemius(
 );
 
 async function main() {
-    const purchases = await freemius.purchase.retrieveActiveSubscriptionsByEmail('swas@freemius.com');
+    const purchases = await freemius.purchase.retrieveSubscriptionsByEmail('swas@freemius.com');
 
     console.log('Active Purchases:', purchases);
 }

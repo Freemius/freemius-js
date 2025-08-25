@@ -5,6 +5,7 @@ import { useLocale } from '../utils/locale';
 import { formatCurrency, formatDate } from '../utils/formatter';
 import SubscriptionAction from './subscription-action';
 import PaymentMethodUpdate from './payment-method-update';
+import PaymentIcon from './payment-icon';
 
 export default function PrimarySubscription(props: {
     subscription: NonNullable<PortalData['subscriptions']['primary']>;
@@ -13,6 +14,8 @@ export default function PrimarySubscription(props: {
 }) {
     const { subscription, plans, sellingUnit } = props;
     const locale = useLocale();
+
+    const renewalDate = subscription.renewalDate ? new Date(subscription.renewalDate) : null;
 
     const isActive = subscription.isActive;
 
@@ -42,7 +45,20 @@ export default function PrimarySubscription(props: {
                     <SubscriptionAction subscription={subscription} plans={plans} sellingUnit={sellingUnit} />
                 </div>
             </div>
-            <div className="mt-4">{isActive ? <PaymentMethodUpdate subscription={subscription} /> : null}</div>
+            <div className="mt-4">
+                {isActive ? (
+                    <PaymentMethodUpdate subscription={subscription} />
+                ) : renewalDate && renewalDate > new Date() ? (
+                    <div className="flex items-center">
+                        <PaymentIcon method={subscription.paymentMethod!} />
+                        <p className="text-sm text-muted-foreground">
+                            {locale.portal.primary.renewal.updatePaymentMethodBefore(
+                                formatDate(renewalDate, locale.code)
+                            )}
+                        </p>
+                    </div>
+                ) : null}
+            </div>
         </div>
     );
 }

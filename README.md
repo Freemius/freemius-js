@@ -1,17 +1,3 @@
-# Project wide @todo (after webinar)
-
-1. Implement the testing framework.
-2. Go through all components and ensure they have proper BEM like class names.
-3. Make sure all public methods have proper JSDoc comments.
-
-# Question for Vova
-
-- The `dispute_won` is reversed for the buyer?
-
-# Vova - Feedback
-
-1. Don't use license terminology in the UI.
-
 ## Priority & Webinar:
 
 **SDK/SaaS Starter Kit**:
@@ -30,9 +16,20 @@
 10. ✅ Create the Shadcn registry
 11. ✅ Create deployment tooling with auto version bumping
 12. Make the SDK work with the UI starter kit (`@freemius/saas-kit`).
-    1. Finish the action parts of the customer portal.
-    2. ✅ See if the paywall can be ported to the UI starter kit (minimalist pricing table).
-    3. See if restore action can be ported to the UI starter kit.
+    1. ✅ See if the paywall can be ported to the UI starter kit (minimalist pricing table).
+    2. See if restore action can be ported to the UI starter kit.
+        1. ✅ Create the `syncPurchases` method in the SDK that will take an emails and sync the purchases including
+           subscription and one-off.
+        2. ✅ Modify the SaaS to save the license Id when the credit is processed. subscription and one-off.
+        3. ✅ Combine ✅ `restorePurchase`, ✅ `processPurchase` and ✅ `processRedirect` and ✅ `retrievePaywallData`
+           into a single `freemius.purchase.action.processAction` method.
+        4. ✅ Make the app with the `/api/purchase` endpoint
+        5. ✅ In the `CheckoutProvider`, accept `endpoint` props to override the default endpoint.
+        6. ✅ Make the Paywall work with `CheckoutProvider` and fetch pricing data from the endpoint.
+        7. ✅ Make the CustomerPortal also get the dynamically through an API call instead of streaming/props. It will
+           use the restore action and pricing table internally.
+        8. ✅ Create the topup component and use that in the Credits area.
+    3. Finish the subscription cancellation flow.
 
 **Webinar**:
 
@@ -44,6 +41,100 @@
     1. Create SaaS app in Freemius.
     2. Configure the product in Freemius.
 4. Where to deploy (Vercel & Prisma).
+
+## Known Bugs
+
+1. The customer portal hacks the Checkout Context to amend the `onAfterSync` callback. This is not a good idea and needs
+   to be fixed. The `const checkout = useCheckout()` and `checkout.open()` should support additional callbacks.
+
+## Quick Setup Guide:
+
+Steps needed to follow:
+
+1. Install `@freemius/sdk` and the shadcn starter kit.
+2. Create two API routes - `/api/purchase/` and `/api/portal/` with the SDK for processing data from the starter kit.
+3. Use the starter kit components to show checkout, paywall, pricing table and customer portal.
+
+No Step 4.
+
+# Features of SaaS Starter Kit:
+
+## Checkout Provider
+
+Wrap your application with the Checkout Provider and define what happens after a successful purchase. Now any part of
+your app can use the checkout hook.
+
+```tsx
+const checkout = useCheckout();
+const handleClick = () => {
+    checkout.open({ plan_id: '123' });
+};
+```
+
+The provider also sends the purchase data to a pre-configured endpoint where you can retrieve the data securely with the
+`@freemius/sdk` package. You are free to configure the endpoint and the implementation.
+
+## Paywall
+
+A customizable component to show simple pricing tables and let users select a plan and start the checkout flow. It also
+supports purchasing one-off credits or units.
+
+The component gets the data from the `@freemius/sdk` by making an API call. So it needs to be set beforehand.
+
+```tsx
+const { state, showNoActivePurchase, showInsufficientCredits, hidePaywall } = usePaywall();
+
+return <Paywall onClose={hidePaywall} state={state} onAfterPurchase={() => router.refresh()} />;
+```
+
+You can also configure the endpoint the Paywall uses to fetch the plans.
+
+## Customer Portal
+
+We provide a fully feature rich and embeddable Customer Portal component that can be used to let your users manage their
+subscriptions, update payment methods, view invoices and more.
+
+1. View current active subscription and update plan/pricing/payment method.
+2. View & update billing information.
+3. View all invoices and download them.
+4. View previous subscriptions and their status.
+
+You can use the `@freemius/sdk` to pre-fetch or stream the data to the component or let the component fetch the data
+itself. It also supports various actions and the endpoint for those actions are managed through the `@freemius/sdk`
+package.
+
+```tsx
+const portalData = await freemius.customerPortal.retrieveData(session.user.fsUserId);
+return <CustomerPortal portalData={portalData} />;
+```
+
+## Restore Purchase by Email
+
+Useful when the purchase is made outside of the app, and for some reason the app has missed to sync the purchase. The
+user can use the functionality to sync themselves and this helps avoid support tickets.
+
+This also uses the `@freemius/sdk` to make the API call, so it needs to be configured beforehand.
+
+```tsx
+<RestorePurchaseByEmail />
+```
+
+The Customer Portal and the Paywall components uses the Restore Purchase component internally.
+
+1. Paywall - A simple pricing table component to show the plans.
+2. Customer Portal -
+3. Purchase Sync by Email -
+
+# Question for Vova
+
+- The `dispute_won` is reversed for the buyer?
+
+# Project wide @todo (after webinar)
+
+1. Implement the testing framework.
+2. Go through all components and ensure they have proper BEM like class names.
+3. Make sure all public methods have proper JSDoc comments.
+4. Make sure all saas-kit components have proper 'use client' tags if necessary.
 
 # Dror - Feedback
 

@@ -1,20 +1,25 @@
 import { CheckoutPopupParams, CheckoutOptions } from '@freemius/checkout';
-import { FSId, SellingUnit } from '../api/types';
-import { idToString, isIdsEqual } from '../api/parser';
-import { CheckoutBuilder } from '../models/CheckoutBuilder';
-import { createHash, createHmac, timingSafeEqual } from 'crypto';
-import { CheckoutRedirectInfo } from '../models/CheckoutRedirectInfo';
-import { ApiService } from './ApiService';
-import { CheckoutPaywallData, CheckoutSessionOptions } from '../contracts/checkout';
-import { PortalPlans } from '../contracts/portal';
+import { FSId } from '../api/types';
+import { idToString } from '../api/parser';
+import { CheckoutBuilder } from '../checkout/CheckoutBuilder';
+import { createHash } from 'crypto';
+import { CheckoutBuilderOptions } from '../contracts/checkout';
+import { PurchaseService } from './PurchaseService';
+import { PricingService } from './PricingService';
+import { CheckoutRequestProcessor } from '../checkout/CheckoutRequestProcessor';
 
 export class CheckoutService {
+    public readonly request: CheckoutRequestProcessor;
+
     constructor(
         private readonly productId: FSId,
         private readonly publicKey: string,
         private readonly secretKey: string,
-        private readonly api: ApiService
-    ) {}
+        private readonly purchase: PurchaseService,
+        private readonly pricing: PricingService
+    ) {
+        this.request = new CheckoutRequestProcessor(this.purchase, this.pricing, this.secretKey);
+    }
 
     /**
      * Use this to build a Checkout for your product.
@@ -69,7 +74,7 @@ export class CheckoutService {
      *   .toOptions();
      * ```
      */
-    create(options: CheckoutSessionOptions = {}): CheckoutBuilder {
+    create(options: CheckoutBuilderOptions = {}): CheckoutBuilder {
         const { user, isSandbox = false, withRecommendation = true, title, image, planId, quota, trial } = options;
 
         let builder = this.createBuilder().withUser(user);
@@ -112,7 +117,7 @@ export class CheckoutService {
      *
      * @see create() for more details on the options.
      */
-    async createOptions(options: CheckoutSessionOptions = {}): Promise<CheckoutOptions> {
+    async createOptions(options: CheckoutBuilderOptions = {}): Promise<CheckoutOptions> {
         return await this.create(options).toOptions();
     }
 
@@ -123,18 +128,8 @@ export class CheckoutService {
      *
      * @see create() for more details on the options.
      */
-    async createLink(options: CheckoutSessionOptions = {}): Promise<string> {
+    async createLink(options: CheckoutBuilderOptions = {}): Promise<string> {
         return await this.create(options).toLink();
-    }
-
-    async retrievePaywallData(topupPlanId?: FSId): Promise<CheckoutPaywallData> {
-        const pricingData = await this.api.product.retrievePricingData();
-
-        return {
-            plans: pricingData?.plans ?? [],
-            topupPlan: this.findTopupPlan(pricingData?.plans, topupPlanId),
-            sellingUnit: (pricingData?.selling_unit_label as SellingUnit) ?? { singular: 'Unit', plural: 'Units' },
-        };
     }
 
     private createBuilder(): CheckoutBuilder {
@@ -161,96 +156,5 @@ export class CheckoutService {
             ctx: timestamp,
             token: createHash('md5').update(token).digest('hex'),
         };
-    }
-
-    /**
-     * Processes the redirect from Freemius Checkout.
-     *
-     * This method verifies the signature in the URL and returns a CheckoutRedirectInfo object if successful.
-     *
-     * For nextjs like applications, make sure to replace the URL from the `Request` object with the right hostname to take care of the proxy.
-     *
-     * For example, if you have put the nextjs application behind nginx proxy (or ngrok during local development), then nextjs will still see the `request.url` as `https://localhost:3000/...`.
-     * In this case, you should replace it with the actual URL of your application, like `https://xyz.ngrok-free.app/...`.
-     *
-     * @example
-     * ```ts
-     * export async function GET(request: Request) {
-     *     // Replace the URL with the actual hostname of your application
-     *     // This is important for the signature verification to work correctly.
-     *     const data = await freemius.checkout.processRedirect(
-     *         request.url.replace('https://localhost:3000', 'https://xyz.ngrok-free.app')
-     *     );
-     * }
-     * ```
-     */
-    async processRedirect(currentUrl: string): Promise<CheckoutRedirectInfo | null> {
-        const url = new URL(
-            currentUrl
-                // Handle spaces in the URL, which may be encoded as %20 or +
-                .replace(/%20/g, '+')
-        );
-
-        const signature = url.searchParams.get('signature');
-
-        if (!signature) {
-            return null;
-        }
-
-        const cleanUrl = this.getCleanUrl(url.href);
-
-        // Calculate HMAC SHA256
-        const calculatedSignature = createHmac('sha256', this.secretKey).update(cleanUrl).digest('hex');
-
-        // Compare signatures securely
-        const result = timingSafeEqual(Buffer.from(calculatedSignature), Buffer.from(signature));
-
-        if (!result) {
-            return null;
-        }
-
-        const params = Object.fromEntries(url.searchParams.entries());
-
-        if (!params.user_id || !params.plan_id || !params.pricing_id || !params.email) {
-            return null;
-        }
-
-        return new CheckoutRedirectInfo(params);
-    }
-
-    // Helper to get the current absolute URL (removing "&signature=..." or "?signature=..." by string slicing)
-    private getCleanUrl(url: string): string {
-        const signatureParam = '&signature=';
-        const signatureParamFirst = '?signature=';
-
-        let signaturePos = url.indexOf(signatureParam);
-
-        if (signaturePos === -1) {
-            signaturePos = url.indexOf(signatureParamFirst);
-        }
-
-        if (signaturePos === -1) {
-            // No signature param found, return as is
-            return url;
-        }
-
-        return url.substring(0, signaturePos);
-    }
-
-    private findTopupPlan(plans?: PortalPlans, planId?: FSId): PortalPlans[number] | null {
-        if (!plans) {
-            return null;
-        }
-
-        const topupPlan = plans.find((plan) => {
-            return (
-                // Either search by the explicitly provided plan ID
-                (isIdsEqual(plan.id!, planId ?? '') && !plan.is_hidden) ||
-                // Or try to guess: A topup plan is where all pricing have one-off purchase set
-                plan.pricing?.every((p) => p.lifetime_price)
-            );
-        });
-
-        return topupPlan ?? null;
     }
 }

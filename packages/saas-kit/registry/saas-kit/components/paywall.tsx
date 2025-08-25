@@ -1,11 +1,12 @@
 'use client';
 
-import { CheckoutPaywallData } from '@freemius/sdk';
 import * as React from 'react';
 import { PricingTable } from './pricing-table';
 import { Button } from '@/components/ui/button';
 import { useLocale } from '../utils/locale';
 import { TopupTable } from './topup-table';
+import { usePricingData } from '../hooks/data';
+import { PricingSkeleton } from './pricing-skeleton';
 
 export enum PaywallRestriction {
     NO_ACTIVE_PURCHASE = 'no_active_purchase',
@@ -31,21 +32,24 @@ export function usePaywall(initialState: PaywallState = null) {
 
 export type PaywallProps = {
     state: PaywallState;
-    data: CheckoutPaywallData;
     hidePaywall: () => void;
+    topupPlanId?: number | string;
+    portalNavigation?: React.ReactNode;
 };
 
 export function Paywall(props: PaywallProps) {
-    const {
-        state,
-        data: { plans, topupPlan, sellingUnit },
-        hidePaywall,
-    } = props;
+    const { state, hidePaywall, topupPlanId, portalNavigation } = props;
+    const { data, error, isLoading, refetch } = usePricingData(topupPlanId);
 
     const locale = useLocale();
 
     if (null === state) {
         return null;
+    }
+
+    if (!data && !isLoading && !error) {
+        // Initial state, trigger data fetch
+        refetch();
     }
 
     return (
@@ -64,10 +68,16 @@ export function Paywall(props: PaywallProps) {
                                 : locale.paywall.insufficientCredits.message()}
                         </p>
 
-                        {state === PaywallRestriction.NO_ACTIVE_PURCHASE ? (
-                            <PricingTable plans={plans} onCheckout={hidePaywall} />
+                        {error ? (
+                            <div className="text-center text-destructive">
+                                {locale.pricing.error.fetchingData()}: {error.message}
+                            </div>
+                        ) : isLoading || !data ? (
+                            <PricingSkeleton />
+                        ) : state === PaywallRestriction.NO_ACTIVE_PURCHASE ? (
+                            <PricingTable plans={data.plans} onCheckout={hidePaywall} />
                         ) : (
-                            <TopupTable plan={topupPlan} sellingUnit={sellingUnit} onCheckout={hidePaywall} />
+                            <TopupTable plan={data.topupPlan} sellingUnit={data.sellingUnit} onCheckout={hidePaywall} />
                         )}
 
                         <div className="text-center mt-6">
@@ -80,6 +90,11 @@ export function Paywall(props: PaywallProps) {
                             >
                                 {locale.pricing.action.cancel()}
                             </Button>
+                            {portalNavigation ? (
+                                <p className="mt-2 text-sm text-muted-foreground">
+                                    {locale.paywall.portalNavigation(portalNavigation)}
+                                </p>
+                            ) : null}
                         </div>
                     </div>
                 </div>

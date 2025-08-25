@@ -1,9 +1,12 @@
 import { freemius } from '@/lib/freemius';
+import { getUser, getUserEmail, processPurchases } from '@/lib/user-license';
 
-export async function GET(request: Request): Promise<Response> {
-    return await freemius.customerPortal.processAction(request);
-}
+const processor = freemius.customerPortal.request.getProcessor({
+    getUser: getUser,
+    getUserEmail: getUserEmail,
+    portalEndpoint: process.env.NEXT_PUBLIC_APP_URL! + '/api/portal',
+    isSandbox: process.env.NODE_ENV !== 'production',
+    onRestore: processPurchases,
+});
 
-export async function POST(request: Request): Promise<Response> {
-    return await freemius.customerPortal.processAction(request);
-}
+export { processor as GET, processor as POST };

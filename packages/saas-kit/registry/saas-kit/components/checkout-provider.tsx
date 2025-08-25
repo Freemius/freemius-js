@@ -1,11 +1,16 @@
+'use client';
+
 import * as React from 'react';
 import { Checkout, CheckoutOptions } from '@freemius/checkout';
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { CheckoutContext, PurchaseData, CheckoutProviderProps, PurchaseSyncSuccess } from '../hooks/checkout';
+import { useEffect, useState, useRef, useCallback, useContext } from 'react';
+import { CheckoutContext, CheckoutPurchaseData, PurchaseSyncSuccess } from '../hooks/checkout';
 import Processing from './processing';
 import { useLocale } from '../utils/locale';
+import { getSanitizedUrl } from '../utils/fetch';
+import type { PurchaseData } from '@freemius/sdk';
 
-function useCreateCheckout(options: CheckoutOptions, success?: PurchaseSyncSuccess) {
+// @todo - Refactor to use only ref, as we don't need re-render on every change
+function useCreateCheckout(options: CheckoutOptions, success?: (purchaseData: CheckoutPurchaseData) => void) {
     const [fsCheckout, setFSCheckout] = useState<Checkout>(() => new Checkout(options));
     const prevCheckoutRef = useRef<Checkout | null>(fsCheckout);
 
@@ -27,37 +32,86 @@ function useCreateCheckout(options: CheckoutOptions, success?: PurchaseSyncSucce
     return fsCheckout;
 }
 
-export default function CheckoutProvider({
+export type CheckoutProviderProps = {
+    children: React.ReactNode;
+    options: CheckoutOptions;
+    endpoint: string;
+    // Optional properties to use the built in purchase sync functionality
+    processingMessage?: React.ReactNode;
+    onSync?: PurchaseSyncSuccess;
+    onBeforeSync?: (purchaseData: CheckoutPurchaseData) => void;
+    onAfterSync?: (serverData: PurchaseData) => void;
+    onError?: (error: unknown) => void;
+};
+
+export function CheckoutProvider({
     children,
     options,
-    onSuccess,
+    onSync,
     processingMessage: message,
     onError,
+    endpoint,
+    onAfterSync,
+    onBeforeSync,
 }: CheckoutProviderProps) {
     const [isSyncing, setIsSyncing] = useState<boolean>(false);
+    const nestedContext = useContext(CheckoutContext);
 
     const syncPurchase = useCallback(
-        async (purchaseData: PurchaseData) => {
+        async (purchaseData: CheckoutPurchaseData) => {
+            const defaultSync: PurchaseSyncSuccess = async (purchaseData: CheckoutPurchaseData) => {
+                const url = getSanitizedUrl(endpoint);
+                if (!url || !purchaseData?.purchase?.license_id) {
+                    return;
+                }
+
+                url.searchParams.set('action', 'process_purchase');
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        purchase: purchaseData.purchase,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to sync purchase');
+                }
+
+                return await response.json();
+            };
+
             setIsSyncing(true);
+            onBeforeSync?.(purchaseData);
 
             try {
-                await onSuccess?.(purchaseData);
+                const result = await (nestedContext?.success ?? onSync ?? defaultSync)(purchaseData);
+                onAfterSync?.(result as PurchaseData);
+                return result;
             } catch (e) {
                 onError?.(e);
             } finally {
                 setIsSyncing(false);
             }
         },
-        [onSuccess, onError, setIsSyncing]
+        [onSync, onError, setIsSyncing, endpoint, onBeforeSync, onAfterSync, nestedContext?.success]
     );
 
-    const fsCheckout = useCreateCheckout(options, onSuccess ? syncPurchase : undefined);
+    const fsCheckout = useCreateCheckout(options, syncPurchase);
 
     const locale = useLocale();
 
+    const checkoutContext = React.useMemo(
+        () => ({ checkout: fsCheckout, endpoint: endpoint, success: syncPurchase, options: options }),
+        [fsCheckout, endpoint, syncPurchase, options]
+    );
+
     return (
-        <CheckoutContext.Provider value={fsCheckout}>
-            {isSyncing && onSuccess ? <Processing>{message ?? locale.checkout.processing()}</Processing> : null}
+        <CheckoutContext.Provider value={checkoutContext}>
+            {isSyncing ? <Processing>{message ?? locale.checkout.processing()}</Processing> : null}
             {children}
         </CheckoutContext.Provider>
     );

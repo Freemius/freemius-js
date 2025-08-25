@@ -1,4 +1,4 @@
-export function formatDate(date: Date | null, locale: string = 'en-US', showTime: boolean = true): string {
+export function formatDate(date: Date | null | string, locale: string = 'en-US', showTime: boolean = true): string {
     if (!date) return 'N/A';
 
     try {

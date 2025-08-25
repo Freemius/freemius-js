@@ -87,3 +87,18 @@ export interface PurchaseData {
      */
     created: Date;
 }
+
+export interface PurchaseDBData {
+    fsLicenseId: string;
+    fsUserId: string;
+    fsPlanId: string;
+    expiration: Date | null;
+    canceled: boolean;
+}
+
+export interface PurchaseCreditData {
+    fsLicenseId: string;
+    fsUserId: string;
+    fsPlanId: string;
+    credit: number;
+}

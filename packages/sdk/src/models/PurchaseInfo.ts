@@ -8,7 +8,7 @@ import {
     parseCurrency,
     parsePaymentMethod,
 } from '../api/parser';
-import { PurchaseData } from '../contracts/purchase';
+import { PurchaseCreditData, PurchaseData, PurchaseDBData } from '../contracts/purchase';
 import { PricingTableData, FSId, UserEntity, LicenseEntity, SubscriptionEntity } from '../api/types';
 
 export class PurchaseInfo implements PurchaseData {
@@ -94,6 +94,30 @@ export class PurchaseInfo implements PurchaseData {
         };
     }
 
+    /**
+     * A convenience method to convert the purchase info to a format suitable for database storage.
+     */
+    toDBData<T extends Record<string, unknown>>(additionalData: T = {} as T): PurchaseDBData & T {
+        return {
+            ...additionalData,
+            fsUserId: this.userId,
+            fsPlanId: this.planId,
+            fsLicenseId: this.licenseId,
+            expiration: this.expiration,
+            canceled: this.canceled,
+        };
+    }
+
+    toCreditData<T extends Record<string, unknown>>(additionalData: T = {} as T): PurchaseCreditData & T {
+        return {
+            ...additionalData,
+            fsUserId: this.userId,
+            fsPlanId: this.planId,
+            fsLicenseId: this.licenseId,
+            credit: this.quota ?? 0,
+        };
+    }
+
     get isActive(): boolean {
         if (this.canceled) {
             return false;
@@ -104,6 +128,10 @@ export class PurchaseInfo implements PurchaseData {
         }
 
         return true;
+    }
+
+    get credit(): number {
+        return this.quota ?? 0;
     }
 
     hasSubscription(): boolean {

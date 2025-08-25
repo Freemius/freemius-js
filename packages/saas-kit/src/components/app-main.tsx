@@ -34,5 +34,5 @@ export default async function AppMain({
 }
 
 export function AppContent({ children }: { children: React.ReactNode }) {
-    return <div className="p-4 md:p-6 max-w-3xl">{children}</div>;
+    return <div className="p-4 md:p-6 max-w-4xl">{children}</div>;
 }

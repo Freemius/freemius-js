@@ -1,20 +1,16 @@
 import { Checkout, CheckoutOptions, CheckoutPopupEvents } from '@freemius/checkout';
-import { useContext, createContext, ReactNode } from 'react';
+import { useContext, createContext } from 'react';
+import type { PurchaseData } from '@freemius/sdk';
 
-export type PurchaseData = Parameters<NonNullable<CheckoutPopupEvents['success']>>[0];
+export type CheckoutPurchaseData = Parameters<NonNullable<CheckoutPopupEvents['success']>>[0];
+export type PurchaseSyncSuccess = (purchaseData: CheckoutPurchaseData) => Promise<PurchaseData | undefined>;
 
-export type PurchaseSyncSuccess = (purchaseData: PurchaseData) => Promise<void>;
-
-export type CheckoutProviderProps = {
-    children: ReactNode;
+export const CheckoutContext = createContext<{
+    checkout: Checkout;
+    endpoint: string;
+    success: PurchaseSyncSuccess;
     options: CheckoutOptions;
-    // Optional properties to use the built in purchase sync functionality
-    processingMessage?: ReactNode;
-    onSuccess?: PurchaseSyncSuccess;
-    onError?: (error: unknown) => void;
-};
-
-export const CheckoutContext = createContext<Checkout | null>(null);
+} | null>(null);
 
 /**
  * Custom hook to access the Freemius Checkout instance from context.
@@ -23,9 +19,20 @@ export const CheckoutContext = createContext<Checkout | null>(null);
  */
 export function useCheckout(): Checkout {
     const context = useContext(CheckoutContext);
+
     if (!context) {
-        throw new Error('useFSCheckout must be used within a CheckoutProvider');
+        throw new Error('useCheckout must be used within a CheckoutProvider');
     }
 
-    return context;
+    return context.checkout;
+}
+
+export function useCheckoutEndpoint(): string | null {
+    const context = useContext(CheckoutContext);
+
+    if (!context) {
+        throw new Error('useCheckoutEndpoint must be used within a CheckoutProvider');
+    }
+
+    return context.endpoint;
 }

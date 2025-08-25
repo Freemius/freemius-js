@@ -1,9 +1,9 @@
-import { FSId, SubscriptionEntity, UserEntity } from '../api/types';
-import { PurchaseInfo } from '../models/PurchaseInfo';
-import { PurchaseData } from '../contracts/purchase';
-import { ApiService } from './ApiService';
-import { PagingOptions } from '../contracts/types';
 import { isIdsEqual } from '../api/parser';
+import { FSId, SubscriptionEntity, UserEntity } from '../api/types';
+import { PurchaseData } from '../contracts/purchase';
+import { PagingOptions } from '../contracts/types';
+import { PurchaseInfo } from '../Freemius';
+import { ApiService } from './ApiService';
 
 export class PurchaseService {
     constructor(private readonly api: ApiService) {}
@@ -48,18 +48,53 @@ export class PurchaseService {
         return purchaseInfo.toData();
     }
 
+    async retrievePurchases(userOrEntity: FSId | UserEntity, pagination?: PagingOptions): Promise<PurchaseInfo[]> {
+        const user = typeof userOrEntity === 'object' ? userOrEntity : await this.api.user.retrieve(userOrEntity);
+
+        if (!user) {
+            return [];
+        }
+
+        const licenses = await this.api.user.retrieveLicenses(user.id!, { type: 'active' }, pagination);
+
+        if (!licenses || !licenses.length) {
+            return [];
+        }
+
+        // @todo - Improve rate limiting by batching requests or using a more efficient method/ new API endpoint.
+        const licenseSubscriptionPromises = licenses.map(async (license) => {
+            const subscription =
+                license.expiration !== null ? await this.api.license.retrieveSubscription(license.id!) : null;
+
+            return new PurchaseInfo(user, license, subscription);
+        });
+
+        return await Promise.all(licenseSubscriptionPromises).then((results) =>
+            results
+                // Remove null values and sort by creation date, where the recent purchase is first.
+                .filter((result): result is PurchaseInfo => result !== null)
+                .sort((a, b) => b.created.getTime() - a.created.getTime())
+        );
+    }
+
+    async retrievePurchasesData(userOrEntity: FSId | UserEntity, pagination?: PagingOptions): Promise<PurchaseData[]> {
+        const purchaseInfos = await this.retrievePurchases(userOrEntity, pagination);
+
+        return purchaseInfos.map((info) => info.toData());
+    }
+
     /**
      * Retrieve a list of active subscriptions for a user. You can use this method to find or sync subscriptions from freemius to your system.
      */
-    async retrieveSubscriptions(userId: FSId, pagination?: PagingOptions): Promise<PurchaseInfo[]> {
-        const user = await this.api.user.retrieve(userId);
+    async retrieveSubscriptions(userOrEntity: FSId | UserEntity, pagination?: PagingOptions): Promise<PurchaseInfo[]> {
+        const user = typeof userOrEntity === 'object' ? userOrEntity : await this.api.user.retrieve(userOrEntity);
 
         if (!user) {
             return [];
         }
 
         const subscriptions = await this.api.user.retrieveSubscriptions(
-            userId,
+            user.id!,
             {
                 filter: 'active',
             },
@@ -126,16 +161,23 @@ export class PurchaseService {
         return new PurchaseInfo(user, license, subscription);
     }
 
-    async retrieveActiveSubscriptionsByEmail(
-        email: string,
-        pagination?: PagingOptions
-    ): Promise<PurchaseInfo[] | null> {
+    async retrieveSubscriptionsByEmail(email: string, pagination?: PagingOptions): Promise<PurchaseInfo[]> {
         const user = await this.api.user.retrieveByEmail(email);
 
         if (!user) {
-            return null;
+            return [];
         }
 
         return await this.retrieveSubscriptions(user.id!, pagination);
+    }
+
+    async retrievePurchasesByEmail(email: string, pagination?: PagingOptions): Promise<PurchaseInfo[]> {
+        const user = await this.api.user.retrieveByEmail(email);
+
+        if (!user) {
+            return [];
+        }
+
+        return await this.retrievePurchases(user.id!, pagination);
     }
 }

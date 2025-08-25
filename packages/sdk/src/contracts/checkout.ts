@@ -1,7 +1,5 @@
 import type { CheckoutOptions } from '@freemius/checkout';
 import { BILLING_CYCLE, CURRENCY } from './types';
-import { PortalPlans } from './portal';
-import { SellingUnit } from '../api/types';
 
 /**
  * Data received from Freemius Checkout after redirecting back to the application.
@@ -86,7 +84,7 @@ export type CheckoutBuilderUserOptions =
     | null
     | undefined;
 
-export type CheckoutSessionOptions = {
+export type CheckoutBuilderOptions = {
     /**
      * The user for whom the checkout is being created.
      * This should be an object containing user details like email, ID, etc.
@@ -133,17 +131,17 @@ export type CheckoutSessionOptions = {
     trial?: CheckoutOptions['trial'];
 };
 
-export type CheckoutPaywallData = {
+/**
+ * Interface for actions that can be processed during the checkout flow.
+ */
+export interface CheckoutAction {
     /**
-     * Product's pricing plans to display in the paywall.
+     * Determine if the action can be handled by this processor.
      */
-    plans: PortalPlans;
+    canHandle(request: Request): boolean;
+
     /**
-     * Optional plan ID to use for top-up purchases.
+     * Process the action and return a response.
      */
-    topupPlan?: PortalPlans[number] | null;
-    /**
-     * The selling unit label for the product (e.g., "Credits", "Messages", etc.).
-     */
-    sellingUnit: SellingUnit;
-};
+    processAction(request: Request): Promise<Response>;
+}

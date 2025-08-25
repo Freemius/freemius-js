@@ -1,3 +1,4 @@
+import { CheckoutOptions } from '@freemius/checkout';
 import {
     idToString,
     isIdsEqual,
@@ -14,51 +15,141 @@ import {
     PlanEntity,
     PricingEntity,
     PricingTableData,
+    SellingUnit,
     SubscriptionEntity,
     UserEntity,
 } from '../api/types';
-import { PortalBilling, PortalPayment, PortalSubscription, PortalSubscriptions } from '../contracts/portal';
+import { PortalBilling, PortalData, PortalPayment, PortalSubscription, PortalSubscriptions } from '../contracts/portal';
 import { CURRENCY } from '../contracts/types';
 import { ApiService } from '../services/ApiService';
+import { CheckoutService } from '../services/CheckoutService';
 import { BillingAction } from './BillingAction';
 import { InvoiceAction } from './InvoiceAction';
 
 export class PortalDataRepository {
-    constructor(private readonly api: ApiService) {}
+    constructor(
+        private readonly api: ApiService,
+        private readonly invoice: InvoiceAction,
+        private readonly billing: BillingAction,
+        private readonly checkout: CheckoutService
+    ) {}
 
-    async getApiData(userId: FSId): Promise<{
+    async retrievePortalDataByEmail(config: {
+        email: string;
+        endpoint: string;
+        primaryLicenseId?: FSId | null;
+        sandbox?: boolean;
+    }): Promise<PortalData | null> {
+        const user = await this.api.user.retrieveByEmail(config.email);
+
+        if (!user) {
+            return null;
+        }
+
+        return this.retrievePortalData({
+            user,
+            endpoint: config.endpoint,
+            primaryLicenseId: config.primaryLicenseId ?? null,
+            sandbox: config.sandbox ?? false,
+        });
+    }
+
+    async retrievePortalDataByUserId(config: {
+        userId: FSId;
+        endpoint: string;
+        primaryLicenseId?: FSId | null;
+        sandbox?: boolean;
+    }): Promise<PortalData | null> {
+        const user = await this.api.user.retrieve(config.userId);
+
+        if (!user) {
+            return null;
+        }
+
+        return this.retrievePortalData({
+            user,
+            endpoint: config.endpoint,
+            primaryLicenseId: config.primaryLicenseId ?? null,
+            sandbox: config.sandbox ?? false,
+        });
+    }
+
+    async retrievePortalData(config: {
         user: UserEntity;
+        endpoint: string;
+        primaryLicenseId?: FSId | null;
+        sandbox?: boolean;
+    }): Promise<PortalData | null> {
+        const { user, endpoint, primaryLicenseId = null, sandbox = false } = config;
+        const userId = user.id!;
+
+        const data = await this.retrieveApiData(userId);
+
+        if (!data) {
+            return null;
+        }
+
+        const { pricingData, subscriptions, payments, billing } = data;
+
+        const plans = this.getPlansById(pricingData);
+        const pricings = this.getPricingById(pricingData);
+
+        const checkoutOptions: CheckoutOptions = {
+            product_id: this.api.productId,
+        };
+
+        if (sandbox) {
+            checkoutOptions.sandbox = await this.checkout.getSandboxParams();
+        }
+
+        const portalData: PortalData = {
+            endpoint,
+            user,
+            checkoutOptions,
+            billing: this.getBilling(billing, userId, endpoint),
+            subscriptions: await this.getSubscriptions(subscriptions, plans, pricings, primaryLicenseId),
+            payments: this.getPayments(payments, plans, pricings, userId, endpoint),
+            plans: pricingData.plans ?? [],
+            sellingUnit: (pricingData.selling_unit_label as SellingUnit) ?? {
+                singular: 'Unit',
+                plural: 'Units',
+            },
+            productId: this.api.productId,
+        };
+
+        return portalData;
+    }
+
+    async retrieveApiData(userId: FSId): Promise<{
         pricingData: PricingTableData;
         subscriptions: SubscriptionEntity[];
         payments: PaymentEntity[];
         billing: BillingEntity | null;
     } | null> {
-        const [user, pricingData, subscriptions, payments, billing] = await Promise.all([
-            this.api.user.retrieve(userId),
+        const [pricingData, subscriptions, payments, billing] = await Promise.all([
             this.api.product.retrievePricingData(),
             this.api.user.retrieveSubscriptions(userId),
             this.api.user.retrievePayments(userId),
             this.api.user.retrieveBilling(userId),
         ]);
 
-        if (!user || !pricingData || !subscriptions) {
+        if (!pricingData || !subscriptions) {
             return null;
         }
 
-        return { user, pricingData, subscriptions, payments, billing };
+        return { pricingData, subscriptions, payments, billing };
     }
 
     getPayments(
         payments: PaymentEntity[],
         plans: Map<string, PlanEntity>,
         pricings: Map<string, PricingEntity>,
-        action: InvoiceAction,
         userId: FSId,
         endpoint: string
     ): PortalPayment[] {
         return payments.map((payment) => ({
             ...payment,
-            invoiceUrl: action.createAuthenticatedUrl(payment.id!, idToString(userId), endpoint),
+            invoiceUrl: this.invoice.createAuthenticatedUrl(payment.id!, idToString(userId), endpoint),
             paymentMethod: parsePaymentMethod(payment.gateway)!,
             createdAt: parseDateTime(payment.created) ?? new Date(),
             planTitle: plans.get(payment.plan_id!)?.title ?? `Plan ${payment.plan_id!}`,
@@ -89,10 +180,10 @@ export class PortalDataRepository {
         return pricings;
     }
 
-    getBilling(billing: BillingEntity | null, action: BillingAction, userId: FSId, endpoint: string): PortalBilling {
+    getBilling(billing: BillingEntity | null, userId: FSId, endpoint: string): PortalBilling {
         return {
             ...(billing ?? {}),
-            updateUrl: action.createAuthenticatedUrl(billing?.id ?? 'new', idToString(userId), endpoint),
+            updateUrl: this.billing.createAuthenticatedUrl(billing?.id ?? 'new', idToString(userId), endpoint),
         };
     }
 

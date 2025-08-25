@@ -2,7 +2,7 @@ import { PortalAction } from '../contracts/portal';
 import { ApiService } from '../services/ApiService';
 import * as zod from 'zod';
 import { AuthService } from '../services/AuthService';
-import { ActionError } from './ActionError';
+import { ActionError } from '../errors/ActionError';
 
 export class InvoiceAction implements PortalAction {
     private readonly actionName = 'invoice';

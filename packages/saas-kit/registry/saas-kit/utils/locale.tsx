@@ -15,6 +15,11 @@ export const defaultLocale = {
                 ),
                 active: (nextDate: string) => <>Your subscription renews on {nextDate}.</>,
                 inactive: (cancelledAt: string) => <>The subscription was cancelled on {cancelledAt}.</>,
+                updatePaymentMethodBefore: (nextDate: string) => (
+                    <>
+                        Reactivate before <strong>{nextDate}</strong> to avoid service interruption.
+                    </>
+                ),
             },
         },
         action: {
@@ -86,6 +91,36 @@ export const defaultLocale = {
                 renewal: () => 'Renewal',
             },
         },
+        error: {
+            fetchingData: () => <>Error fetching billing data</>,
+        },
+        empty: {
+            message: {
+                restore: () => (
+                    <>
+                        In case you have already purchased and do not see it here, please click the button below to try
+                        and restore your purchase.
+                    </>
+                ),
+            },
+        },
+        subscribe: {
+            title: () => <>Please subscribe to use our product</>,
+            message: () => (
+                <>It looks like you don&apos;t have any active susbcription with us. Please purchase one from below.</>
+            ),
+        },
+    },
+    refreshPurchase: {
+        action: {
+            restore: () => <>Restore Purchase</>,
+            restoring: () => <>Restoring...</>,
+        },
+        alert: {
+            restored: (count: number) =>
+                `Successfully restored ${count} purchase${count > 1 ? 's' : ''}. The page will reload now.`,
+            nothingToRestore: () => 'No purchases were found to restore.',
+        },
     },
     paymentBadge: (type: PortalPayment['type']) => {
         switch (type) {
@@ -134,6 +169,11 @@ export const defaultLocale = {
                 at {unitPrice} / {sellingUnit.singular!.toLowerCase()}
             </>
         ),
+        error: {
+            fetchingData: () => <>Error fetching pricing data</>,
+            noPlans: () => <>No plans available</>,
+            noTopupPlan: () => <>No top-up plan available</>,
+        },
     },
     paywall: {
         noActivePurchase: {
@@ -154,6 +194,12 @@ export const defaultLocale = {
                 </>
             ),
         },
+        portalNavigation: (navLink: React.ReactNode) => (
+            <>
+                If you&apos;ve purchased already yet don&apos;t see it reflected please visit the billing section from
+                where you can restore the purchase: {navLink}
+            </>
+        ),
     },
     code: 'en-US',
 } as const;
