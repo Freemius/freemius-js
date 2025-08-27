@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button';
 import { useLocale } from '../utils/locale';
 import PaymentIcon from './payment-icon';
 
-export default function PaymentMethodUpdate(props: { subscription: PortalSubscription }) {
+export function PaymentMethodUpdate(props: { subscription: PortalSubscription }) {
     const { subscription } = props;
     const checkout = useCheckout();
     const locale = useLocale();
 
     return (
-        <p className="text-muted-foreground text-sm flex flex-wrap justify-between items-center gap-4">
-            <span className="grow-0 shrink-0 flex items-center">
+        <p className="flex flex-wrap justify-between items-center gap-4">
+            <span className="grow-0 shrink-0 flex items-center text-muted-foreground text-sm ">
                 <PaymentIcon method={subscription.paymentMethod!} />
                 {/* @todo - When backend sends card info show it here */}
                 <span className="font-semibold uppercase text-xs">

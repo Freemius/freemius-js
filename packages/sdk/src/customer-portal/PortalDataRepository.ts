@@ -10,27 +10,26 @@ import {
 } from '../api/parser';
 import {
     BillingEntity,
+    CouponEntityEnriched,
     FSId,
     PaymentEntity,
     PlanEntity,
     PricingEntity,
     PricingTableData,
     SellingUnit,
-    SubscriptionEntity,
     UserEntity,
+    UserSubscriptionEntity,
 } from '../api/types';
 import { PortalBilling, PortalData, PortalPayment, PortalSubscription, PortalSubscriptions } from '../contracts/portal';
 import { CURRENCY } from '../contracts/types';
 import { ApiService } from '../services/ApiService';
 import { CheckoutService } from '../services/CheckoutService';
-import { BillingAction } from './BillingAction';
-import { InvoiceAction } from './InvoiceAction';
+import { CustomerPortalActionService } from './CustomerPortalActionService';
 
 export class PortalDataRepository {
     constructor(
         private readonly api: ApiService,
-        private readonly invoice: InvoiceAction,
-        private readonly billing: BillingAction,
+        private readonly action: CustomerPortalActionService,
         private readonly checkout: CheckoutService
     ) {}
 
@@ -89,7 +88,7 @@ export class PortalDataRepository {
             return null;
         }
 
-        const { pricingData, subscriptions, payments, billing } = data;
+        const { pricingData, subscriptions, payments, billing, coupons } = data;
 
         const plans = this.getPlansById(pricingData);
         const pricings = this.getPricingById(pricingData);
@@ -107,7 +106,7 @@ export class PortalDataRepository {
             user,
             checkoutOptions,
             billing: this.getBilling(billing, userId, endpoint),
-            subscriptions: await this.getSubscriptions(subscriptions, plans, pricings, primaryLicenseId),
+            subscriptions: await this.getSubscriptions(subscriptions, plans, pricings, primaryLicenseId, endpoint),
             payments: this.getPayments(payments, plans, pricings, userId, endpoint),
             plans: pricingData.plans ?? [],
             sellingUnit: (pricingData.selling_unit_label as SellingUnit) ?? {
@@ -115,6 +114,7 @@ export class PortalDataRepository {
                 plural: 'Units',
             },
             productId: this.api.productId,
+            cancellationCoupons: coupons,
         };
 
         return portalData;
@@ -122,22 +122,24 @@ export class PortalDataRepository {
 
     async retrieveApiData(userId: FSId): Promise<{
         pricingData: PricingTableData;
-        subscriptions: SubscriptionEntity[];
+        subscriptions: UserSubscriptionEntity[];
         payments: PaymentEntity[];
         billing: BillingEntity | null;
+        coupons: CouponEntityEnriched[] | null;
     } | null> {
-        const [pricingData, subscriptions, payments, billing] = await Promise.all([
+        const [pricingData, subscriptions, payments, billing, coupons] = await Promise.all([
             this.api.product.retrievePricingData(),
-            this.api.user.retrieveSubscriptions(userId),
+            this.api.user.retrieveSubscriptions(userId, { extended: true }),
             this.api.user.retrievePayments(userId),
             this.api.user.retrieveBilling(userId),
+            this.api.product.retrieveSubscriptionCancellationCoupon(),
         ]);
 
         if (!pricingData || !subscriptions) {
             return null;
         }
 
-        return { pricingData, subscriptions, payments, billing };
+        return { pricingData, subscriptions, payments, billing, coupons };
     }
 
     getPayments(
@@ -149,7 +151,7 @@ export class PortalDataRepository {
     ): PortalPayment[] {
         return payments.map((payment) => ({
             ...payment,
-            invoiceUrl: this.invoice.createAuthenticatedUrl(payment.id!, idToString(userId), endpoint),
+            invoiceUrl: this.action.invoice.createAuthenticatedUrl(payment.id!, idToString(userId), endpoint),
             paymentMethod: parsePaymentMethod(payment.gateway)!,
             createdAt: parseDateTime(payment.created) ?? new Date(),
             planTitle: plans.get(payment.plan_id!)?.title ?? `Plan ${payment.plan_id!}`,
@@ -183,15 +185,16 @@ export class PortalDataRepository {
     getBilling(billing: BillingEntity | null, userId: FSId, endpoint: string): PortalBilling {
         return {
             ...(billing ?? {}),
-            updateUrl: this.billing.createAuthenticatedUrl(billing?.id ?? 'new', idToString(userId), endpoint),
+            updateUrl: this.action.billing.createAuthenticatedUrl(billing?.id ?? 'new', idToString(userId), endpoint),
         };
     }
 
     async getSubscriptions(
-        subscriptions: SubscriptionEntity[],
+        subscriptions: UserSubscriptionEntity[],
         plans: Map<string, PlanEntity>,
         pricings: Map<string, PricingEntity>,
-        primaryLicenseId: FSId | null = null
+        primaryLicenseId: FSId | null = null,
+        endpoint: string
     ): Promise<PortalSubscriptions> {
         const portalSubscriptions: PortalSubscriptions = {
             primary: null,
@@ -201,6 +204,9 @@ export class PortalDataRepository {
 
         subscriptions.forEach((subscription) => {
             const isActive = null === subscription.canceled_at;
+            const trialEndsData = subscription.trial_ends ? parseDateTime(subscription.trial_ends) : null;
+            const isTrial = trialEndsData ? trialEndsData > new Date() : false;
+            const isFreeTrial = isTrial && !subscription.gateway;
 
             const subscriptionData: PortalSubscription = {
                 subscriptionId: idToString(subscription.id!),
@@ -218,6 +224,21 @@ export class PortalDataRepository {
                 cancelledAt: subscription.canceled_at ? parseDateTime(subscription.canceled_at) : null,
                 quota: pricings.get(subscription.pricing_id!)?.licenses ?? null,
                 paymentMethod: parsePaymentMethod(subscription.gateway),
+                isTrial: isTrial,
+                trialEnds: isTrial ? trialEndsData : null,
+                isFreeTrial: isFreeTrial,
+                applyRenewalCancellationCouponUrl: this.isRenewalCancellationCouponApplicable(subscription)
+                    ? this.action.renewalCoupon.createAuthenticatedUrl(
+                          idToString(subscription.id!),
+                          idToString(subscription.user_id!),
+                          endpoint
+                      )
+                    : null,
+                cancelRenewalUrl: this.action.cancelRenewal.createAuthenticatedUrl(
+                    idToString(subscription.id!),
+                    idToString(subscription.user_id!),
+                    endpoint
+                ),
             };
 
             if (isActive) {
@@ -247,5 +268,38 @@ export class PortalDataRepository {
         }
 
         return portalSubscriptions;
+    }
+
+    /**
+     * Check if coupon application is impossible due to certain conditions.
+     * This function can be used to determine if a coupon can be applied to a subscription.
+     * Introduced initially for PayPal subscriptions with a renewal date less than 48 hours in the future.
+     *
+     * @author @DanieleAlessandra
+     * @author @swashata (Ported to SDK)
+     *
+     * @returns boolean
+     */
+    isRenewalCancellationCouponApplicable(subscription: UserSubscriptionEntity): boolean {
+        // If it was already applied, do not allow applying it again.
+        if (subscription.has_subscription_cancellation_discount) {
+            return false;
+        }
+
+        // The block is only for PayPal subscriptions
+        if (subscription.gateway !== 'paypal') {
+            return true;
+        }
+
+        // Convert next_payment to time.
+        const nextPaymentTime = parseDateTime(subscription.next_payment)?.getTime() ?? 0;
+
+        // Get the current time.
+        const currentTime = new Date().getTime();
+
+        // Check if the next payment is at least 48 hours in the future.
+        const fortyEightHoursInMs = 48 * 60 * 60 * 1000;
+
+        return nextPaymentTime <= currentTime + fortyEightHoursInMs;
     }
 }

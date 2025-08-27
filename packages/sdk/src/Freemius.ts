@@ -32,5 +32,3 @@ export class Freemius {
         this.webhook = new WebhookService(secretKey);
     }
 }
-
-export { PurchaseInfo } from './models/PurchaseInfo';

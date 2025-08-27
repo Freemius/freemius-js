@@ -124,3 +124,39 @@ export function useRestorePurchase(endpoint: string) {
 
     return useFetchData(fetchRestorePurchase, { autoFetch: false });
 }
+
+export function usePortalAction<Payload extends Record<string, unknown>, Result = void>(authenticatedUrl: string) {
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const execute = useCallback(
+        async (body?: Payload): Promise<Result> => {
+            setLoading(true);
+
+            try {
+                const url = getSanitizedUrl(authenticatedUrl);
+                if (!url) {
+                    throw new Error('Authenticated endpoint is not of right format');
+                }
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(body),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error performing action: ${response.statusText}`);
+                }
+
+                return await response.json();
+            } finally {
+                setLoading(false);
+            }
+        },
+        [authenticatedUrl]
+    );
+
+    return { execute, loading } as const;
+}

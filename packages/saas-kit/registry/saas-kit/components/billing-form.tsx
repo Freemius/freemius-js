@@ -2,18 +2,17 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { PortalData } from '@freemius/sdk';
 import { useLocale } from '../utils/locale';
-import { BillingUpdatePayload } from '@freemius/sdk';
+import { BillingRequest } from '@freemius/sdk';
 import Spinner from '../icons/spinner';
 import { Input } from '@/components/ui/input';
 import { BillingItem } from './billing-item';
 import { countriesOptions } from '../utils/country';
 import { Combobox } from './combobox';
-import SaveIcon from '../icons/save';
 
 export function BillingForm(props: {
     billing: NonNullable<PortalData['billing']>;
     setIsUpdating: (isUpdating: boolean) => void;
-    updateBilling: (billing: BillingUpdatePayload) => Promise<void>;
+    updateBilling: (billing: BillingRequest) => Promise<void>;
 }) {
     const { billing, setIsUpdating, updateBilling } = props;
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -57,7 +56,7 @@ export function BillingForm(props: {
             setIsLoading(true);
 
             // Create payload with only non-empty fields
-            const payload: BillingUpdatePayload = {};
+            const payload: BillingRequest = {};
 
             if (formData.business_name.trim()) {
                 payload.business_name = formData.business_name.trim();
@@ -194,7 +193,7 @@ export function BillingForm(props: {
 
             <div className="mt-4 flex gap-4">
                 <Button type="submit" disabled={isLoading}>
-                    {isLoading ? <Spinner /> : <SaveIcon />}
+                    {isLoading ? <Spinner /> : null}
                     {locale.portal.billing.action.save()}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setIsUpdating(false)} disabled={isLoading}>

@@ -1,7 +1,7 @@
 import { PortalAction } from '../contracts/portal';
 import { UserEmailRetriever, UserRetriever } from '../contracts/types';
 import { ActionError } from '../errors/ActionError';
-import { PurchaseInfo } from '../Freemius';
+import { PurchaseInfo } from '../models/PurchaseInfo';
 import { PurchaseService } from '../services/PurchaseService';
 
 export type RestoreCallback = (purchases: PurchaseInfo[]) => Promise<Response | void>;

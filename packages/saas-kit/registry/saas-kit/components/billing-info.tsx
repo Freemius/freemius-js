@@ -1,9 +1,10 @@
+'use client';
+
 import * as React from 'react';
 import { PortalData } from '@freemius/sdk';
 import { useLocale } from '../utils/locale';
 import { BillingItem } from './billing-item';
 import { Button } from '@/components/ui/button';
-import EditIcon from '../icons/edit';
 
 export function BillingInfo(props: {
     billing: NonNullable<PortalData['billing']>;
@@ -58,7 +59,6 @@ export function BillingInfo(props: {
 
             <div className="mt-4">
                 <Button variant="outline" onClick={() => setIsUpdating(true)}>
-                    <EditIcon />
                     {locale.portal.billing.action.update()}
                 </Button>
             </div>

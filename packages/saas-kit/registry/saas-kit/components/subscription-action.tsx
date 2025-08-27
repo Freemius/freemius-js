@@ -41,16 +41,15 @@ type PlanWithPricing = Omit<PortalPlans[0], 'pricing'> & {
 
 /**
  * @todo
- * 1. Implement cancellation coupon.
- * 2. Implement upgrade to different pricing.
- * 3. Implement a nice short pricing table like UI when upgrading or downgrading.
+ * 1. Implement a nice short pricing table like UI when upgrading or downgrading.
  */
-export default function SubscriptionAction(props: {
+export function SubscriptionAction(props: {
     subscription: PortalSubscription;
     plans: PortalPlans;
     sellingUnit: SellingUnit;
+    onCancel?: () => void;
 }) {
-    const { subscription, plans } = props;
+    const { subscription, plans, onCancel } = props;
     const locale = useLocale();
 
     const checkout = useCheckout();
@@ -189,9 +188,11 @@ export default function SubscriptionAction(props: {
                     ) : null}
                 </DropdownMenuContent>
             </DropdownMenu>
-            <Button className="w-full" variant="outline">
-                {locale.portal.action.cancel()}
-            </Button>
+            {onCancel ? (
+                <Button className="w-full" variant="outline" onClick={onCancel}>
+                    {locale.portal.action.cancel()}
+                </Button>
+            ) : null}
         </div>
     );
 }

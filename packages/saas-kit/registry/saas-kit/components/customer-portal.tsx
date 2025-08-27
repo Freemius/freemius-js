@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { PortalData, PurchaseData } from '@freemius/sdk';
-import PrimarySubscription from './primary-subscription';
+import { PrimarySubscription } from './primary-subscription';
 import { BillingSection } from './billing-section';
 import { PaymentsSection } from './payments-section';
 import { CheckoutContext } from '../hooks/checkout';
@@ -13,6 +13,9 @@ import { useLocale } from '../utils/locale';
 import { Subscribe } from './subscribe';
 import { RestorePurchase } from './restore-purchase';
 import { CheckoutProvider } from './checkout-provider';
+import { PortalContext } from '../hooks/portal';
+import { SectionHeading } from './section-heading';
+import { PricingTable } from './pricing-table';
 
 export function CustomerPortal(props: { endpoint: string }) {
     const { endpoint } = props;
@@ -41,6 +44,8 @@ export function CustomerPortal(props: { endpoint: string }) {
         refetch();
     }, [refetch]);
 
+    const portalContextValue = React.useMemo(() => ({ endpoint }), [endpoint]);
+
     if (!checkoutContext) {
         throw new Error('CustomerPortal must be used within a CheckoutProvider');
     }
@@ -54,15 +59,21 @@ export function CustomerPortal(props: { endpoint: string }) {
     }
 
     return (
-        <CheckoutProvider onAfterSync={refresh} endpoint={checkoutContext.endpoint} options={checkoutContext.options}>
-            {isLoading || undefined === data ? (
-                <CustomerPortalSkeleton />
-            ) : !data ? (
-                <CustomerPortalEmpty endpoint={endpoint} onSubscribe={refetch} onRestore={onRestored} />
-            ) : (
-                <CustomerPortalUi portalData={data} />
-            )}
-        </CheckoutProvider>
+        <PortalContext.Provider value={portalContextValue}>
+            <CheckoutProvider
+                onAfterSync={refresh}
+                endpoint={checkoutContext.endpoint}
+                options={checkoutContext.options}
+            >
+                {isLoading || undefined === data ? (
+                    <CustomerPortalSkeleton />
+                ) : !data ? (
+                    <CustomerPortalEmpty endpoint={endpoint} onSubscribe={refetch} onRestore={onRestored} />
+                ) : (
+                    <CustomerPortalUi portalData={data} refresh={refetch} />
+                )}
+            </CheckoutProvider>
+        </PortalContext.Provider>
     );
 }
 
@@ -90,8 +101,9 @@ export function CustomerPortalEmpty(props: {
     );
 }
 
-export function CustomerPortalUi(props: { portalData: PortalData }) {
-    const { portalData } = props;
+export function CustomerPortalUi(props: { portalData: PortalData; refresh: () => void }) {
+    const { portalData, refresh } = props;
+    const locale = useLocale();
 
     return (
         <div className="fs-saas-starter-portal flex flex-col gap-16">
@@ -100,7 +112,17 @@ export function CustomerPortalUi(props: { portalData: PortalData }) {
                     subscription={portalData.subscriptions.primary}
                     plans={portalData.plans}
                     sellingUnit={portalData.sellingUnit}
+                    cancellationCoupons={portalData.cancellationCoupons}
+                    afterCancel={refresh}
+                    afterCouponApplied={refresh}
                 />
+            ) : null}
+
+            {portalData.subscriptions.primary && !portalData.subscriptions.primary.isActive ? (
+                <div>
+                    <SectionHeading>{locale.portal.subscribe.title()}</SectionHeading>
+                    <PricingTable plans={portalData.plans} />
+                </div>
             ) : null}
 
             {portalData.billing ? <BillingSection billing={portalData.billing} user={portalData.user} /> : null}

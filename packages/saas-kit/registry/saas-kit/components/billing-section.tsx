@@ -5,6 +5,7 @@ import { useLocale } from '../utils/locale';
 import { BillingForm } from './billing-form';
 import { BillingInfo } from './billing-info';
 import { BillingUpdatePayload } from '@freemius/sdk';
+import { usePortalAction } from '../hooks/data';
 
 export function BillingSection(props: {
     billing: NonNullable<PortalData['billing']>;
@@ -16,20 +17,10 @@ export function BillingSection(props: {
         ...props.billing,
     });
 
+    const { execute } = usePortalAction<BillingUpdatePayload, PortalData['billing']>(props.billing.updateUrl);
+
     const updateBilling = async (billing: BillingUpdatePayload) => {
-        const response = await fetch(props.billing.updateUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(billing),
-        });
-
-        if (!response.ok) {
-            throw new Error('Update of billing information failed!');
-        }
-
-        const updatedBilling = await response.json();
+        const updatedBilling = await execute(billing);
         setBilling(updatedBilling);
     };
 

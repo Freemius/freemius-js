@@ -49,10 +49,11 @@ export class CheckoutRequestProcessor implements RequestProcessor<CheckoutReques
                 return error.toResponse();
             }
 
-            return Response.json({ error: 'Internal Server Error' }, { status: 500 });
+            console.error('Error processing action:', error);
+            return ActionError.internalError('Internal Server Error').toResponse();
         }
 
-        return Response.json({ error: 'Unsupported action' }, { status: 400 });
+        return ActionError.badRequest('Unsupported action').toResponse();
     }
 
     /**

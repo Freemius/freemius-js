@@ -21,3 +21,7 @@ export type { CheckoutRequestConfig as CheckoutActionConfig } from './checkout/C
 export type { CheckoutBuilder } from './checkout/CheckoutBuilder';
 export type { CheckoutRedirectInfo } from './models/CheckoutRedirectInfo';
 export type { PurchaseInfo } from './models/PurchaseInfo';
+export type { ApplyRenewalCouponRequest } from './customer-portal/SubscriptionRenewalCouponAction';
+export type { SubscriptionCancellationRequest } from './customer-portal/SubscriptionCancellationAction';
+export type { PortalRequestConfig } from './customer-portal/PortalRequestProcessor';
+export type { BillingRequest } from './customer-portal/BillingAction';

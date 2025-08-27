@@ -162,6 +162,12 @@ just the essential properties (message, statusCode, validationIssues) and method
 - **SaaS Kit**: `packages/saas-kit/src/` - Next.js application
 - **Registry**: `packages/saas-kit/registry/saas-kit/` - Shadcn components for registry
 
+### Component Structure
+
+- No default exports - always use named exports
+- Separate files for each React component. Group only tightly related components
+- Use kebab-case for filenames (e.g. `subscription-info.tsx` which has `SubscriptionInfo` component)
+
 ### Import Conventions
 
 ```typescript

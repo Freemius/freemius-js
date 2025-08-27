@@ -1,9 +1,9 @@
 import { PagingOptions } from '../contracts/types';
 import { ApiBase } from './ApiBase';
+import { idToString } from './parser';
 import {
     LicenseEntity,
     PaymentEntity,
-    SubscriptionEntity,
     UserBillingEntity,
     UserEntity,
     UserFilterOptions,
@@ -12,6 +12,8 @@ import {
     UserLicenseFilterOptions,
     UserPaymentFilterOptions,
     BillingUpdatePayload,
+    UserSubscriptionWithDiscounts,
+    SubscriptionDiscountEntity,
 } from './types';
 
 const USER_FIELDS = 'email,first,last,picture,is_verified,id,created,updated,is_marketing_allowed';
@@ -98,8 +100,8 @@ export class User extends ApiBase<UserEntity, UserFilterOptions> {
         userId: FSId,
         filters?: UserSubscriptionFilterOptions,
         pagination?: PagingOptions
-    ): Promise<SubscriptionEntity[]> {
-        const response = await this.client.GET(`/products/{product_id}/users/{user_id}/subscriptions.json`, {
+    ): Promise<UserSubscriptionWithDiscounts[]> {
+        const result = await this.client.GET(`/products/{product_id}/users/{user_id}/subscriptions.json`, {
             params: {
                 path: {
                     product_id: this.productId,
@@ -112,11 +114,22 @@ export class User extends ApiBase<UserEntity, UserFilterOptions> {
             },
         });
 
-        if (response.response.status !== 200 || !response.data || !Array.isArray(response.data.subscriptions)) {
+        if (!this.isGoodResponse(result.response) || !result.data || !Array.isArray(result.data.subscriptions)) {
             return [];
         }
 
-        return response.data.subscriptions;
+        const discountsMap: Map<string, SubscriptionDiscountEntity[]> = new Map();
+
+        if (result.data.discounts) {
+            Object.entries(result.data.discounts).forEach(([subscriptionId, discounts]) => {
+                discountsMap.set(idToString(subscriptionId), discounts);
+            });
+        }
+
+        return result.data.subscriptions.map((subscription) => ({
+            ...subscription,
+            discounts: discountsMap.get(idToString(subscription.id!)) || [],
+        }));
     }
 
     async retrieveLicenses(

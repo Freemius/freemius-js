@@ -1,6 +1,6 @@
 import { CheckoutOptions } from '@freemius/checkout';
 import { operations } from '../api/schema';
-import { BillingEntity, FSId, PaymentEntity, SellingUnit, UserEntity } from '../api/types';
+import { BillingEntity, CouponEntityEnriched, FSId, PaymentEntity, SellingUnit, UserEntity } from '../api/types';
 import { BILLING_CYCLE, CURRENCY, PaymentMethod } from './types';
 
 export interface PortalSubscription {
@@ -21,6 +21,11 @@ export interface PortalSubscription {
     quota: number | null;
     paymentMethod: PaymentMethod | null;
     upgradeUrl?: string;
+    isTrial: boolean;
+    trialEnds: Date | null;
+    isFreeTrial: boolean;
+    applyRenewalCancellationCouponUrl: string | null;
+    cancelRenewalUrl: string;
 }
 
 export type PortalPlans = NonNullable<
@@ -55,6 +60,12 @@ export interface PortalData {
     sellingUnit: SellingUnit;
     productId: string;
     checkoutOptions: CheckoutOptions;
+    cancellationCoupons:
+        | Pick<
+              CouponEntityEnriched,
+              'has_renewals_discount' | 'type' | 'coupon_id' | 'discount' | 'discount_type' | 'discounts'
+          >[]
+        | null;
 }
 
 /**

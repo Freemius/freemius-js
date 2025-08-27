@@ -10,6 +10,19 @@ export type FSId = string | number | bigint;
 
 export type SubscriptionEntity = components['schemas']['Subscription'];
 export type SubscriptionFilterOptions = ApiEntitiesFilter<operations['subscriptions/list']['parameters']['query']>;
+export type UserSubscriptionEntity = NonNullable<
+    operations['users/list-subscriptions']['responses'][200]['content']['application/json']['subscriptions']
+>[number];
+export type SubscriptionDiscountEntity = NonNullable<
+    operations['users/list-subscriptions']['responses'][200]['content']['application/json']['discounts']
+>[string][number];
+export type UserSubscriptionWithDiscounts = UserSubscriptionEntity & {
+    discounts: SubscriptionDiscountEntity[];
+};
+export type SubscriptionCancellationResult =
+    operations['subscriptions/cancel']['responses'][200]['content']['application/json'];
+export type SubscriptionRenewalCouponResult =
+    operations['subscriptions/update']['responses'][200]['content']['application/json'];
 
 export type UserEntity = components['schemas']['User'];
 export type UserFilterOptions = ApiEntitiesFilter<operations['users/list']['parameters']['query']>;
@@ -50,3 +63,7 @@ export type SellingUnit = Required<
         operations['products/retrieve-pricing-table-data']['responses']['200']['content']['application/json']['selling_unit_label']
     >
 >;
+
+export type CouponEntityEnriched = components['schemas']['CouponEntityEnriched'];
+
+export type SubscriptionCancellationReasonType = components['schemas']['Uninstall']['reason_id'];

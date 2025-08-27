@@ -3,17 +3,15 @@ import { FSId } from '../api/types';
 import { PortalData } from '../contracts/portal';
 import { CheckoutService } from './CheckoutService';
 import { AuthService } from './AuthService';
-import { InvoiceAction } from '../customer-portal/InvoiceAction';
 import { PortalDataRepository } from '../customer-portal/PortalDataRepository';
-import { BillingAction } from '../customer-portal/BillingAction';
 import { PurchaseService } from './PurchaseService';
 import { PortalRequestProcessor } from '../customer-portal/PortalRequestProcessor';
+import { CustomerPortalActionService } from '../customer-portal/CustomerPortalActionService';
 
 export class CustomerPortalService {
     private readonly repository: PortalDataRepository;
 
-    public readonly invoice: InvoiceAction;
-    public readonly billing: BillingAction;
+    public readonly action: CustomerPortalActionService;
     public readonly request: PortalRequestProcessor;
 
     constructor(
@@ -22,12 +20,11 @@ export class CustomerPortalService {
         private readonly authService: AuthService,
         private readonly purchase: PurchaseService
     ) {
-        this.invoice = new InvoiceAction(this.api, this.authService);
-        this.billing = new BillingAction(this.api, this.authService);
+        this.action = new CustomerPortalActionService(this.api, this.authService);
 
-        this.repository = new PortalDataRepository(this.api, this.invoice, this.billing, this.checkout);
+        this.repository = new PortalDataRepository(this.api, this.action, this.checkout);
 
-        this.request = new PortalRequestProcessor(this.repository, this.invoice, this.billing, this.purchase);
+        this.request = new PortalRequestProcessor(this.repository, this.action, this.purchase);
     }
 
     /**

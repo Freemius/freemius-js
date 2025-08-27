@@ -1,8 +1,8 @@
 import { ActionError } from '../errors/ActionError';
-import { PurchaseInfo } from '../Freemius';
 import * as zod from 'zod';
 import { PurchaseService } from '../services/PurchaseService';
 import { CheckoutAction } from '../contracts/checkout';
+import { PurchaseInfo } from '../models/PurchaseInfo';
 
 export type PurchaseCallback = (purchase: PurchaseInfo) => Promise<Response | void>;
 

@@ -41,3 +41,17 @@ export function formatCurrency(
 export function formatNumber(value: number, locale: string = 'en-US'): string {
     return new Intl.NumberFormat(locale).format(value);
 }
+
+export function getDaysLeft(targetDate: Date | string | null): number | null {
+    if (!targetDate) {
+        return null;
+    }
+
+    const now = new Date();
+    const target = new Date(targetDate);
+    const diffTime = target.getTime() - now.getTime();
+
+    if (diffTime <= 0) return 0;
+
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}

@@ -2,6 +2,7 @@ import { PagingOptions } from '../contracts/types';
 import { idToNumber } from './parser';
 import { FsApiClient } from './client';
 import { FSId } from './types';
+import { QuerySerializerOptions } from 'openapi-fetch';
 
 export const PAGING_DEFAULT_LIMIT = 150;
 export const PAGING_MAX_LIMIT = 300;
@@ -76,5 +77,17 @@ export abstract class ApiBase<EntityType, FilterType extends Record<string, unkn
 
     isGoodResponse(response: Response): boolean {
         return response.status >= 200 && response.status < 300;
+    }
+
+    /**
+     * @note - We must use this serializer when sending arrays as query parameter to our API.
+     */
+    getQuerySerializerForArray(): QuerySerializerOptions {
+        return {
+            array: {
+                explode: false,
+                style: 'form',
+            },
+        };
     }
 }

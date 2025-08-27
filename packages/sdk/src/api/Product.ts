@@ -1,5 +1,5 @@
 import { ApiBase } from './ApiBase';
-import { ProductEntity, PricingTableData } from './types';
+import { ProductEntity, PricingTableData, CouponEntityEnriched } from './types';
 
 export class Product extends ApiBase<ProductEntity, never> {
     async retrieve(): Promise<ProductEntity | null> {
@@ -11,7 +11,7 @@ export class Product extends ApiBase<ProductEntity, never> {
             },
         });
 
-        if (response.response.status !== 200 || !response.data) {
+        if (!this.isGoodResponse(response.response) || !response.data) {
             return null;
         }
 
@@ -31,10 +31,29 @@ export class Product extends ApiBase<ProductEntity, never> {
             },
         });
 
-        if (response.response.status !== 200 || !response.data) {
+        if (!this.isGoodResponse(response.response) || !response.data) {
             return null;
         }
 
         return response.data;
+    }
+
+    async retrieveSubscriptionCancellationCoupon(): Promise<CouponEntityEnriched[] | null> {
+        const response = await this.client.GET(`/products/{product_id}/coupons/special.json`, {
+            params: {
+                path: {
+                    product_id: this.productId,
+                },
+                query: {
+                    type: 'subscription_cancellation',
+                },
+            },
+        });
+
+        if (!this.isGoodResponse(response.response) || !response.data || !response.data.coupon_entities) {
+            return null;
+        }
+
+        return response.data.coupon_entities;
     }
 }

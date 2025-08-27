@@ -6,6 +6,7 @@ export const defaultLocale = {
     portal: {
         primary: {
             title: () => <>Current Subscription</>,
+            inactiveBadge: () => <>INACTIVE</>,
             planTitle: (planTitle: string) => <>{planTitle} Plan</>,
             renewal: {
                 amount: (formattedAmount: string, period: string) => (
@@ -109,6 +110,77 @@ export const defaultLocale = {
             message: () => (
                 <>It looks like you don&apos;t have any active susbcription with us. Please purchase one from below.</>
             ),
+        },
+        cancelSubscription: {
+            title: {
+                confirm: () => <>Well, that&apos;s a bummer</>,
+                coupon: (discountLabel: React.ReactNode) => <>Wait, how about {discountLabel} off?</>,
+                reason: () => <>Why are you cancelling?</>,
+            },
+            message: {
+                trial: {
+                    paragraphs: (daysLeft: number | null, isFree: boolean | null) => [
+                        <>Cancelling the trial will immediately block access to all premium features. Are you sure?</>,
+                        isFree ? (
+                            <>
+                                If you aren&apos;t sure, keep enjoying the paid features for another {daysLeft}{' '}
+                                {daysLeft !== 1 ? 'days' : 'day'} and we&apos;ll email you once the trial has expired
+                                (don&apos;t worry, you won&apos;t be charged).
+                            </>
+                        ) : (
+                            <>
+                                If you aren&apos;t sure, you can choose to have a reminder sent 2 days prior to the
+                                trial expiration date.
+                            </>
+                        ),
+                    ],
+                },
+                regular: {
+                    paragraphs: (daysLeft: number | null) => [
+                        <>
+                            Your product subscription will be cancelled after {daysLeft}{' '}
+                            {daysLeft !== 1 ? 'days' : 'day'}. Keep enjoying it until then.
+                        </>,
+                        // eslint-disable-next-line react/jsx-key
+                        <span className="bg-destructive text-primary-foreground p-4 rounded-md block">
+                            Please note that we will not be able to grandfather outdated pricing for renewals/new
+                            subscriptions after a cancellation. If you choose to renew the subscription manually in the
+                            future, after a price increase, which typically occurs once a year, you will be charged the
+                            updated price.
+                        </span>,
+                        <>If you aren&apos;t sure, you can choose to have a reminder sent prior to the renewal date.</>,
+                    ],
+                },
+                coupon: {
+                    off: () => <>off</>,
+                    paragraphs: (hasRenewals: boolean, discountLabel: React.ReactNode) => [
+                        <>
+                            We&apos;d hate to see you go, especially if it&apos;s a matter of price! Keep your
+                            subscription active and get a special {discountLabel} discount off your{' '}
+                            {hasRenewals ? 'renewals' : 'next renewal'}
+                        </>,
+                    ],
+                },
+                reason: {
+                    paragraphs: () => [<>We hate to see you go, but before you do, let us know where we went wrong.</>],
+                    form: {
+                        reason: () => <>Select all that apply</>,
+                        feedback: () => <>Additional feedback (optional)</>,
+                        feedbackPlaceholder: () => `Your feedback...`,
+                    },
+                },
+            },
+            action: {
+                cancel: () => <>Cancel renewals</>,
+                remindMe: () => <>Remind me later</>,
+                back: () => <>Go back</>,
+                couponCancel: () => <>Continue to cancel</>,
+                confirmCancel: (hasTrial: boolean) => <>Send &amp; Cancel {hasTrial ? 'trial' : 'renewals'}</>,
+            },
+            alert: {
+                subscriptionCancelled: () => 'Subscription successfully canceled.',
+                couponApplied: () => 'Promo successfully applied!',
+            },
         },
     },
     refreshPurchase: {

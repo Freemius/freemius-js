@@ -2,7 +2,7 @@ import { isIdsEqual } from '../api/parser';
 import { FSId, SubscriptionEntity, UserEntity } from '../api/types';
 import { PurchaseData } from '../contracts/purchase';
 import { PagingOptions } from '../contracts/types';
-import { PurchaseInfo } from '../Freemius';
+import { PurchaseInfo } from '../models/PurchaseInfo';
 import { ApiService } from './ApiService';
 
 export class PurchaseService {

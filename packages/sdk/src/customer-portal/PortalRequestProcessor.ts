@@ -2,8 +2,7 @@ import { PortalAction } from '../contracts/portal';
 import { RequestProcessor, UserEmailRetriever, UserRetriever } from '../contracts/types';
 import { ActionError } from '../errors/ActionError';
 import { PurchaseService } from '../services/PurchaseService';
-import { BillingAction } from './BillingAction';
-import { InvoiceAction } from './InvoiceAction';
+import { CustomerPortalActionService } from './CustomerPortalActionService';
 import { PortalDataRepository } from './PortalDataRepository';
 import { PortalDataRetriever } from './PortalDataRetriever';
 import { PurchaseRestorer, RestoreCallback } from './PurchaseRestorer';
@@ -20,8 +19,7 @@ export type PortalRequestConfig = {
 export class PortalRequestProcessor implements RequestProcessor<PortalRequestConfig> {
     constructor(
         private readonly repository: PortalDataRepository,
-        private readonly invoice: InvoiceAction,
-        private readonly billing: BillingAction,
+        private readonly action: CustomerPortalActionService,
         private readonly purchase: PurchaseService
     ) {}
 
@@ -42,8 +40,7 @@ export class PortalRequestProcessor implements RequestProcessor<PortalRequestCon
 
         const actionHandlers: PortalAction[] = [
             new PortalDataRetriever(this.repository, config.getUser, config.portalEndpoint, config.isSandbox),
-            this.invoice,
-            this.billing,
+            ...this.action.getAllHandlers(),
         ];
 
         if (config.onRestore) {

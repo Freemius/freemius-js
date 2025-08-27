@@ -74,8 +74,8 @@ export class CheckoutBuilder {
             {
                 ...this.options,
                 user_email: user.email,
-                user_first_name: firstName,
-                user_last_name: lastName,
+                user_firstname: firstName,
+                user_lastname: lastName,
                 readonly_user: readonly,
             },
             this.productId,

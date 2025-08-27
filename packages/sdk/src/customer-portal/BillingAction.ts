@@ -5,6 +5,21 @@ import { AuthService } from '../services/AuthService';
 import { ActionError } from '../errors/ActionError';
 import * as zod from 'zod';
 
+// Define Zod schema for billing request body
+const schema = zod.object({
+    business_name: zod.string().optional(),
+    tax_id: zod.string().optional(),
+    phone: zod.string().optional(),
+    address_apt: zod.string().optional(),
+    address_street: zod.string().optional(),
+    address_city: zod.string().optional(),
+    address_state: zod.string().optional(),
+    address_country_code: zod.string().optional(),
+    address_zip: zod.string().optional(),
+});
+
+export type BillingRequest = zod.infer<typeof schema>;
+
 export class BillingAction implements PortalAction {
     private readonly actionName = 'billing';
 
@@ -51,19 +66,6 @@ export class BillingAction implements PortalAction {
     }
 
     async processAction(request: Request): Promise<Response> {
-        // Define Zod schema for billing request body
-        const billingSchema = zod.object({
-            business_name: zod.string().optional(),
-            tax_id: zod.string().optional(),
-            phone: zod.string().optional(),
-            address_apt: zod.string().optional(),
-            address_street: zod.string().optional(),
-            address_city: zod.string().optional(),
-            address_state: zod.string().optional(),
-            address_country_code: zod.string().optional(),
-            address_zip: zod.string().optional(),
-        });
-
         // Check content type
         const contentType = request.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
@@ -79,7 +81,7 @@ export class BillingAction implements PortalAction {
         }
 
         // Validate request body with Zod schema
-        const parseResult = billingSchema.safeParse(requestBody);
+        const parseResult = schema.safeParse(requestBody);
         if (!parseResult.success) {
             throw ActionError.validationFailed('Invalid request body format', parseResult.error.issues);
         }

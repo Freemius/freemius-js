@@ -15,7 +15,7 @@
 9. ✅ Create the mono repo
 10. ✅ Create the Shadcn registry
 11. ✅ Create deployment tooling with auto version bumping
-12. Make the SDK work with the UI starter kit (`@freemius/saas-kit`).
+12. ✅ Make the SDK work with the UI starter kit (`@freemius/saas-kit`).
     1. ✅ See if the paywall can be ported to the UI starter kit (minimalist pricing table).
     2. See if restore action can be ported to the UI starter kit.
         1. ✅ Create the `syncPurchases` method in the SDK that will take an emails and sync the purchases including
@@ -29,7 +29,7 @@
         7. ✅ Make the CustomerPortal also get the dynamically through an API call instead of streaming/props. It will
            use the restore action and pricing table internally.
         8. ✅ Create the topup component and use that in the Credits area.
-    3. Finish the subscription cancellation flow.
+    3. ✅ Finish the subscription cancellation flow.
 
 **Webinar**:
 
@@ -42,10 +42,12 @@
     2. Configure the product in Freemius.
 4. Where to deploy (Vercel & Prisma).
 
-## Known Bugs
+## Known Bugs/Missing Features:
 
 1. The customer portal hacks the Checkout Context to amend the `onAfterSync` callback. This is not a good idea and needs
    to be fixed. The `const checkout = useCheckout()` and `checkout.open()` should support additional callbacks.
+2. The portal doesn't support multiple subscriptions. We need to add a section for that.
+3. The Portal doesn't support trials at the moment (displaying trial UI + Consider lifetime trial purchases)
 
 ## Quick Setup Guide:
 

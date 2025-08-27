@@ -5827,6 +5827,8 @@ export interface components {
                 eur?: number;
             };
         };
+        FSEndpointDeveloperPluginSubscriptions: components['schemas']['Discount'][];
+        FSEndpointDeveloperPluginUserSubscriptions: components['schemas']['Discount'][];
     };
     responses: {
         /** @description The API has no content to send. This usually happens when some entity is deleted. */
@@ -11435,7 +11437,13 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['Subscription'];
+                    'application/json': components['schemas']['Subscription'] & {
+                        /**
+                         * @description Shows whether a renewal discount was already applied to the subscription.
+                         * @example false
+                         */
+                        has_subscription_cancellation_discount?: boolean | null;
+                    };
                 };
             };
             401: components['responses']['401'];
@@ -11556,7 +11564,10 @@ export interface operations {
                              */
                             title?: string | null;
                         })[];
-                        discounts?: components['schemas']['Discount'][];
+                        /** @description The key represents the ID of the subscription */
+                        discounts?: {
+                            [key: string]: components['schemas']['Discount'][];
+                        };
                     };
                 };
             };
@@ -12774,8 +12785,16 @@ export interface operations {
                              * @example Website title
                              */
                             title?: string | null;
+                            /**
+                             * @description Shows whether a renewal discount was already applied to the subscription.
+                             * @example false
+                             */
+                            has_subscription_cancellation_discount?: boolean | null;
                         })[];
-                        discounts?: components['schemas']['Discount'][];
+                        /** @description The key represents the ID of the subscription */
+                        discounts?: {
+                            [key: string]: components['schemas']['Discount'][];
+                        };
                     };
                 };
             };
