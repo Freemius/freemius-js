@@ -28,7 +28,7 @@ export class PortalDataRetriever implements PortalAction {
     async processAction(): Promise<Response> {
         const user = await this.getUser();
 
-        if (!user) {
+        if (!user || !('id' in user)) {
             return Response.json(null);
         }
 

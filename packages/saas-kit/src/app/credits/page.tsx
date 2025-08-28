@@ -5,8 +5,8 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { ErrorBoundary } from '@/components/error';
 import { freemius } from '@/lib/freemius';
-import PurchaseProvider from '@/components/purchase-provider';
-import Credits from '../billing/credits';
+import CheckoutWithConfettiProvider from '@/components/checkout-with-confetti-provider';
+import Credits from './credits';
 
 export default async function CreditsPage() {
     const session = await auth.api.getSession({
@@ -29,9 +29,9 @@ export default async function CreditsPage() {
         <AppMain title="Credits & Topups" isLoggedIn={true}>
             <AppContent>
                 <ErrorBoundary>
-                    <PurchaseProvider checkoutOptions={options}>
+                    <CheckoutWithConfettiProvider checkoutOptions={options}>
                         <Credits credits={credits} hasLicense={!!license} />
-                    </PurchaseProvider>
+                    </CheckoutWithConfettiProvider>
                 </ErrorBoundary>
             </AppContent>
         </AppMain>

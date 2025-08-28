@@ -25,7 +25,7 @@ export function CustomerPortal(props: { endpoint: string }) {
 
     const onRestored = React.useCallback(
         (data: PurchaseData[] | null) => {
-            if (data) {
+            if (data && data.length > 0) {
                 if (typeof window !== 'undefined') {
                     window.alert(locale.refreshPurchase.alert.restored(data.length));
                 }

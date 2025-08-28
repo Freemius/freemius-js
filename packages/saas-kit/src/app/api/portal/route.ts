@@ -1,12 +1,11 @@
 import { freemius } from '@/lib/freemius';
-import { getUser, getUserEmail, processPurchases } from '@/lib/user-license';
+import { getFsUser, processPurchaseInfo } from '@/lib/user-license';
 
-const processor = freemius.customerPortal.request.getProcessor({
-    getUser: getUser,
-    getUserEmail: getUserEmail,
+const processor = freemius.customerPortal.request.createProcessor({
+    getUser: getFsUser,
     portalEndpoint: process.env.NEXT_PUBLIC_APP_URL! + '/api/portal',
     isSandbox: process.env.NODE_ENV !== 'production',
-    onRestore: processPurchases,
+    onRestore: freemius.customerPortal.createRestorer(processPurchaseInfo),
 });
 
 export { processor as GET, processor as POST };

@@ -69,7 +69,7 @@ export class ApiService {
     }
 
     /**
-     * Generate signed URL for the given full URL
+     * Generate signed URL for the given full URL. The authentication is valid for 15 minutes only.
      */
     public getSignedUrl(fullUrl: string): string {
         const url = new URL(fullUrl);

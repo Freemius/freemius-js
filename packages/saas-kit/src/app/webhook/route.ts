@@ -48,6 +48,6 @@ listener.on('subscription.renewal.failed', async ({ objects: { subscription } })
     console.log('Subscription renewal failed:', subscription);
 });
 
-export async function POST(request: Request) {
-    return await freemius.webhook.processFetch(listener, request);
-}
+const processor = freemius.webhook.createRequestProcessor(listener);
+
+export { processor as POST };

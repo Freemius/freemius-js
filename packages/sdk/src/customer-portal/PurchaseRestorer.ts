@@ -1,5 +1,5 @@
 import { PortalAction } from '../contracts/portal';
-import { UserEmailRetriever, UserRetriever } from '../contracts/types';
+import { UserRetriever } from '../contracts/types';
 import { ActionError } from '../errors/ActionError';
 import { PurchaseInfo } from '../models/PurchaseInfo';
 import { PurchaseService } from '../services/PurchaseService';
@@ -9,7 +9,7 @@ export type RestoreCallback = (purchases: PurchaseInfo[]) => Promise<Response | 
 export class PurchaseRestorer implements PortalAction {
     constructor(
         private readonly purchase: PurchaseService,
-        private readonly user: UserRetriever | UserEmailRetriever,
+        private readonly user: UserRetriever,
         private readonly callback?: RestoreCallback,
         private readonly subscriptionOnly: boolean = false
     ) {}

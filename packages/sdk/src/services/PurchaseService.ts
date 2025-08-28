@@ -1,6 +1,6 @@
 import { isIdsEqual } from '../api/parser';
 import { FSId, SubscriptionEntity, UserEntity } from '../api/types';
-import { PurchaseData } from '../contracts/purchase';
+import { PurchaseData, PurchaseDBData } from '../contracts/purchase';
 import { PagingOptions } from '../contracts/types';
 import { PurchaseInfo } from '../models/PurchaseInfo';
 import { ApiService } from './ApiService';
@@ -179,5 +179,26 @@ export class PurchaseService {
         }
 
         return await this.retrievePurchases(user.id!, pagination);
+    }
+
+    /**
+     * Verify that the purchase data from the database is valid and not expired or canceled.
+     *
+     * This is useful when loading purchase data from your own database to ensure it is still active.
+     */
+    verifyPurchaseDBData<T extends PurchaseDBData>(data?: T | null): T | null {
+        if (!data) {
+            return null;
+        }
+
+        if (data.canceled) {
+            return null;
+        }
+
+        if (data.expiration && new Date(data.expiration) < new Date()) {
+            return null;
+        }
+
+        return data;
     }
 }

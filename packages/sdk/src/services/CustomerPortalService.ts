@@ -7,6 +7,7 @@ import { PortalDataRepository } from '../customer-portal/PortalDataRepository';
 import { PurchaseService } from './PurchaseService';
 import { PortalRequestProcessor } from '../customer-portal/PortalRequestProcessor';
 import { CustomerPortalActionService } from '../customer-portal/CustomerPortalActionService';
+import { PurchaseInfo } from '../models/PurchaseInfo';
 
 export class CustomerPortalService {
     private readonly repository: PortalDataRepository;
@@ -45,5 +46,14 @@ export class CustomerPortalService {
             primaryLicenseId,
             sandbox,
         });
+    }
+
+    /**
+     * Creates a restorer function that processes an array of purchases by invoking the provided callback for each purchase.
+     */
+    createRestorer(callback: (purchase: PurchaseInfo) => Promise<void>): (purchases: PurchaseInfo[]) => Promise<void> {
+        return async (purchases: PurchaseInfo[]) => {
+            await Promise.all(purchases.map((purchase) => callback(purchase)));
+        };
     }
 }

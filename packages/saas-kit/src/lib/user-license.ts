@@ -12,18 +12,60 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import {
-    CheckoutRedirectInfo,
-    LicenseEntity,
-    PurchaseInfo,
-    SubscriptionEntity,
-    UserEmailRetriever,
-    UserRetriever,
-} from '@freemius/sdk';
+import { CheckoutRedirectInfo, LicenseEntity, PurchaseInfo, SubscriptionEntity, UserRetriever } from '@freemius/sdk';
 import { UserLicense, User } from '@generated/prisma';
 import { freemius } from './freemius';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+
+export async function processPurchaseInfo(fsPurchase: PurchaseInfo): Promise<void> {
+    const user = await prisma.user.findUnique({ where: { email: fsPurchase.email } });
+
+    if (!user) {
+        // We can also register the user here if needed.
+        console.warn(`User with email ${fsPurchase.email} not found. Cannot process purchase.`);
+        return;
+    }
+
+    // If the purchase is from a subscription then we update the local userLicense table.
+    // Freemius guarantees that there is only one active subscription per user. (This can be configured in Freemius dashboard).
+    const allSubscriptionPlans = process.env.NEXT_PUBLIC_FS_PLAN_ALL_SUBSCRIPTIONS?.split(',') ?? [
+        process.env.NEXT_PUBLIC_FS__PLAN_SUBSCRIPTION!,
+    ];
+
+    if (fsPurchase.hasSubscription() && fsPurchase.isFromPlans(allSubscriptionPlans)) {
+        await prisma.userLicense.upsert({
+            where: {
+                userId: user.id,
+            },
+            update: fsPurchase.toDBData(),
+            create: fsPurchase.toDBData({ userId: user.id }),
+        });
+    }
+
+    // Now add the credits if not already added.
+    if ((fsPurchase.quota ?? 0) > 0) {
+        const existingCreditPurchase = await prisma.userCreditPurchase.findUnique({
+            where: { fsLicenseId: fsPurchase.licenseId },
+        });
+
+        if (!existingCreditPurchase) {
+            // Better do the operations in a transaction.
+            prisma.$transaction(async (prisma) => {
+                await prisma.userCreditPurchase.create({
+                    data: fsPurchase.toCreditData({ userId: user.id }),
+                });
+
+                const updatedLicense = await prisma.user.update({
+                    where: { id: user.id },
+                    data: { credit: { increment: fsPurchase.credit ?? 0 } },
+                });
+
+                return updatedLicense;
+            });
+        }
+    }
+}
 
 /**
  * Get the user's active license.
@@ -33,19 +75,30 @@ import { headers } from 'next/headers';
 export async function getLicense(userId: string): Promise<UserLicense | null> {
     const userLicense = await prisma.userLicense.findUnique({ where: { userId } });
 
-    if (!userLicense) {
-        return null;
+    return freemius.purchase.verifyPurchaseDBData(userLicense);
+}
+
+export const getFsUser: UserRetriever = async () => {
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+
+    const license = session ? await getLicense(session.user.id) : null;
+    const email = session?.user.email ?? undefined;
+
+    if (license) {
+        return { id: license.fsUserId, primaryLicenseId: license.fsLicenseId, email };
     }
 
-    if (userLicense.canceled) {
-        return null;
-    }
+    // Fallback to email only if no license found. This helps the SDK to restore purchases by email.
+    return email ? { email } : null;
+};
 
-    if (userLicense.expiration && userLicense.expiration < new Date()) {
-        return null;
+export async function syncLicenseFromWebhook(fsLicense: LicenseEntity): Promise<void> {
+    const purchaseInfo = await freemius.purchase.retrievePurchase(fsLicense.id!);
+    if (purchaseInfo) {
+        await processPurchaseInfo(purchaseInfo);
     }
-
-    return userLicense;
 }
 
 export async function hasCredits(userId: string, credits: number = 1): Promise<boolean> {
@@ -81,71 +134,9 @@ export async function addCredits(userId: string, credits: number): Promise<User 
     return updatedLicense;
 }
 
-export async function processPurchases(purchases: PurchaseInfo[]): Promise<void> {
-    for (const purchase of purchases) {
-        await processPurchaseInfo(purchase);
-    }
-}
-
 export async function processRedirect(info: CheckoutRedirectInfo): Promise<void> {
     const purchaseInfo = await freemius.purchase.retrievePurchase(info.license_id);
 
-    if (purchaseInfo) {
-        await processPurchaseInfo(purchaseInfo);
-    }
-}
-
-export async function processPurchaseInfo(fsPurchase: PurchaseInfo): Promise<void> {
-    const user = await prisma.user.findUnique({ where: { email: fsPurchase.email } });
-
-    if (!user) {
-        // We can also register the user here if needed.
-        console.warn(`User with email ${fsPurchase.email} not found. Cannot process purchase.`);
-        return;
-    }
-
-    // If the purchase is from a subscription then we update the local userLicense table.
-    // Freemius guarantees that there is only one active subscription per user. (This can be configured in Freemius dashboard).
-    const allSubscriptionPlans = process.env.NEXT_PUBLIC_FS_PLAN_ALL_SUBSCRIPTIONS?.split(',') ?? [
-        process.env.NEXT_PUBLIC_FS__PLAN_SUBSCRIPTION!,
-    ];
-
-    if (fsPurchase.isFromPlans(allSubscriptionPlans)) {
-        await prisma.userLicense.upsert({
-            where: {
-                userId: user.id,
-            },
-            update: fsPurchase.toDBData(),
-            create: fsPurchase.toDBData({ userId: user.id }),
-        });
-    }
-
-    // Now add the credits if not already added.
-    if ((fsPurchase.quota ?? 0) > 0) {
-        const existingCreditPurchase = await prisma.userCreditPurchase.findUnique({
-            where: { fsLicenseId: fsPurchase.licenseId },
-        });
-
-        if (!existingCreditPurchase) {
-            // Better do the operations in a transaction.
-            prisma.$transaction(async (prisma) => {
-                await prisma.userCreditPurchase.create({
-                    data: fsPurchase.toCreditData({ userId: user.id }),
-                });
-
-                const updatedLicense = await prisma.user.update({
-                    where: { id: user.id },
-                    data: { credit: { increment: fsPurchase.credit ?? 0 } },
-                });
-
-                return updatedLicense;
-            });
-        }
-    }
-}
-
-export async function syncLicenseFromWebhook(fsLicense: LicenseEntity): Promise<void> {
-    const purchaseInfo = await freemius.purchase.retrievePurchase(fsLicense.id!);
     if (purchaseInfo) {
         await processPurchaseInfo(purchaseInfo);
     }
@@ -161,29 +152,3 @@ export async function sendRenewalFailureEmail(subscription: SubscriptionEntity):
     console.log('Sending renewal failure email for subscription:', subscription);
     // Example: await sendEmailToUser(subscription.user, 'Renewal failed', 'Your subscription renewal has failed.');
 }
-
-export const getUser: UserRetriever = async () => {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    const license = session ? await getLicense(session.user.id) : null;
-
-    if (license) {
-        return { id: license.fsUserId, primaryLicenseId: license.fsLicenseId };
-    }
-
-    return null;
-};
-
-export const getUserEmail: UserEmailRetriever = async () => {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (session?.user?.email) {
-        return { email: session.user.email };
-    }
-
-    return null;
-};

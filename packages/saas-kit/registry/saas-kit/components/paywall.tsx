@@ -73,7 +73,9 @@ export function Paywall(props: PaywallProps) {
                                 {locale.pricing.error.fetchingData()}: {error.message}
                             </div>
                         ) : isLoading || !data ? (
-                            <PricingSkeleton />
+                            <PricingSkeleton
+                                type={state === PaywallRestriction.NO_ACTIVE_PURCHASE ? 'subscription' : 'topup'}
+                            />
                         ) : state === PaywallRestriction.NO_ACTIVE_PURCHASE ? (
                             <PricingTable plans={data.plans} onCheckout={hidePaywall} />
                         ) : (

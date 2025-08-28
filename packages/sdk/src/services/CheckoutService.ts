@@ -7,6 +7,7 @@ import { CheckoutBuilderOptions } from '../contracts/checkout';
 import { PurchaseService } from './PurchaseService';
 import { PricingService } from './PricingService';
 import { CheckoutRequestProcessor } from '../checkout/CheckoutRequestProcessor';
+import { RedirectProcessor } from '../checkout/RedirectProcessor';
 
 export class CheckoutService {
     public readonly request: CheckoutRequestProcessor;
@@ -156,5 +157,31 @@ export class CheckoutService {
             ctx: timestamp,
             token: createHash('md5').update(token).digest('hex'),
         };
+    }
+
+    /**
+     * Processes a redirect URL and returns the checkout redirect information if valid.
+     *
+     * This is useful for handling redirects from the checkout portal back to your application.
+     *
+     * @param url The current URL to process.
+     * @param proxyUrl Optional proxy URL to replace parts of the URL for signature verification.
+     *
+     * @returns A promise that resolves to the checkout redirect information or null if invalid.
+     *
+     * @example
+     * ```typescript
+     * const redirectInfo = await freemius.checkout.processRedirect(window.location.href);
+     *
+     * if (redirectInfo) {
+     *   // Handle valid redirect info
+     * } else {
+     *   // Handle invalid or missing redirect info
+     * }
+     * ```
+     */
+    processRedirect(url: string, proxyUrl?: string) {
+        const processor = new RedirectProcessor(this.secretKey, proxyUrl);
+        return processor.getRedirectInfo(url);
     }
 }

@@ -17,7 +17,7 @@ export default function Credits(props: { credits?: number; hasLicense?: boolean 
                 <div className="text-center">
                     <h2 className="text-lg font-medium">Please subscribe below</h2>
                     <p className="mb-10 text-muted-foreground">
-                        Every plan comes with an one-time <strong>100</strong> credits for your utilization.
+                        Every plan comes with an <strong>one-time</strong> credit for your utilization.
                     </p>
                 </div>
             </Subscribe>

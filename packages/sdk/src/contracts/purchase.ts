@@ -92,7 +92,7 @@ export interface PurchaseDBData {
     fsLicenseId: string;
     fsUserId: string;
     fsPlanId: string;
-    expiration: Date | null;
+    expiration: Date | null | string;
     canceled: boolean;
 }
 

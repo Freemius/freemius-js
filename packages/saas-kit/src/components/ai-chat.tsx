@@ -16,7 +16,7 @@ export interface ChatContentProps {
     onApiError?: (data: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-export function ChatContent({ examples, onApiError }: ChatContentProps) {
+export function AIChat({ examples, onApiError }: ChatContentProps) {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [text, setText] = useState<string>('');
     const [dummyMessages, setDummyMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);

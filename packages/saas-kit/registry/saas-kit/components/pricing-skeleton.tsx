@@ -16,7 +16,11 @@ export function PricingSkeleton(props: { type?: 'subscription' | 'topup' }) {
                         <Skeleton className="h-20" />
                     </CardHeader>
                     <CardContent>
-                        {type === 'subscription' ? <Skeleton className={`h-40 mb-5`} /> : null}
+                        {type === 'subscription' ? (
+                            <Skeleton className={`h-40 mb-5`} />
+                        ) : (
+                            <Skeleton className={`h-8 mb-5`} />
+                        )}
                         <Skeleton className="h-10" />
                     </CardContent>
                 </Card>

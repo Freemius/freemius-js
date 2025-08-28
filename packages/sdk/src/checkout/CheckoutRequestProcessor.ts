@@ -20,7 +20,7 @@ export class CheckoutRequestProcessor implements RequestProcessor<CheckoutReques
         private readonly secretKey: string
     ) {}
 
-    getProcessor(config: CheckoutRequestConfig): (request: Request) => Promise<Response> {
+    createProcessor(config: CheckoutRequestConfig): (request: Request) => Promise<Response> {
         return (request: Request) => this.process(config, request);
     }
 

@@ -1,5 +1,5 @@
 import { PortalAction } from '../contracts/portal';
-import { RequestProcessor, UserEmailRetriever, UserRetriever } from '../contracts/types';
+import { RequestProcessor, UserRetriever } from '../contracts/types';
 import { ActionError } from '../errors/ActionError';
 import { PurchaseService } from '../services/PurchaseService';
 import { CustomerPortalActionService } from './CustomerPortalActionService';
@@ -9,7 +9,6 @@ import { PurchaseRestorer, RestoreCallback } from './PurchaseRestorer';
 
 export type PortalRequestConfig = {
     getUser: UserRetriever;
-    getUserEmail?: UserEmailRetriever;
     onRestore?: RestoreCallback;
     restoreSubscriptionsOnly?: boolean;
     isSandbox?: boolean;
@@ -23,7 +22,7 @@ export class PortalRequestProcessor implements RequestProcessor<PortalRequestCon
         private readonly purchase: PurchaseService
     ) {}
 
-    getProcessor(config: PortalRequestConfig): (request: Request) => Promise<Response> {
+    createProcessor(config: PortalRequestConfig): (request: Request) => Promise<Response> {
         return (request: Request) => this.process(config, request);
     }
 
@@ -47,7 +46,7 @@ export class PortalRequestProcessor implements RequestProcessor<PortalRequestCon
             actionHandlers.push(
                 new PurchaseRestorer(
                     this.purchase,
-                    config.getUserEmail ?? config.getUser,
+                    config.getUser,
                     config.onRestore,
                     config.restoreSubscriptionsOnly ?? false
                 )

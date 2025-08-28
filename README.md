@@ -1,3 +1,12 @@
+# Freemius JS SDK
+
+## Installation
+
+```bash
+npm i @freemius/sdk
+npx shadcn@latest add https://shadcn.freemius.com/saas-kit.json
+```
+
 ## Priority & Webinar:
 
 **SDK/SaaS Starter Kit**:
@@ -48,6 +57,10 @@
    to be fixed. The `const checkout = useCheckout()` and `checkout.open()` should support additional callbacks.
 2. The portal doesn't support multiple subscriptions. We need to add a section for that.
 3. The Portal doesn't support trials at the moment (displaying trial UI + Consider lifetime trial purchases)
+4. Create a proper `<AlertProvider>` and use that instead of `window.alert()`. This will let us show nice alerts and
+   also dismiss them after a few seconds.
+5. The Checkout `Paywall`, `Subscription`, `Topup` etc can call the API `/api/checkout` to get the needed options (like
+   Session, sandbox etc) instead of passing them through props. This will make the integration easier.
 
 ## Quick Setup Guide:
 

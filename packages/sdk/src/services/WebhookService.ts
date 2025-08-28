@@ -7,6 +7,10 @@ export class WebhookService {
         return new WebhookListener(this.secretKey, onError);
     }
 
+    createRequestProcessor(listener: WebhookListener): (request: Request) => Promise<Response> {
+        return (request: Request) => this.processFetch(listener, request);
+    }
+
     /**
      * WHATWG Fetch API adapter for modern JavaScript environments.
      *

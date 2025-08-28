@@ -10,7 +10,10 @@ export default async function Dashboard() {
         headers: await headers(),
     });
 
-    const options = await freemius.checkout.createOptions({ user: session?.user, isSandbox: true });
+    const options = await freemius.checkout.createOptions({
+        user: session?.user,
+        isSandbox: process.env.NODE_ENV !== 'production',
+    });
 
     return (
         <AppMain title="New Chat" isLoggedIn={!!session}>

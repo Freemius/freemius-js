@@ -39,7 +39,10 @@ export function useConfirmPurchase() {
     return { isExploding, setIsExploding, handlePurchase, handleError };
 }
 
-export default function PurchaseProvider(props: { checkoutOptions: CheckoutOptions; children: React.ReactNode }) {
+export default function CheckoutWithConfettiProvider(props: {
+    checkoutOptions: CheckoutOptions;
+    children: React.ReactNode;
+}) {
     const { checkoutOptions, children } = props;
     const { isExploding, setIsExploding, handleError, handlePurchase } = useConfirmPurchase();
 

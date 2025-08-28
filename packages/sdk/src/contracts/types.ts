@@ -24,15 +24,15 @@ export enum CURRENCY {
 
 export type PaymentMethod = 'card' | 'paypal' | 'ideal';
 
-export type UserRetriever = () => Promise<{ id: FSId; primaryLicenseId?: FSId } | null>;
-
-export type UserEmailRetriever = () => Promise<{ email: string } | null>;
+export type UserRetriever = () => Promise<
+    { id: FSId; primaryLicenseId?: FSId; email?: string } | { email: string } | null
+>;
 
 /**
  * @todo - Add a more unified way to get handlers so that we can simplify the Checkout & Customer Portal request processors.
  */
 export interface RequestProcessor<Config> {
-    getProcessor(config: Config): (request: Request) => Promise<Response>;
+    createProcessor(config: Config): (request: Request) => Promise<Response>;
 
     process(config: Config, request: Request): Promise<Response>;
 }

@@ -4,9 +4,9 @@
 import { freemius } from '@/lib/freemius';
 import { processPurchaseInfo, processRedirect } from '@/lib/user-license';
 
-const processor = freemius.checkout.request.getProcessor({
-    proxyUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'https://xyz.ngrok-free.app',
+const processor = freemius.checkout.request.createProcessor({
     onPurchase: processPurchaseInfo,
+    proxyUrl: process.env.NEXT_PUBLIC_APP_URL!,
     onRedirect: processRedirect,
 });
 
