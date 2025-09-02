@@ -1,10 +1,6 @@
-import { Freemius } from '@freemius/sdk';
+import 'dotenv/config';
+import { Freemius } from '../../';
 
-/**
- * Freemius SDK instance for the Next.js application.
- *
- * Check the .env.sample file for required environment variables.
- */
 export const freemius = new Freemius({
     productId: process.env.FS__PRODUCT_ID!,
     apiKey: process.env.FS__API_KEY!,

@@ -7,6 +7,13 @@ import { AuthService } from './services/AuthService';
 import { PricingService } from './services/PricingService';
 import { PurchaseService } from './services/PurchaseService';
 
+export type FreemiusConfig = {
+    productId: FSId;
+    apiKey: string;
+    secretKey: string;
+    publicKey: string;
+};
+
 export class Freemius {
     public readonly api: ApiService;
 
@@ -22,7 +29,9 @@ export class Freemius {
 
     private readonly auth: AuthService;
 
-    constructor(productId: FSId, apiKey: string, secretKey: string, publicKey: string) {
+    constructor(config: FreemiusConfig) {
+        const { productId, apiKey, secretKey, publicKey } = config;
+
         this.api = new ApiService(productId, apiKey, secretKey, publicKey);
         this.auth = new AuthService(productId, secretKey);
         this.pricing = new PricingService(this.api);
