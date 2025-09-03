@@ -4,8 +4,8 @@ import { FsApiClient } from './client';
 import { FSId } from './types';
 import { QuerySerializerOptions } from 'openapi-fetch';
 
-export const PAGING_DEFAULT_LIMIT = 150;
-export const PAGING_MAX_LIMIT = 300;
+export const PAGING_MAX_LIMIT = 50;
+export const PAGING_DEFAULT_LIMIT = PAGING_MAX_LIMIT;
 
 export const defaultPagingOptions: PagingOptions = {
     count: PAGING_DEFAULT_LIMIT,
@@ -17,7 +17,7 @@ export abstract class ApiBase<EntityType, FilterType extends Record<string, unkn
 
     constructor(
         productId: FSId,
-        public readonly client: FsApiClient
+        protected readonly client: FsApiClient
     ) {
         this.productId = idToNumber(productId);
     }

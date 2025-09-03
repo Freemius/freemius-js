@@ -93,6 +93,7 @@ export interface PurchaseDBData {
     fsUserId: string;
     fsPlanId: string;
     expiration: Date | null | string;
+    // @todo - Rename to `isCancelled`
     canceled: boolean;
 }
 
