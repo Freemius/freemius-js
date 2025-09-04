@@ -26,6 +26,35 @@ import { ApiService } from '../services/ApiService';
 import { CheckoutService } from '../services/CheckoutService';
 import { CustomerPortalActionService } from './CustomerPortalActionService';
 
+type CustomerPortalDataOption = {
+    /**
+     * The API endpoint for which secure authenticated signed URLs will be created where the customer portal will send requests to fetch additional data (e.g., invoices, licenses, subscriptions). This should be an endpoint in your SaaS application that you will implement to handle these requests.
+     */
+    endpoint: string;
+    /**
+     * ID of the primary licenses, in case your software has pricing model supporting multiple active subscriptions. If not provided the first active subscription will be used instead.
+     */
+    primaryLicenseId?: FSId | null;
+    /**
+     * Whether to create actions in sandbox mode (For example Checkout, Upgrade etc).
+     */
+    sandbox?: boolean;
+};
+
+export type CustomerPortalDataWithUserOption = {
+    /**
+     * ID of the user from Freemius.
+     */
+    userId: FSId;
+} & CustomerPortalDataOption;
+
+export type CustomerPortalDataWithEmailOption = {
+    /**
+     * The email address of the user from Freemius.
+     */
+    email: string;
+} & CustomerPortalDataOption;
+
 export class PortalDataRepository {
     constructor(
         private readonly api: ApiService,
@@ -33,12 +62,7 @@ export class PortalDataRepository {
         private readonly checkout: CheckoutService
     ) {}
 
-    async retrievePortalDataByEmail(config: {
-        email: string;
-        endpoint: string;
-        primaryLicenseId?: FSId | null;
-        sandbox?: boolean;
-    }): Promise<PortalData | null> {
+    async retrievePortalDataByEmail(config: CustomerPortalDataWithEmailOption): Promise<PortalData | null> {
         const user = await this.api.user.retrieveByEmail(config.email);
 
         if (!user) {
@@ -53,12 +77,7 @@ export class PortalDataRepository {
         });
     }
 
-    async retrievePortalDataByUserId(config: {
-        userId: FSId;
-        endpoint: string;
-        primaryLicenseId?: FSId | null;
-        sandbox?: boolean;
-    }): Promise<PortalData | null> {
+    async retrievePortalDataByUserId(config: CustomerPortalDataWithUserOption): Promise<PortalData | null> {
         const user = await this.api.user.retrieve(config.userId);
 
         if (!user) {

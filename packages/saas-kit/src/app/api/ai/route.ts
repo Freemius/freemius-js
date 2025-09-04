@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
-import { deductCredits, getLicense, hasCredits } from '@/lib/user-license';
+import { deductCredits, getUserLicense, hasCredits } from '@/lib/user-license';
 import { getAiResponse } from '@/lib/ai';
 
 export async function POST(request: Request) {
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     }
 
     // We assume an active license is needed regardless of the credit balance.
-    const userLicense = await getLicense(session.user.id);
+    const userLicense = await getUserLicense(session.user.id);
 
     if (!userLicense) {
         return Response.json(

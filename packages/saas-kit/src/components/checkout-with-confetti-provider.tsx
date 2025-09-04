@@ -5,7 +5,7 @@ import type { CheckoutOptions } from '@freemius/checkout';
 import { toast } from 'sonner';
 import ConfettiExplosion from 'react-confetti-explosion';
 import { IconCircleCheck, IconAlertCircle } from '@tabler/icons-react';
-import { CheckoutProvider } from '@freemius/saas-starter/components/checkout-provider';
+import { CheckoutProvider } from '@/react-starter/components/checkout-provider';
 import type { PurchaseData } from '@freemius/sdk';
 import { useRouter } from 'next/navigation';
 

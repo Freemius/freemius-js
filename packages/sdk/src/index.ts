@@ -25,3 +25,7 @@ export type { ApplyRenewalCouponRequest } from './customer-portal/SubscriptionRe
 export type { SubscriptionCancellationRequest } from './customer-portal/SubscriptionCancellationAction';
 export type { PortalRequestConfig } from './customer-portal/PortalRequestProcessor';
 export type { BillingRequest } from './customer-portal/BillingAction';
+export type {
+    CustomerPortalDataWithEmailOption,
+    CustomerPortalDataWithUserOption,
+} from './customer-portal/PortalDataRepository';

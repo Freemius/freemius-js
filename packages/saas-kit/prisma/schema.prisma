@@ -49,6 +49,7 @@ model UserLicense {
     fsPlanId    String
     fsLicenseId String    @unique
     expiration  DateTime?
+    // @todo Change to isCanceled
     canceled    Boolean
 
     @@map("user_license")

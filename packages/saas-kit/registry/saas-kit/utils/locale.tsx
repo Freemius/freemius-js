@@ -285,7 +285,7 @@ export function useLocale() {
 }
 
 export function LocaleProvider({ children, text }: { children: React.ReactNode; text?: Partial<LocaleType> }) {
-    const value = { ...defaultLocale, ...text } as LocaleType;
+    const value = React.useMemo(() => ({ ...defaultLocale, ...text }) as LocaleType, [text]);
 
     return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }

@@ -1,7 +1,16 @@
 'use client';
 
 import { ComponentProps, useCallback, useState } from 'react';
-import { IconSparkles, IconLogout, IconCoins, IconUserPlus, IconLogin2, IconReceipt } from '@tabler/icons-react';
+import {
+    IconSparkles,
+    IconLogout,
+    IconCoins,
+    IconUserPlus,
+    IconLogin2,
+    IconReceipt,
+    IconShoppingBagPlus,
+    IconShieldHeart,
+} from '@tabler/icons-react';
 import Link from 'next/link';
 import { Loader2, SparkleIcon } from 'lucide-react';
 
@@ -36,6 +45,16 @@ const data = {
             title: 'Credits & Topups',
             url: '/credits',
             icon: IconCoins,
+        },
+        {
+            title: 'Purchase Demo',
+            url: '/purchase',
+            icon: IconShoppingBagPlus,
+        },
+        {
+            title: 'Paywall Demo',
+            url: '/paywall',
+            icon: IconShieldHeart,
         },
     ],
     navFooterLoggedOut: [

@@ -11,6 +11,7 @@ const dirToTypeMap: Record<string, RegistryItem['type']> = {
 
 const REGISTRY_BASE_PATH = path.join(__dirname, 'saas-kit');
 const OUTPUT_PATH = path.join(__dirname, '..', 'registry.json');
+const TARGET_DIRECTORY_NAME = 'react-starter';
 
 function getAllFiles(dir: string): string[] {
     const files: string[] = [];
@@ -119,7 +120,7 @@ function createRegistryFile(
     return {
         file: {
             path: `registry/saas-kit/${relativePath}`,
-            target: `saas-kit/${relativePath}`,
+            target: `${TARGET_DIRECTORY_NAME}/${relativePath}`,
             type,
         },
         dependencies,

@@ -1,8 +1,8 @@
 'use client';
 
-import { Subscribe } from '@freemius/saas-starter/components/subscribe';
-import { Topup } from '@freemius/saas-starter/components/topup';
-import { formatNumber } from '@freemius/saas-starter/utils/formatter';
+import { Subscribe } from '@/react-starter/components/subscribe';
+import { Topup } from '@/react-starter/components/topup';
+import { formatNumber } from '@/react-starter/utils/formatter';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 

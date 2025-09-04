@@ -18,6 +18,11 @@ import { freemius } from './freemius';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 
+/**
+ * Process the purchase info and update the local database.
+ *
+ * This function is called when a purchase happens with Freemius.
+ */
 export async function processPurchaseInfo(fsPurchase: PurchaseInfo): Promise<void> {
     const user = await prisma.user.findUnique({ where: { email: fsPurchase.email } });
 
@@ -44,7 +49,7 @@ export async function processPurchaseInfo(fsPurchase: PurchaseInfo): Promise<voi
     }
 
     // Now add the credits if not already added.
-    if ((fsPurchase.quota ?? 0) > 0) {
+    if (fsPurchase.credit > 0) {
         const existingCreditPurchase = await prisma.userCreditPurchase.findUnique({
             where: { fsLicenseId: fsPurchase.licenseId },
         });
@@ -58,7 +63,7 @@ export async function processPurchaseInfo(fsPurchase: PurchaseInfo): Promise<voi
 
                 const updatedLicense = await prisma.user.update({
                     where: { id: user.id },
-                    data: { credit: { increment: fsPurchase.credit ?? 0 } },
+                    data: { credit: { increment: fsPurchase.credit } },
                 });
 
                 return updatedLicense;
@@ -72,18 +77,25 @@ export async function processPurchaseInfo(fsPurchase: PurchaseInfo): Promise<voi
  *
  * @returns The user's active license or null if the user does not have an active license.
  */
-export async function getLicense(userId: string): Promise<UserLicense | null> {
+export async function getUserLicense(userId: string): Promise<UserLicense | null> {
     const userLicense = await prisma.userLicense.findUnique({ where: { userId } });
 
     return freemius.purchase.verifyPurchaseDBData(userLicense);
 }
 
+/**
+ * Get the Freemius user for the current session.
+ *
+ * This is used by the Freemius SDK to identify the user.
+ *
+ * @returns The Freemius user or null if the user is not logged in.
+ */
 export const getFsUser: UserRetriever = async () => {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
 
-    const license = session ? await getLicense(session.user.id) : null;
+    const license = session ? await getUserLicense(session.user.id) : null;
     const email = session?.user.email ?? undefined;
 
     if (license) {
@@ -99,6 +111,10 @@ export async function syncLicenseFromWebhook(fsLicense: LicenseEntity): Promise<
     if (purchaseInfo) {
         await processPurchaseInfo(purchaseInfo);
     }
+}
+
+export async function deleteLicense(fsLicenseId: string): Promise<void> {
+    await prisma.userLicense.delete({ where: { fsLicenseId: fsLicenseId } });
 }
 
 export async function hasCredits(userId: string, credits: number = 1): Promise<boolean> {
@@ -140,10 +156,6 @@ export async function processRedirect(info: CheckoutRedirectInfo): Promise<void>
     if (purchaseInfo) {
         await processPurchaseInfo(purchaseInfo);
     }
-}
-
-export async function deleteLicense(fsLicenseId: string): Promise<void> {
-    await prisma.userLicense.delete({ where: { fsLicenseId: fsLicenseId } });
 }
 
 export async function sendRenewalFailureEmail(subscription: SubscriptionEntity): Promise<void> {

@@ -4,7 +4,7 @@ import { freemius } from '@/lib/freemius';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { ErrorBoundary } from '@/components/error';
-import { CustomerPortal } from '@freemius/saas-starter/components/customer-portal';
+import { CustomerPortal } from '@/react-starter/components/customer-portal';
 import CheckoutWithConfettiProvider from '@/components/checkout-with-confetti-provider';
 
 export default async function Billing() {

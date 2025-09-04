@@ -10,7 +10,7 @@ export class RedirectProcessor implements CheckoutAction {
         private readonly secretKey: string,
         private readonly proxyUrl?: string,
         private readonly callback?: RedirectCallback,
-        private readonly portalUrl?: string
+        private readonly afterProcessUrl?: string
     ) {}
 
     canHandle(request: Request): boolean {
@@ -34,7 +34,7 @@ export class RedirectProcessor implements CheckoutAction {
             }
         }
 
-        const url = new URL(this.portalUrl ?? this.proxyUrl ?? request.url);
+        const url = new URL(this.afterProcessUrl ?? this.proxyUrl ?? request.url);
 
         // Delete all existing search params
         url.search = '';

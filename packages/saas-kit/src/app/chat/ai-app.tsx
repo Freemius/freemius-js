@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { CheckoutOptions } from '@freemius/checkout';
-import { Paywall, usePaywall } from '@freemius/saas-starter/components/paywall';
+import { Paywall, usePaywall } from '@/react-starter/components/paywall';
 import LoginModal from '@/components/login-modal';
 import CheckoutWithConfettiProvider from '@/components/checkout-with-confetti-provider';
 import { AIChat } from '@/components/ai-chat';

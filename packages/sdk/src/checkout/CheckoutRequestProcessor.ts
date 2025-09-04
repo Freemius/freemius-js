@@ -8,9 +8,23 @@ import { RedirectCallback, RedirectProcessor } from './RedirectProcessor';
 import { RequestProcessor } from '../contracts/types';
 
 export type CheckoutRequestConfig = {
+    /**
+     * The real public/proxy URL where the application is accessible from the internet.
+     * This is useful for authenticating the Checkout Redirection requests.
+     */
     proxyUrl?: string;
+    /**
+     * The function to be called when a purchase is made.
+     */
     onPurchase?: PurchaseCallback;
+    /**
+     * The function to be called when a redirect is made after checkout.
+     */
     onRedirect?: RedirectCallback;
+    /**
+     * Specifies a URL to redirect to after processing the redirect action. If not provided, it will redirect to the `proxyUrl` or the original request URL.
+     */
+    afterProcessUrl?: string;
 };
 
 export class CheckoutRequestProcessor implements RequestProcessor<CheckoutRequestConfig> {
@@ -34,7 +48,11 @@ export class CheckoutRequestProcessor implements RequestProcessor<CheckoutReques
 
         const actionHandlers: CheckoutAction[] = [
             this.getPricingRetriever(),
-            this.getRedirectProcessor({ proxyUrl: config.proxyUrl, callback: config.onRedirect }),
+            this.getRedirectProcessor({
+                proxyUrl: config.proxyUrl,
+                callback: config.onRedirect,
+                afterProcessUrl: config.afterProcessUrl,
+            }),
             this.getPurchaseProcessor({ callback: config.onPurchase }),
         ];
 
@@ -87,8 +105,9 @@ export class CheckoutRequestProcessor implements RequestProcessor<CheckoutReques
     getRedirectProcessor(config: {
         proxyUrl?: string | undefined;
         callback?: RedirectCallback | undefined;
+        afterProcessUrl?: string | undefined;
     }): RedirectProcessor {
-        return new RedirectProcessor(this.secretKey, config.proxyUrl, config.callback);
+        return new RedirectProcessor(this.secretKey, config.proxyUrl, config.callback, config.afterProcessUrl);
     }
 
     getPurchaseProcessor(config: { callback?: PurchaseCallback | undefined }): PurchaseProcessor {

@@ -4,7 +4,7 @@
 
 ```bash
 npm i @freemius/sdk
-npx shadcn@latest add https://shadcn.freemius.com/saas-kit.json
+npx shadcn@latest add https://shadcn.freemius.com/all.json
 ```
 
 ## Priority & Webinar:
