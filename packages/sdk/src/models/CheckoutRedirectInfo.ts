@@ -33,10 +33,10 @@ export class CheckoutRedirectInfo implements CheckoutRedirectData {
         this.action = data.action ? (data.action as 'payment_method_update' | 'license_update') : null;
         this.amount = parseNumber(data.amount as string)!;
         this.tax = parseNumber(data.tax as string)!;
-        this.type = data.type === 'subscription' ? 'subscription' : 'one-off';
         this.subscription_id = data.subscription_id ? idToString(data.subscription_id as string) : null;
         this.billing_cycle = data.billing_cycle ? parseBillingCycle(data.billing_cycle as BillingCycleApiEnum) : null;
         this.payment_id = data.payment_id ? idToString(data.payment_id as string) : null;
+        this.type = this.subscription_id ? 'subscription' : 'one-off';
     }
 
     isSubscription(): boolean {

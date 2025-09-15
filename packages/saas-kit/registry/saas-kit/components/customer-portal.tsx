@@ -63,7 +63,7 @@ export function CustomerPortal(props: { endpoint: string }) {
             <CheckoutProvider
                 onAfterSync={refresh}
                 endpoint={checkoutContext.endpoint}
-                options={checkoutContext.options}
+                checkout={checkoutContext.serializedData}
             >
                 {isLoading || undefined === data ? (
                     <CustomerPortalSkeleton />

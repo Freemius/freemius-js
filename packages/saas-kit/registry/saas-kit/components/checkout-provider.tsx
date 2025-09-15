@@ -7,9 +7,8 @@ import { CheckoutContext, CheckoutPurchaseData, PurchaseSyncSuccess } from '../h
 import Processing from './processing';
 import { useLocale } from '../utils/locale';
 import { getSanitizedUrl } from '../utils/fetch';
-import type { PurchaseData } from '@freemius/sdk';
+import type { PurchaseData, CheckoutSerialized } from '@freemius/sdk';
 
-// @todo - Refactor to use only ref, as we don't need re-render on every change
 function useCreateCheckout(options: CheckoutOptions, success?: (purchaseData: CheckoutPurchaseData) => void) {
     const [fsCheckout, setFSCheckout] = useState<Checkout>(() => new Checkout(options));
     const prevCheckoutRef = useRef<Checkout | null>(fsCheckout);
@@ -34,7 +33,7 @@ function useCreateCheckout(options: CheckoutOptions, success?: (purchaseData: Ch
 
 export type CheckoutProviderProps = {
     children: React.ReactNode;
-    options: CheckoutOptions;
+    checkout: CheckoutSerialized;
     endpoint: string;
     // Optional properties to use the built in purchase sync functionality
     processingMessage?: React.ReactNode;
@@ -46,7 +45,7 @@ export type CheckoutProviderProps = {
 
 export function CheckoutProvider({
     children,
-    options,
+    checkout,
     onSync,
     processingMessage: message,
     onError,
@@ -100,13 +99,18 @@ export function CheckoutProvider({
         [onSync, onError, setIsSyncing, endpoint, onBeforeSync, onAfterSync, nestedContext?.success]
     );
 
-    const fsCheckout = useCreateCheckout(options, syncPurchase);
+    const fsCheckout = useCreateCheckout(checkout.options, syncPurchase);
 
     const locale = useLocale();
 
     const checkoutContext = React.useMemo(
-        () => ({ checkout: fsCheckout, endpoint: endpoint, success: syncPurchase, options: options }),
-        [fsCheckout, endpoint, syncPurchase, options]
+        () => ({
+            checkout: fsCheckout,
+            endpoint: endpoint,
+            success: syncPurchase,
+            serializedData: checkout,
+        }),
+        [fsCheckout, endpoint, syncPurchase, checkout]
     );
 
     return (

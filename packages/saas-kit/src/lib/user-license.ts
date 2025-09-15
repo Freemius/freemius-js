@@ -24,6 +24,14 @@ import { headers } from 'next/headers';
  * This function is called when a purchase happens with Freemius.
  */
 export async function processPurchaseInfo(fsPurchase: PurchaseInfo): Promise<void> {
+    // {
+    //     const user = getUser();
+
+    //     const credit = updateUserEntitlement(fsPurchase, user);
+
+    //     await addCredits(user.id, credit);
+    // }
+
     const user = await prisma.user.findUnique({ where: { email: fsPurchase.email } });
 
     if (!user) {
@@ -72,6 +80,16 @@ export async function processPurchaseInfo(fsPurchase: PurchaseInfo): Promise<voi
     }
 }
 
+// function processCreditFromPurchase(fsPurchase: PurchaseInfo): number {
+//     const map = new Map<string, number>();
+//     let credit = 0;
+//     if (fsPurchase.planId == TOPUP) {
+//         credit = fsPurchase.quota ?? 0;
+//     }
+
+//     credit = map.get(fsPurchase.planId);
+// }
+
 /**
  * Get the user's active license.
  *
@@ -98,6 +116,7 @@ export const getFsUser: UserRetriever = async () => {
     const license = session ? await getUserLicense(session.user.id) : null;
     const email = session?.user.email ?? undefined;
 
+    // @todo - Let the SDK return a more strucutured object. `FsLicensedUser`, `FsNonLicensedUser` or `null`.
     if (license) {
         return { id: license.fsUserId, primaryLicenseId: license.fsLicenseId, email };
     }

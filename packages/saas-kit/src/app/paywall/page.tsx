@@ -16,7 +16,7 @@ export default async function PurchasePage() {
         redirect('/login');
     }
 
-    const options = await freemius.checkout.createOptions({
+    const checkout = freemius.checkout.create({
         user: session?.user,
         isSandbox: process.env.NODE_ENV !== 'production',
     });
@@ -25,7 +25,10 @@ export default async function PurchasePage() {
         <AppMain title="Paywall" isLoggedIn={true}>
             <AppContent>
                 <ErrorBoundary>
-                    <CheckoutProvider options={options} endpoint={process.env.NEXT_PUBLIC_APP_URL! + '/api/checkout'}>
+                    <CheckoutProvider
+                        checkout={await checkout.serialize()}
+                        endpoint={process.env.NEXT_PUBLIC_APP_URL! + '/api/checkout'}
+                    >
                         <PaywallDemo />
                     </CheckoutProvider>
                 </ErrorBoundary>

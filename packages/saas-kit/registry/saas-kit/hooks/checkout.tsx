@@ -1,6 +1,6 @@
-import { Checkout, CheckoutOptions, CheckoutPopupEvents } from '@freemius/checkout';
+import { Checkout, CheckoutPopupEvents } from '@freemius/checkout';
 import { useContext, createContext } from 'react';
-import type { PurchaseData } from '@freemius/sdk';
+import type { PurchaseData, CheckoutSerialized } from '@freemius/sdk';
 
 export type CheckoutPurchaseData = Parameters<NonNullable<CheckoutPopupEvents['success']>>[0];
 export type PurchaseSyncSuccess = (purchaseData: CheckoutPurchaseData) => Promise<PurchaseData | undefined>;
@@ -9,7 +9,7 @@ export const CheckoutContext = createContext<{
     checkout: Checkout;
     endpoint: string;
     success: PurchaseSyncSuccess;
-    options: CheckoutOptions;
+    serializedData: CheckoutSerialized;
 } | null>(null);
 
 /**
@@ -35,4 +35,14 @@ export function useCheckoutEndpoint(): string | null {
     }
 
     return context.endpoint;
+}
+
+export function useCheckoutLink(): string {
+    const context = useContext(CheckoutContext);
+
+    if (!context) {
+        throw new Error('useCheckoutLink must be used within a CheckoutProvider');
+    }
+
+    return context.serializedData.link;
 }

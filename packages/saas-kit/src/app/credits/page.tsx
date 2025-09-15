@@ -20,7 +20,7 @@ export default async function CreditsPage() {
     const license = await getUserLicense(session.user.id);
     const credits = await getCredits(session.user.id);
 
-    const options = await freemius.checkout.createOptions({
+    const checkout = freemius.checkout.create({
         user: session?.user,
         isSandbox: process.env.NODE_ENV !== 'production',
     });
@@ -29,7 +29,7 @@ export default async function CreditsPage() {
         <AppMain title="Credits & Topups" isLoggedIn={true}>
             <AppContent>
                 <ErrorBoundary>
-                    <CheckoutWithConfettiProvider checkoutOptions={options}>
+                    <CheckoutWithConfettiProvider checkout={await checkout.serialize()}>
                         <Credits credits={credits} hasLicense={!!license} />
                     </CheckoutWithConfettiProvider>
                 </ErrorBoundary>

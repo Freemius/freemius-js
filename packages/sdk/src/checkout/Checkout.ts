@@ -2,50 +2,61 @@ import {
     CheckoutOptions,
     CheckoutPopupParams,
     convertCheckoutOptionsToQueryParams,
-    CheckoutPopupArbitraryParams,
     buildFreemiusQueryFromOptions,
 } from '@freemius/checkout';
 import { createHash } from 'crypto';
 import { splitName } from '../utils/ops';
 import { CheckoutBuilderUserOptions } from '../contracts/checkout';
 
+export type CheckoutSerialized = {
+    options: CheckoutOptions;
+    link: string;
+};
+
 /**
  * A builder class for constructing checkout parameters. This class provides a fluent
  * API to create Checkout parameters for a product with various configurations.
  *
- * Every method returns a new instance of the builder with the updated options,
- * allowing for method chaining. The final `toOptions()` method returns the constructed
- * `CheckoutOptions` object. So the class itself is immutable and does not modify the original instance.
+ * Every method returns the existing instance of the builder for chainability,
+ * The final `getOptions()` method returns the constructed `CheckoutOptions` object.
  */
-export class CheckoutBuilder {
+export class Checkout {
+    static createSandboxToken(
+        productId: string,
+        secretKey: string,
+        publicKey: string
+    ): NonNullable<CheckoutPopupParams['sandbox']> {
+        const timestamp = Math.floor(Date.now() / 1000).toString();
+        const token = `${timestamp}${productId}${secretKey}${publicKey}checkout`;
+
+        return {
+            ctx: timestamp,
+            token: createHash('md5').update(token).digest('hex'),
+        };
+    }
+
+    private options: CheckoutOptions;
+
     constructor(
-        private readonly options: Omit<CheckoutPopupParams, 'plugin_id'> & CheckoutPopupArbitraryParams,
         private readonly productId: string,
-        private readonly publicKey?: string,
-        private readonly secretKey?: string
-    ) {}
+        private readonly publicKey: string,
+        private readonly secretKey: string
+    ) {
+        this.options = { product_id: productId };
+    }
 
     /**
      * Enables sandbox mode for testing purposes.
      *
      * @returns A new builder instance with sandbox configuration
      */
-    inSandbox(): CheckoutBuilder {
-        const timestamp = Math.floor(Date.now() / 1000).toString();
-        const token = `${timestamp}${this.productId}${this.secretKey}${this.publicKey}checkout`;
+    setSandbox(): Checkout {
+        this.options = {
+            ...this.options,
+            sandbox: Checkout.createSandboxToken(this.productId, this.secretKey!, this.publicKey!),
+        };
 
-        return new CheckoutBuilder(
-            {
-                ...this.options,
-                sandbox: {
-                    ctx: timestamp,
-                    token: createHash('md5').update(token).digest('hex'),
-                },
-            },
-            this.productId,
-            this.publicKey,
-            this.secretKey
-        );
+        return this;
     }
 
     /**
@@ -56,7 +67,7 @@ export class CheckoutBuilder {
      *
      * @returns A new builder instance with user configuration
      */
-    withUser(user: CheckoutBuilderUserOptions, readonly: boolean = true): CheckoutBuilder {
+    setUser(user: CheckoutBuilderUserOptions, readonly: boolean = true): Checkout {
         if (!user) {
             return this;
         }
@@ -70,18 +81,15 @@ export class CheckoutBuilder {
             lastName = ln;
         }
 
-        return new CheckoutBuilder(
-            {
-                ...this.options,
-                user_email: user.email,
-                user_firstname: firstName,
-                user_lastname: lastName,
-                readonly_user: readonly,
-            },
-            this.productId,
-            this.publicKey,
-            this.secretKey
-        );
+        this.options = {
+            ...this.options,
+            user_email: user.email,
+            user_firstname: firstName,
+            user_lastname: lastName,
+            readonly_user: readonly,
+        };
+
+        return this;
     }
 
     /**
@@ -90,20 +98,17 @@ export class CheckoutBuilder {
      *
      * @returns A new builder instance with recommended UI settings
      */
-    withRecommendation(): CheckoutBuilder {
-        return new CheckoutBuilder(
-            {
-                ...this.options,
-                fullscreen: true,
-                show_refund_badge: true,
-                show_reviews: true,
-                locale: 'auto',
-                currency: 'auto',
-            },
-            this.productId,
-            this.publicKey,
-            this.secretKey
-        );
+    setRecommendations(): Checkout {
+        this.options = {
+            ...this.options,
+            fullscreen: true,
+            show_refund_badge: true,
+            show_reviews: true,
+            locale: 'auto',
+            currency: 'auto',
+        };
+
+        return this;
     }
 
     /**
@@ -112,16 +117,13 @@ export class CheckoutBuilder {
      * @param planId The plan ID to purchase
      * @returns A new builder instance with plan ID set
      */
-    withPlan(planId: string | number): CheckoutBuilder {
-        return new CheckoutBuilder(
-            {
-                ...this.options,
-                plan_id: planId.toString(),
-            },
-            this.productId,
-            this.publicKey,
-            this.secretKey
-        );
+    setPlan(planId: string | number): Checkout {
+        this.options = {
+            ...this.options,
+            plan_id: planId.toString(),
+        };
+
+        return this;
     }
 
     /**
@@ -130,40 +132,31 @@ export class CheckoutBuilder {
      * @param count Number of licenses
      * @returns A new builder instance with license count set
      */
-    withQuota(count: number): CheckoutBuilder {
-        return new CheckoutBuilder(
-            {
-                ...this.options,
-                licenses: count,
-            },
-            this.productId,
-            this.publicKey,
-            this.secretKey
-        );
+    setQuota(count: number): Checkout {
+        this.options = {
+            ...this.options,
+            licenses: count,
+        };
+
+        return this;
     }
 
-    withPricing(pricingId: string | number): CheckoutBuilder {
-        return new CheckoutBuilder(
-            {
-                ...this.options,
-                pricing_id: pricingId.toString(),
-            },
-            this.productId,
-            this.publicKey,
-            this.secretKey
-        );
+    setPricing(pricingId: string | number): Checkout {
+        this.options = {
+            ...this.options,
+            pricing_id: pricingId.toString(),
+        };
+
+        return this;
     }
 
-    withTitle(title: string): CheckoutBuilder {
-        return new CheckoutBuilder(
-            {
-                ...this.options,
-                title,
-            },
-            this.productId,
-            this.publicKey,
-            this.secretKey
-        );
+    setTitle(title: string): Checkout {
+        this.options = {
+            ...this.options,
+            title,
+        };
+
+        return this;
     }
 
     /**
@@ -173,15 +166,16 @@ export class CheckoutBuilder {
      * @param hideUI Whether to hide the coupon input field from users
      * @returns A new builder instance with coupon configuration
      */
-    withCoupon(options: { code: string; hideUI?: boolean }): CheckoutBuilder {
+    setCoupon(options: { code: string; hideUI?: boolean }): Checkout {
         const { code: coupon, hideUI = false } = options;
 
-        const newOptions = { ...this.options, hide_coupon: hideUI };
-        if (coupon !== undefined) {
-            newOptions.coupon = coupon;
-        }
+        this.options = {
+            ...this.options,
+            coupon,
+            hide_coupon: hideUI,
+        };
 
-        return new CheckoutBuilder(newOptions, this.productId, this.publicKey, this.secretKey);
+        return this;
     }
 
     /**
@@ -190,16 +184,13 @@ export class CheckoutBuilder {
      * @param mode Trial type - true/false for plan default, or specific 'free'/'paid' mode
      * @returns A new builder instance with trial configuration
      */
-    inTrial(mode: 'free' | 'paid' | boolean = true): CheckoutBuilder {
-        return new CheckoutBuilder(
-            {
-                ...this.options,
-                trial: mode,
-            },
-            this.productId,
-            this.publicKey,
-            this.secretKey
-        );
+    setTrial(mode: 'free' | 'paid' | boolean = true): Checkout {
+        this.options = {
+            ...this.options,
+            trial: mode,
+        };
+
+        return this;
     }
 
     /**
@@ -208,33 +199,33 @@ export class CheckoutBuilder {
      * @param options Appearance configuration options
      * @returns A new builder instance with appearance configuration
      */
-    withAppearance(options: {
+    setAppearance(options: {
         layout?: 'vertical' | 'horizontal' | null;
         formPosition?: 'left' | 'right';
         fullscreen?: boolean;
         modalTitle?: string;
         id?: string; // Custom body ID for CSS targeting
-    }): CheckoutBuilder {
-        const newOptions = { ...this.options };
+    }): Checkout {
+        this.options = { ...this.options };
 
         if (options.layout !== undefined) {
-            newOptions.layout = options.layout;
+            this.options.layout = options.layout;
         }
         if (options.formPosition !== undefined) {
-            newOptions.form_position = options.formPosition;
+            this.options.form_position = options.formPosition;
         }
         if (options.fullscreen !== undefined) {
-            newOptions.fullscreen = options.fullscreen;
+            this.options.fullscreen = options.fullscreen;
         }
         if (options.modalTitle !== undefined) {
-            newOptions.modal_title = options.modalTitle;
+            this.options.modal_title = options.modalTitle;
         }
 
         if (options.id !== undefined) {
-            newOptions.id = options.id;
+            this.options.id = options.id;
         }
 
-        return new CheckoutBuilder(newOptions, this.productId, this.publicKey, this.secretKey);
+        return this;
     }
 
     /**
@@ -243,28 +234,28 @@ export class CheckoutBuilder {
      * @param options Discount configuration options
      * @returns A new builder instance with discount configuration
      */
-    withDiscounts(options: {
+    setDiscounts(options: {
         annual?: boolean;
         multisite?: boolean | 'auto';
         bundle?: boolean | 'maximize';
         showMonthlySwitch?: boolean;
-    }): CheckoutBuilder {
-        const newOptions = { ...this.options };
+    }): Checkout {
+        this.options = { ...this.options };
 
         if (options.annual !== undefined) {
-            newOptions.annual_discount = options.annual;
+            this.options.annual_discount = options.annual;
         }
         if (options.multisite !== undefined) {
-            newOptions.multisite_discount = options.multisite;
+            this.options.multisite_discount = options.multisite;
         }
         if (options.bundle !== undefined) {
-            newOptions.bundle_discount = options.bundle;
+            this.options.bundle_discount = options.bundle;
         }
         if (options.showMonthlySwitch !== undefined) {
-            newOptions.show_monthly_switch = options.showMonthlySwitch;
+            this.options.show_monthly_switch = options.showMonthlySwitch;
         }
 
-        return new CheckoutBuilder(newOptions, this.productId, this.publicKey, this.secretKey);
+        return this;
     }
 
     /**
@@ -274,20 +265,20 @@ export class CheckoutBuilder {
      * @param defaultCycle Default billing cycle to select
      * @returns A new builder instance with billing cycle configuration
      */
-    withBillingCycle(
+    setBillingCycle(
         defaultCycle: 'monthly' | 'annual' | 'lifetime',
         selector?: 'list' | 'responsive_list' | 'dropdown'
-    ): CheckoutBuilder {
-        const newOptions = { ...this.options };
+    ): Checkout {
+        this.options = { ...this.options };
 
         if (selector !== undefined) {
-            newOptions.billing_cycle_selector = selector;
+            this.options.billing_cycle_selector = selector;
         }
         if (defaultCycle !== undefined) {
-            newOptions.billing_cycle = defaultCycle;
+            this.options.billing_cycle = defaultCycle;
         }
 
-        return new CheckoutBuilder(newOptions, this.productId, this.publicKey, this.secretKey);
+        return this;
     }
 
     /**
@@ -296,17 +287,13 @@ export class CheckoutBuilder {
      * @param locale Language setting - 'auto', 'auto-beta', or specific locale like 'en_US'
      * @returns A new builder instance with locale configuration
      */
-    withLanguage(locale: 'auto' | 'auto-beta' | string = 'auto'): CheckoutBuilder {
-        return new CheckoutBuilder(
-            {
-                ...this.options,
-                language: locale,
-                locale: locale,
-            },
-            this.productId,
-            this.publicKey,
-            this.secretKey
-        );
+    setLanguage(locale: 'auto' | 'auto-beta' | string = 'auto'): Checkout {
+        this.options = {
+            ...this.options,
+            language: locale,
+        };
+
+        return this;
     }
 
     /**
@@ -315,28 +302,28 @@ export class CheckoutBuilder {
      * @param options Review and badge configuration
      * @returns A new builder instance with reviews and badges configuration
      */
-    withReviewsAndBadges(options: {
+    setSocialProofing(options: {
         showReviews?: boolean;
         reviewId?: number;
         showRefundBadge?: boolean;
         refundPolicyPosition?: 'below_form' | 'below_breakdown' | 'dynamic';
-    }): CheckoutBuilder {
-        const newOptions = { ...this.options };
+    }): Checkout {
+        this.options = { ...this.options };
 
         if (options.showReviews !== undefined) {
-            newOptions.show_reviews = options.showReviews;
+            this.options.show_reviews = options.showReviews;
         }
         if (options.reviewId !== undefined) {
-            newOptions.review_id = options.reviewId;
+            this.options.review_id = options.reviewId;
         }
         if (options.showRefundBadge !== undefined) {
-            newOptions.show_refund_badge = options.showRefundBadge;
+            this.options.show_refund_badge = options.showRefundBadge;
         }
         if (options.refundPolicyPosition !== undefined) {
-            newOptions.refund_policy_position = options.refundPolicyPosition;
+            this.options.refund_policy_position = options.refundPolicyPosition;
         }
 
-        return new CheckoutBuilder(newOptions, this.productId, this.publicKey, this.secretKey);
+        return this;
     }
 
     /**
@@ -347,23 +334,19 @@ export class CheckoutBuilder {
      * @param showInlineSelector Whether to show inline currency selector
      * @returns A new builder instance with currency configuration
      */
-    withCurrency(
+    setCurrency(
         currency: 'usd' | 'eur' | 'gbp' | 'auto',
         defaultCurrency: 'usd' | 'eur' | 'gbp' = 'usd',
         showInlineSelector: boolean = true
-    ): CheckoutBuilder {
-        const options = {
+    ): Checkout {
+        this.options = {
             ...this.options,
             show_inline_currency_selector: showInlineSelector,
             default_currency: defaultCurrency,
+            currency: currency,
         };
 
-        // Only set currency if it's not 'auto'
-        if (currency !== 'auto') {
-            options.currency = currency;
-        }
-
-        return new CheckoutBuilder(options, this.productId, this.publicKey, this.secretKey);
+        return this;
     }
 
     /**
@@ -373,17 +356,17 @@ export class CheckoutBuilder {
      * @param cancelIcon Custom cancel icon URL
      * @returns A new builder instance with navigation configuration
      */
-    withNavigation(cancelUrl?: string, cancelIcon?: string): CheckoutBuilder {
-        const newOptions = { ...this.options };
+    setCancelButton(cancelUrl?: string, cancelIcon?: string): Checkout {
+        this.options = { ...this.options };
 
         if (cancelUrl !== undefined) {
-            newOptions.cancel_url = cancelUrl;
+            this.options.cancel_url = cancelUrl;
         }
         if (cancelIcon !== undefined) {
-            newOptions.cancel_icon = cancelIcon;
+            this.options.cancel_icon = cancelIcon;
         }
 
-        return new CheckoutBuilder(newOptions, this.productId, this.publicKey, this.secretKey);
+        return this;
     }
 
     /**
@@ -392,16 +375,13 @@ export class CheckoutBuilder {
      * @param userId Affiliate user ID
      * @returns A new builder instance with affiliate configuration
      */
-    withAffiliate(userId: number): CheckoutBuilder {
-        return new CheckoutBuilder(
-            {
-                ...this.options,
-                affiliate_user_id: userId,
-            },
-            this.productId,
-            this.publicKey,
-            this.secretKey
-        );
+    setAffiliate(userId: number): Checkout {
+        this.options = {
+            ...this.options,
+            affiliate_user_id: userId,
+        };
+
+        return this;
     }
 
     /**
@@ -410,16 +390,13 @@ export class CheckoutBuilder {
      * @param imageUrl Secure HTTPS URL to the image
      * @returns A new builder instance with custom image
      */
-    withImage(imageUrl: string): CheckoutBuilder {
-        return new CheckoutBuilder(
-            {
-                ...this.options,
-                image: imageUrl,
-            },
-            this.productId,
-            this.publicKey,
-            this.secretKey
-        );
+    setImage(imageUrl: string): Checkout {
+        this.options = {
+            ...this.options,
+            image: imageUrl,
+        };
+
+        return this;
     }
 
     /**
@@ -428,16 +405,13 @@ export class CheckoutBuilder {
      * @param licenseKey The license key to renew
      * @returns A new builder instance configured for renewal
      */
-    forRenewal(licenseKey: string): CheckoutBuilder {
-        return new CheckoutBuilder(
-            {
-                ...this.options,
-                license_key: licenseKey,
-            },
-            this.productId,
-            this.publicKey,
-            this.secretKey
-        );
+    setLicenseRenewal(licenseKey: string): Checkout {
+        this.options = {
+            ...this.options,
+            license_key: licenseKey,
+        };
+
+        return this;
     }
 
     /**
@@ -447,10 +421,8 @@ export class CheckoutBuilder {
      *
      * @returns The constructed CheckoutOptions object
      */
-    async toOptions(
-        additionalOptions?: Omit<CheckoutPopupParams, 'plugin_id'> & CheckoutPopupArbitraryParams
-    ): Promise<CheckoutOptions> {
-        return { ...this.options, ...additionalOptions, product_id: this.productId };
+    async getOptions(): Promise<CheckoutOptions> {
+        return { ...this.options };
     }
 
     /**
@@ -458,7 +430,7 @@ export class CheckoutBuilder {
      *
      * @note - This is async by purpose so that we can allow for future enhancements that might require async operations.
      */
-    async toLink(): Promise<string> {
+    async getLink(): Promise<string> {
         const checkoutOptions = convertCheckoutOptionsToQueryParams(this.options);
 
         const queryParams = buildFreemiusQueryFromOptions(checkoutOptions);
@@ -467,5 +439,12 @@ export class CheckoutBuilder {
         url.search = queryParams;
 
         return url.href;
+    }
+
+    async serialize(): Promise<CheckoutSerialized> {
+        return {
+            options: await this.getOptions(),
+            link: await this.getLink(),
+        };
     }
 }

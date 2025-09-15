@@ -1,15 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import type { CheckoutOptions } from '@freemius/checkout';
 import { Paywall, usePaywall } from '@/react-starter/components/paywall';
 import LoginModal from '@/components/login-modal';
-import CheckoutWithConfettiProvider from '@/components/checkout-with-confetti-provider';
 import { AIChat } from '@/components/ai-chat';
 import Link from 'next/link';
 
-export default function AiApp(props: { examples: string[]; checkoutOptions: CheckoutOptions }) {
-    const { checkoutOptions, examples } = props;
+export default function AiApp(props: { examples: string[] }) {
+    const { examples } = props;
     const [isShowingLogin, setIsShowingLogin] = useState<boolean>(false);
     const { hidePaywall, showInsufficientCredits, showNoActivePurchase, state } = usePaywall();
 
@@ -25,7 +23,7 @@ export default function AiApp(props: { examples: string[]; checkoutOptions: Chec
     };
 
     return (
-        <CheckoutWithConfettiProvider checkoutOptions={checkoutOptions}>
+        <>
             <Paywall
                 state={state}
                 hidePaywall={hidePaywall}
@@ -39,6 +37,6 @@ export default function AiApp(props: { examples: string[]; checkoutOptions: Chec
             <LoginModal isShowing={isShowingLogin} onClose={() => setIsShowingLogin(false)} />
 
             <AIChat examples={examples} onApiError={handleApiError} />
-        </CheckoutWithConfettiProvider>
+        </>
     );
 }

@@ -11,6 +11,9 @@ import { Payment } from '../api/Payment';
 const API_ENDPOINT_PRODUCTION = 'https://api.freemius.com/v1/';
 const API_ENDPOINT_TEST = 'http://api.freemius-local.com:8080/v1/';
 
+/**
+ * @todo - Add a proper user-agent string with SDK version.
+ */
 export class ApiService {
     private readonly client: FsApiClient;
 

@@ -16,7 +16,7 @@ export default async function Billing() {
         redirect('/login');
     }
 
-    const options = await freemius.checkout.createOptions({
+    const checkout = freemius.checkout.create({
         user: session?.user,
         isSandbox: process.env.NODE_ENV !== 'production',
     });
@@ -25,7 +25,7 @@ export default async function Billing() {
         <AppMain title="Billing" isLoggedIn={true}>
             <AppContent>
                 <ErrorBoundary>
-                    <CheckoutWithConfettiProvider checkoutOptions={options}>
+                    <CheckoutWithConfettiProvider checkout={await checkout.serialize()}>
                         <CustomerPortal endpoint={process.env.NEXT_PUBLIC_APP_URL! + '/api/portal'} />
                     </CheckoutWithConfettiProvider>
                 </ErrorBoundary>

@@ -18,7 +18,7 @@ export type { PricingService } from './services/PricingService';
 
 export type { CheckoutRequestConfig as CheckoutActionConfig } from './checkout/CheckoutRequestProcessor';
 
-export type { CheckoutBuilder } from './checkout/CheckoutBuilder';
+export type { Checkout, CheckoutSerialized } from './checkout/Checkout';
 export type { CheckoutRedirectInfo } from './models/CheckoutRedirectInfo';
 export type { PurchaseInfo } from './models/PurchaseInfo';
 export type { ApplyRenewalCouponRequest } from './customer-portal/SubscriptionRenewalCouponAction';

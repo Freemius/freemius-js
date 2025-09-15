@@ -1,12 +1,11 @@
 'use client';
 
 import * as React from 'react';
-import type { CheckoutOptions } from '@freemius/checkout';
 import { toast } from 'sonner';
 import ConfettiExplosion from 'react-confetti-explosion';
 import { IconCircleCheck, IconAlertCircle } from '@tabler/icons-react';
 import { CheckoutProvider } from '@/react-starter/components/checkout-provider';
-import type { PurchaseData } from '@freemius/sdk';
+import type { PurchaseData, CheckoutSerialized } from '@freemius/sdk';
 import { useRouter } from 'next/navigation';
 
 export function useConfirmPurchase() {
@@ -40,16 +39,16 @@ export function useConfirmPurchase() {
 }
 
 export default function CheckoutWithConfettiProvider(props: {
-    checkoutOptions: CheckoutOptions;
+    checkout: CheckoutSerialized;
     children: React.ReactNode;
 }) {
-    const { checkoutOptions, children } = props;
+    const { checkout, children } = props;
     const { isExploding, setIsExploding, handleError, handlePurchase } = useConfirmPurchase();
 
     return (
         <CheckoutProvider
             endpoint={process.env.NEXT_PUBLIC_APP_URL! + '/api/checkout'}
-            options={checkoutOptions}
+            checkout={checkout}
             onError={handleError}
             onAfterSync={handlePurchase}
         >

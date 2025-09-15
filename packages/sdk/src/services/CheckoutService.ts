@@ -1,8 +1,7 @@
-import { CheckoutPopupParams, CheckoutOptions } from '@freemius/checkout';
+import { CheckoutPopupParams } from '@freemius/checkout';
 import { FSId } from '../api/types';
 import { idToString } from '../api/parser';
-import { CheckoutBuilder } from '../checkout/CheckoutBuilder';
-import { createHash } from 'crypto';
+import { Checkout } from '../checkout/Checkout';
 import { CheckoutBuilderOptions } from '../contracts/checkout';
 import { PurchaseService } from './PurchaseService';
 import { PricingService } from './PricingService';
@@ -33,110 +32,65 @@ export class CheckoutService {
      * @example
      * Basic usage:
      * ```typescript
-     * const options = freemius.checkout.create({user: session?.user})
-     *   .toOptions(); // Or .toLink() for a hosted checkout link
+     * const checkout = await freemius.checkout.create({user: session?.user})
+     *   .getOptions(); // Or .getLink() for a hosted checkout link
      * ```
      *
      * @example
      * Advanced configuration: You can also skip the convenience options and rather use the builder directly to configure the checkout.
      *
      * ```typescript
-     * const checkoutOptions = freemius.checkout.create()
-     *   .withUser(user, true)
-     *   .withPlan('1234')
-     *   .withQuota(5)
-     *   .withCurrency('eur')
-     *   .withCoupon({
+     * const checkout = freemius.checkout.create()
+     *   .setUser(user, true)
+     *   .setPlan('1234')
+     *   .setCoupon({
      *     code: 'DISCOUNT2023',
      *     hideUI: false
      *   })
-     *   .inTrial('paid')
-     *   .withAppearance({
-     *     layout: 'horizontal',
-     *     formPosition: 'left',
-     *     fullscreen: true,
-     *     modalTitle: 'Upgrade Now'
-     *   })
-     *   .withDiscounts({
-     *     annual: true,
-     *     multisite: 'auto',
-     *     bundle: 'maximize',
-     *     showMonthlySwitch: true
-     *   })
-     *   .withReviewsAndBadges({
-     *     showReviews: true,
-     *     showRefundBadge: true,
-     *     refundPolicyPosition: 'below_form'
-     *   })
-     *   .withBillingCycle('dropdown', 'annual')
-     *   .withLocale('en_US')
-     *   .withAffiliate(12345)
-     *   .inSandbox()
-     *   .toOptions();
+     *   .setSandbox()
+     *   .getOptions();
      * ```
+     *
+     * @example
      */
-    create(options: CheckoutBuilderOptions = {}): CheckoutBuilder {
+    create(options: CheckoutBuilderOptions = {}): Checkout {
         const { user, isSandbox = false, withRecommendation = true, title, image, planId, quota, trial } = options;
 
-        let builder = this.createBuilder().withUser(user);
+        const builder = new Checkout(idToString(this.productId), this.publicKey, this.secretKey);
+
+        if (user) {
+            builder.setUser(user, true);
+        }
 
         if (withRecommendation) {
-            builder = builder.withRecommendation();
+            builder.setRecommendations();
         }
 
         if (isSandbox) {
-            builder = builder.inSandbox();
+            builder.setSandbox();
         }
 
         if (title) {
-            builder = builder.withTitle(title);
+            builder.setTitle(title);
         }
 
         if (image) {
-            builder = builder.withImage(image);
+            builder.setImage(image);
         }
 
         if (planId) {
-            builder = builder.withPlan(planId);
+            builder.setPlan(planId);
         }
 
         if (quota) {
-            builder = builder.withQuota(quota);
+            builder.setQuota(quota);
         }
 
         if (trial) {
-            builder = builder.inTrial(trial);
+            builder.setTrial(trial);
         }
 
         return builder;
-    }
-
-    /**
-     * Convenience method to create checkout options for a specific user with or without sandbox mode.
-     *
-     * Useful for generating recommended checkout options for SaaS.
-     *
-     * @see create() for more details on the options.
-     */
-    async createOptions(options: CheckoutBuilderOptions = {}): Promise<CheckoutOptions> {
-        return await this.create(options).toOptions();
-    }
-
-    /**
-     * Convenience method to create a checkout link for a specific user with or without sandbox mode.
-     *
-     * Useful for generating recommended checkout links for SaaS.
-     *
-     * @see create() for more details on the options.
-     */
-    async createLink(options: CheckoutBuilderOptions = {}): Promise<string> {
-        return await this.create(options).toLink();
-    }
-
-    private createBuilder(): CheckoutBuilder {
-        const productId = idToString(this.productId);
-
-        return new CheckoutBuilder({}, productId, this.publicKey, this.secretKey);
     }
 
     /**
@@ -150,13 +104,7 @@ export class CheckoutService {
      *         Also think about whether we should make the builder's `inSandbox` method async as well.
      */
     async getSandboxParams(): Promise<NonNullable<CheckoutPopupParams['sandbox']>> {
-        const timestamp = Math.floor(Date.now() / 1000).toString();
-        const token = `${timestamp}${this.productId}${this.secretKey}${this.publicKey}checkout`;
-
-        return {
-            ctx: timestamp,
-            token: createHash('md5').update(token).digest('hex'),
-        };
+        return Checkout.createSandboxToken(idToString(this.productId), this.secretKey, this.publicKey);
     }
 
     /**

@@ -13,6 +13,7 @@ export type WebhookListenerResponse = {
 
 const SIGNATURE_HEADER = 'x-signature';
 
+// @todo - Add a method `onAny` to listen to all events with a single handler
 export class WebhookListener {
     private eventHandlers: Map<FreemiusEventType, Set<EventHandler<FreemiusEventType>>> = new Map();
 
