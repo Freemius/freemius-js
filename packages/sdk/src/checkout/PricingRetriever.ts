@@ -16,7 +16,7 @@ export class PricingRetriever implements CheckoutAction {
         const url = new URL(request.url);
         const topupPlanId = url.searchParams.get('topupPlanId') || undefined;
 
-        const pricingData = await this.pricing.retrievePricingData(topupPlanId);
+        const pricingData = await this.pricing.retrieve(topupPlanId);
 
         return Response.json(pricingData);
     }

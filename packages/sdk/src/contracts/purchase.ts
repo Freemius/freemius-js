@@ -88,18 +88,44 @@ export interface PurchaseData {
     created: Date;
 }
 
-export interface PurchaseDBData {
-    fsLicenseId: string;
-    fsUserId: string;
-    fsPlanId: string;
-    expiration: Date | null | string;
-    // @todo - Rename to `isCanceled`
-    canceled: boolean;
-}
+export type PurchaseEntitlementType = 'subscription' | 'oneoff';
 
-export interface PurchaseCreditData {
+/**
+ * Data structure representing a purchase entitlement, which links a user to a specific license and plan within the Freemius system.
+ * This is what is typically stored in your own database to keep track of user entitlements.
+ */
+export interface PurchaseEntitlementData {
+    /**
+     * The unique identifier of the user in the Freemius system.
+     */
     fsLicenseId: string;
-    fsUserId: string;
+    /**
+     * The unique identifier of the plan in the Freemius system.
+     */
     fsPlanId: string;
-    credit: number;
+    /**
+     * The unique identifier of the pricing in the Freemius system.
+     */
+    fsPricingId: string;
+    /**
+     * The unique identifier of the user in the Freemius system.
+     */
+    fsUserId: string;
+    /**
+     * The type of entitlement, which can be either 'subscription' or 'oneoff'.
+     */
+    type: PurchaseEntitlementType;
+    /**
+     * The expiration date of the entitlement. If `null`, the entitlement does not expire.
+     * If you are passing a string, then it must of the format "YYYY-MM-DD HH:mm:ss" in UTC.
+     */
+    expiration: Date | null | string;
+    /**
+     * The date when the entitlement was created. This is useful for record-keeping and auditing purposes.
+     */
+    createdAt: Date | string;
+    /**
+     * Indicates whether the entitlement has been canceled.
+     */
+    isCanceled: boolean;
 }

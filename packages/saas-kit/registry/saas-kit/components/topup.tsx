@@ -11,12 +11,13 @@ export type TopupProps = {
     onCheckout?: () => void;
     currency?: CURRENCY;
     children?: React.ReactNode;
+    topupPlanId?: number | string | null;
 };
 
 export function Topup(props: TopupProps) {
     const locale = useLocale();
-    const { data, error, isLoading } = usePricingData(null, true);
-    const { onCheckout, currency, children } = props;
+    const { onCheckout, currency, children, topupPlanId } = props;
+    const { data, error, isLoading } = usePricingData(topupPlanId, true);
 
     return (
         <div className="mb-4 max-w-4xl mx-auto">

@@ -6,6 +6,7 @@ import { WebhookService } from './services/WebhookService';
 import { AuthService } from './services/AuthService';
 import { PricingService } from './services/PricingService';
 import { PurchaseService } from './services/PurchaseService';
+import { EntitlementService } from './services/EntitlementService';
 
 export type FreemiusConfig = {
     productId: FSId;
@@ -26,6 +27,8 @@ export class Freemius {
     public readonly webhook: WebhookService;
 
     public readonly pricing: PricingService;
+
+    public readonly entitlement = new EntitlementService();
 
     private readonly auth: AuthService;
 

@@ -7,6 +7,7 @@ import { Subscription } from '../api/Subscription';
 import { User } from '../api/User';
 import { idToString } from '../api/parser';
 import { Payment } from '../api/Payment';
+import { isTestServer } from '../utils/ops';
 
 const API_ENDPOINT_PRODUCTION = 'https://api.freemius.com/v1/';
 const API_ENDPOINT_TEST = 'http://api.freemius-local.com:8080/v1/';
@@ -37,8 +38,7 @@ export class ApiService {
         private readonly secretKey: string,
         private readonly publicKey: string
     ) {
-        const isTestServer = process.env.FS__INTERNAL__IS_DEVELOPMENT_MODE === 'true';
-        this.baseUrl = isTestServer ? API_ENDPOINT_TEST : API_ENDPOINT_PRODUCTION;
+        this.baseUrl = isTestServer() ? API_ENDPOINT_TEST : API_ENDPOINT_PRODUCTION;
 
         this.client = createApiClient(this.baseUrl, apiKey);
         this.productId = idToString(productId);

@@ -1,6 +1,6 @@
 import AppMain, { AppContent } from '@/components/app-main';
 import { auth } from '@/lib/auth';
-import { getCredits, getUserLicense } from '@/lib/user-license';
+import { getCredits, getUserEntitlement } from '@/lib/user-entitlement';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { ErrorBoundary } from '@/components/error';
@@ -17,7 +17,7 @@ export default async function CreditsPage() {
         redirect('/login');
     }
 
-    const license = await getUserLicense(session.user.id);
+    const license = await getUserEntitlement(session.user.id);
     const credits = await getCredits(session.user.id);
 
     const checkout = freemius.checkout.create({

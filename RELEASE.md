@@ -53,42 +53,6 @@ This will:
 npm run release
 ```
 
-### 5. Development Scripts
-
-```bash
-# Type checking
-npm run typecheck
-
-# Linting
-npm run lint
-npm run lint:fix
-
-# Clean build artifacts
-npm run clean
-```
-
-## Package-Specific Commands
-
-### SDK (@freemius/sdk)
-
-```bash
-# Development with watch mode
-npm run dev:sdk
-
-# Generate OpenAPI types
-npm run openapi:generate --workspace=@freemius/sdk
-```
-
-### SaaS Kit (@freemius/saas-kit)
-
-```bash
-# Build registry
-npm run build --workspace=@freemius/saas-kit
-
-# Development
-npm run dev --workspace=@freemius/saas-kit
-```
-
 ## Example Workflow
 
 1. Make changes to the SDK

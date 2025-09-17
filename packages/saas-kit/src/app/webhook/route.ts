@@ -1,5 +1,5 @@
 import { freemius } from '@/lib/freemius';
-import { deleteLicense, sendRenewalFailureEmail, syncLicenseFromWebhook } from '@/lib/user-license';
+import { deleteEntitlement, sendRenewalFailureEmail, syncLicenseFromWebhook } from '@/lib/user-entitlement';
 
 const listener = freemius.webhook.createListener();
 
@@ -39,7 +39,7 @@ listener.on('license.plan.changed', async ({ objects: { license } }) => {
 });
 
 listener.on('license.deleted', async ({ data }) => {
-    await deleteLicense(data.license_id);
+    await deleteEntitlement(data.license_id);
     console.log('License deleted:', data.license_id);
 });
 

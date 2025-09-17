@@ -5,12 +5,13 @@ import {
     buildFreemiusQueryFromOptions,
 } from '@freemius/checkout';
 import { createHash } from 'crypto';
-import { splitName } from '../utils/ops';
+import { isTestServer, splitName } from '../utils/ops';
 import { CheckoutBuilderUserOptions } from '../contracts/checkout';
 
 export type CheckoutSerialized = {
     options: CheckoutOptions;
     link: string;
+    baseUrl: string;
 };
 
 /**
@@ -435,16 +436,21 @@ export class Checkout {
 
         const queryParams = buildFreemiusQueryFromOptions(checkoutOptions);
 
-        const url = new URL(`https://checkout.freemius.com/product/${this.productId}/`);
+        const url = new URL(`${this.getBaseUrl()}/product/${this.productId}/`);
         url.search = queryParams;
 
-        return url.href;
+        return url.toString();
     }
 
     async serialize(): Promise<CheckoutSerialized> {
         return {
             options: await this.getOptions(),
             link: await this.getLink(),
+            baseUrl: this.getBaseUrl(),
         };
+    }
+
+    private getBaseUrl(): string {
+        return isTestServer() ? 'http://checkout.freemius-local.com:8080' : 'https://checkout.freemius.com';
     }
 }

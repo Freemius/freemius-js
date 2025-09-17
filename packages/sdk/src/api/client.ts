@@ -1,28 +1,42 @@
-import createClient, { Middleware } from 'openapi-fetch';
+import createClient from 'openapi-fetch';
 import type { paths } from './schema';
 import { version } from '../../package.json';
 
-const middleware: Middleware = {
-    async onRequest({ request }) {
-        const originalUrl = new URL(request.url);
+function detectPlatform(): string {
+    // Check for Bun runtime
+    if (typeof globalThis !== 'undefined' && 'Bun' in globalThis) return 'Bun';
 
-        // Add a `sdk_version` query parameter to every request
-        originalUrl.searchParams.set('sdk_version', version);
+    // Check for Deno runtime
+    if (typeof globalThis !== 'undefined' && 'Deno' in globalThis) return 'Deno';
 
-        return new Request(originalUrl, request);
-    },
-};
+    // Check for Node.js
+    if (
+        typeof globalThis !== 'undefined' &&
+        'process' in globalThis &&
+        globalThis.process &&
+        typeof globalThis.process === 'object' &&
+        'versions' in globalThis.process &&
+        globalThis.process.versions &&
+        'node' in globalThis.process.versions
+    ) {
+        return 'Node';
+    }
+
+    // Check for browser environment
+    if (typeof globalThis !== 'undefined' && 'window' in globalThis) return 'Browser';
+
+    return 'Unknown';
+}
 
 export function createApiClient(baseUrl: string, bearerToken?: string) {
+    const platform = detectPlatform();
     const client = createClient<paths>({
         baseUrl,
         headers: {
             Authorization: bearerToken ? `Bearer ${bearerToken}` : undefined,
-            'User-Agent': `Freemius/JS-SDK`,
+            'User-Agent': `Freemius/JS-SDK/${version}/${platform}`,
         },
     });
-
-    client.use(middleware);
 
     return client;
 }

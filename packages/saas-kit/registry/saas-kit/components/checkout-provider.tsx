@@ -9,13 +9,17 @@ import { useLocale } from '../utils/locale';
 import { getSanitizedUrl } from '../utils/fetch';
 import type { PurchaseData, CheckoutSerialized } from '@freemius/sdk';
 
-function useCreateCheckout(options: CheckoutOptions, success?: (purchaseData: CheckoutPurchaseData) => void) {
+function useCreateCheckout(
+    options: CheckoutOptions,
+    success?: (purchaseData: CheckoutPurchaseData) => void,
+    baseUrl?: string
+) {
     const [fsCheckout, setFSCheckout] = useState<Checkout>(() => new Checkout(options));
     const prevCheckoutRef = useRef<Checkout | null>(fsCheckout);
 
     useEffect(() => {
         // Create a new Checkout instance when productId changes
-        const checkout = new Checkout({ ...options, success: options.success ?? success });
+        const checkout = new Checkout({ ...options, success: options.success ?? success }, true, baseUrl);
         setFSCheckout(checkout);
 
         // Cleanup previous instance
@@ -26,7 +30,7 @@ function useCreateCheckout(options: CheckoutOptions, success?: (purchaseData: Ch
 
             prevCheckoutRef.current = checkout;
         };
-    }, [options, success]);
+    }, [options, success, baseUrl]);
 
     return fsCheckout;
 }
@@ -99,7 +103,7 @@ export function CheckoutProvider({
         [onSync, onError, setIsSyncing, endpoint, onBeforeSync, onAfterSync, nestedContext?.success]
     );
 
-    const fsCheckout = useCreateCheckout(checkout.options, syncPurchase);
+    const fsCheckout = useCreateCheckout(checkout.options, syncPurchase, checkout.baseUrl);
 
     const locale = useLocale();
 

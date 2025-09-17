@@ -1,5 +1,5 @@
 import { freemius } from '@/lib/freemius';
-import { getFsUser, processPurchaseInfo } from '@/lib/user-license';
+import { getFsUser, processPurchaseInfo } from '@/lib/user-entitlement';
 
 const processor = freemius.customerPortal.request.createProcessor({
     getUser: getFsUser,

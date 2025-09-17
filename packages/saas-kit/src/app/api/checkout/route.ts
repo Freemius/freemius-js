@@ -2,7 +2,7 @@
  * This route handles the Purchase actions and sync actions coming from the Freemius React Starter Kit.
  */
 import { freemius } from '@/lib/freemius';
-import { processPurchaseInfo, processRedirect } from '@/lib/user-license';
+import { processPurchaseInfo, processRedirect } from '@/lib/user-entitlement';
 
 const processor = freemius.checkout.request.createProcessor({
     onPurchase: processPurchaseInfo,

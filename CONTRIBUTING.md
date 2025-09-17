@@ -23,3 +23,39 @@ The following dependencies are handled from the root `package.json`:
 - TypeScript - For type checking and development.
 - Husky - For managing Git hooks.
 - Lint-staged - For running linters on staged files.
+
+## Development Scripts
+
+```bash
+# Type checking
+npm run typecheck
+
+# Linting
+npm run lint
+npm run lint:fix
+
+# Clean build artifacts
+npm run clean
+```
+
+## Package-Specific Commands
+
+### SDK (@freemius/sdk)
+
+```bash
+# Development with watch mode
+npm run dev:sdk
+
+# Generate OpenAPI types
+npm run openapi:generate --workspace=@freemius/sdk
+```
+
+### SaaS Kit (shadcn)
+
+```bash
+# Build registry
+npm run build --workspace=@freemius/saas-kit
+
+# Development
+npm run dev --workspace=@freemius/saas-kit
+```

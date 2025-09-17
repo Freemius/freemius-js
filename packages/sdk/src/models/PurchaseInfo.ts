@@ -8,7 +8,7 @@ import {
     parseCurrency,
     parsePaymentMethod,
 } from '../api/parser';
-import { PurchaseCreditData, PurchaseData, PurchaseDBData } from '../contracts/purchase';
+import { PurchaseData, PurchaseEntitlementData } from '../contracts/purchase';
 import { PricingTableData, FSId, UserEntity, LicenseEntity, SubscriptionEntity } from '../api/types';
 
 export class PurchaseInfo implements PurchaseData {
@@ -97,24 +97,17 @@ export class PurchaseInfo implements PurchaseData {
     /**
      * A convenience method to convert the purchase info to a format suitable for database storage.
      */
-    toDBData<T extends Record<string, unknown>>(additionalData: T = {} as T): PurchaseDBData & T {
+    toEntitlement<T extends Record<string, unknown>>(additionalData: T = {} as T): PurchaseEntitlementData & T {
         return {
             ...additionalData,
-            fsUserId: this.userId,
-            fsPlanId: this.planId,
             fsLicenseId: this.licenseId,
+            fsPlanId: this.planId,
+            fsPricingId: this.pricingId,
+            fsUserId: this.userId,
+            type: this.isSubscription() ? 'subscription' : 'oneoff',
             expiration: this.expiration,
-            canceled: this.canceled,
-        };
-    }
-
-    toCreditData<T extends Record<string, unknown>>(additionalData: T = {} as T): PurchaseCreditData & T {
-        return {
-            ...additionalData,
-            fsUserId: this.userId,
-            fsPlanId: this.planId,
-            fsLicenseId: this.licenseId,
-            credit: this.quota ?? 0,
+            createdAt: this.created,
+            isCanceled: this.canceled,
         };
     }
 
@@ -134,7 +127,7 @@ export class PurchaseInfo implements PurchaseData {
         return this.quota ?? 0;
     }
 
-    hasSubscription(): boolean {
+    isSubscription(): boolean {
         return this.subscriptionId !== null;
     }
 

@@ -21,7 +21,7 @@ async function main() {
     const subscriptionsByEmail = await freemius.purchase.retrieveSubscriptionsByEmail('jane@example.com');
     console.log('Purchases by Email:', subscriptionsByEmail);
 
-    const hasLicense = freemius.purchase.verifyPurchaseDBData(purchase?.toDBData());
+    const hasLicense = freemius.entitlement.getActive([purchase!.toEntitlement()]);
     console.log('Has License:', hasLicense);
 }
 

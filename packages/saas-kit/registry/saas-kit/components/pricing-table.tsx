@@ -116,6 +116,8 @@ export function PricingTable(props: {
             const pricing = plan.pricing?.find(
                 (p) =>
                     parseCurrency(p.currency) === currency &&
+                    // Must not be hidden
+                    p.is_hidden !== true &&
                     // Must have subscription pricing
                     (p.monthly_price || p.annual_price)
             );
