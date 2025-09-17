@@ -13,7 +13,10 @@ export class PricingService {
         return {
             plans: pricingData?.plans ?? [],
             topupPlan: this.findTopupPlan(pricingData?.plans, topupPlanId),
-            sellingUnit: (pricingData?.selling_unit_label as SellingUnit) ?? { singular: 'Unit', plural: 'Units' },
+            sellingUnit: (pricingData?.plugin?.selling_unit_label as SellingUnit) ?? {
+                singular: 'Unit',
+                plural: 'Units',
+            },
         };
     }
 

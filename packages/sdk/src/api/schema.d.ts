@@ -1508,7 +1508,7 @@ export interface paths {
         post?: never;
         /**
          * Cancel a trial
-         * @description Cancel a trial associated with an specified install.
+         * @description Cancel a trial associated with a specific install.
          */
         delete: operations['installations/cancel-trial'];
         options?: never;
@@ -3838,6 +3838,7 @@ export interface components {
             source_external_id?:
                 | 'freemius'
                 | 'edd'
+                | 'others'
                 | 'easydigitaldownloads'
                 | 'woo'
                 | 'wc'
@@ -4465,8 +4466,8 @@ export interface components {
         };
         FeatureEnriched: components['schemas']['Feature'] & {
             /**
-             * @description The value of the feature associated with the plan.
-             * @example 5MB
+             * @description The value of the feature associated with the plan. For example the feature name could be "AI Credits" and the value could be "1000".
+             * @example 1000 Units
              */
             value?: string;
             plan_id?: components['schemas']['CommonProperties']['plan_id'];
@@ -8937,6 +8938,9 @@ export interface operations {
     'installations/cancel-trial': {
         parameters: {
             query?: {
+                /** @description Optional cancellation reason IDs. */
+                reason_ids?: components['schemas']['Uninstall']['reason_id'][];
+                reason?: components['schemas']['Uninstall']['reason_info'];
                 /**
                  * @description Comma separated list of fields to return in the response. If not specified, all fields are returned.
                  * @example id,name,slug
@@ -8958,16 +8962,17 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                'application/json': {
-                    reason_ids?: components['schemas']['Uninstall']['reason_id'][];
-                    reason?: components['schemas']['Uninstall']['reason_info'];
+        requestBody?: never;
+        responses: {
+            /** @description The install with cancelled trial. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Install'];
                 };
             };
-        };
-        responses: {
-            204: components['responses']['204'];
             400: components['responses']['400'];
             401: components['responses']['401'];
             402: components['responses']['402'];
@@ -10821,25 +10826,34 @@ export interface operations {
                 };
                 content: {
                     'application/json': {
-                        plugin?: components['schemas']['Plugin'];
+                        plugin?: {
+                            icon?: components['schemas']['Plugin']['icon'];
+                            slug?: components['schemas']['Plugin']['slug'];
+                            title?: components['schemas']['Plugin']['title'];
+                            type?: components['schemas']['Plugin']['type'];
+                            money_back_period?: components['schemas']['Plugin']['money_back_period'];
+                            refund_policy?: components['schemas']['Plugin']['refund_policy'];
+                            public_key?: components['schemas']['Plugin']['public_key'];
+                            parent_plugin_id?: components['schemas']['Plugin']['parent_plugin_id'];
+                            /** @description The label used for the selling unit of the product, e.g., 'Credit', 'Activation', etc. The resulting object will have both singular and plural. */
+                            selling_unit_label?: {
+                                /**
+                                 * @description The singular form of the selling unit label.
+                                 * @example Credit
+                                 */
+                                singular?: string;
+                                /**
+                                 * @description The plural form of the selling unit label.
+                                 * @example Credits
+                                 */
+                                plural?: string;
+                            };
+                        };
                         plans?: (components['schemas']['Plan'] & {
                             pricing?: components['schemas']['Pricing'][];
                         } & {
                             features?: components['schemas']['FeatureEnriched'][];
                         })[];
-                        /** @description The label used for the selling unit of the product, e.g., 'Credit', 'Activation', etc. The resulting object will have both singular and plural. */
-                        selling_unit_label?: {
-                            /**
-                             * @description The singular form of the selling unit label.
-                             * @example Credit
-                             */
-                            singular?: string;
-                            /**
-                             * @description The plural form of the selling unit label.
-                             * @example Credits
-                             */
-                            plural?: string;
-                        };
                         /** @description Verified and featured reviews of the product. */
                         reviews?: components['schemas']['PluginReview'][];
                         /**
@@ -11439,7 +11453,7 @@ export interface operations {
                 content: {
                     'application/json': components['schemas']['Subscription'] & {
                         /**
-                         * @description Shows whether a renewal discount was already applied to the subscription.
+                         * @description Shows whether a subscription cancellation discount was applied to the subscription.
                          * @example false
                          */
                         has_subscription_cancellation_discount?: boolean | null;
@@ -11505,6 +11519,8 @@ export interface operations {
                 filter?: 'all' | 'active' | 'cancelled';
                 /** @description When set to `true` enrich the subscriptions with the plan name, install URL & title, and user email. */
                 extended?: boolean;
+                /** @description When set to `true` enrich the subscription to include any cancellation discounts applied to the subscriptions. */
+                enrich_with_cancellation_discounts?: boolean;
                 /**
                  * @description The number of records to return.
                  * @example 10
@@ -11563,6 +11579,11 @@ export interface operations {
                              * @example Website title
                              */
                             title?: string | null;
+                            /**
+                             * @description Whether subscription cancellation discount was already applied. (Only available when `enrich_with_cancellation_discounts` is set to `true`.)
+                             * @example true
+                             */
+                            has_subscription_cancellation_discount?: boolean | null;
                         })[];
                         /** @description The key represents the ID of the subscription */
                         discounts?: {

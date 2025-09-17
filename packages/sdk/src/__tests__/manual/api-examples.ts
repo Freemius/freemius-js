@@ -1,6 +1,10 @@
 import { freemius } from './fs';
 
 async function main() {
+    // Product
+    const product = await freemius.api.product.retrieve();
+    console.log(product);
+
     // Licenses
     const license = await freemius.api.license.retrieve(123);
     console.log(license);

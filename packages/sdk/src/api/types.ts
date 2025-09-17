@@ -60,7 +60,9 @@ export type CurrencyApiEnum = components['schemas']['CommonEnums']['Currency'];
 
 export type SellingUnit = Required<
     NonNullable<
-        operations['products/retrieve-pricing-table-data']['responses']['200']['content']['application/json']['selling_unit_label']
+        NonNullable<
+            operations['products/retrieve-pricing-table-data']['responses']['200']['content']['application/json']['plugin']
+        >['selling_unit_label']
     >
 >;
 
