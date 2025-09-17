@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { EventHandler, FreemiusEventType, FreemiusEvent } from './events';
+import { WebhookEventHandler, WebhookEventType, WebhookEvent } from './events';
 import { EventEntity } from '../api/types';
 
 export interface NormalizedRequest {
@@ -15,59 +15,72 @@ const SIGNATURE_HEADER = 'x-signature';
 
 // @todo - Add a method `onAny` to listen to all events with a single handler
 export class WebhookListener {
-    private eventHandlers: Map<FreemiusEventType, Set<EventHandler<FreemiusEventType>>> = new Map();
+    private eventHandlers: Map<WebhookEventType, Set<WebhookEventHandler<WebhookEventType>>> = new Map();
 
     constructor(
         private readonly secretKey: string,
         private readonly onError: (error: unknown) => void = console.error
     ) {}
 
-    on<T extends FreemiusEventType>(type: T, handler: EventHandler<T>): this {
-        if (!this.eventHandlers.has(type)) {
-            this.eventHandlers.set(type, new Set());
-        }
+    // Overload for single event type
+    on<T extends WebhookEventType>(type: T, handler: WebhookEventHandler<T>): this;
+    // Overload for array of event types
+    on<T extends WebhookEventType>(types: T[], handler: WebhookEventHandler<T>): this;
+    // Implementation
+    on<T extends WebhookEventType>(typeOrTypes: T | T[], handler: WebhookEventHandler<T>): this {
+        const types = Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes];
 
-        const existingHandlers = this.eventHandlers.get(type)!;
+        for (const type of types) {
+            if (!this.eventHandlers.has(type)) {
+                this.eventHandlers.set(type, new Set());
+            }
 
-        existingHandlers?.add(handler as EventHandler<FreemiusEventType>);
-        return this;
-    }
-
-    off<T extends FreemiusEventType>(type: T, handler: EventHandler<T>): this {
-        const currentHandlers = this.eventHandlers.get(type);
-        if (!currentHandlers) {
-            return this;
-        }
-
-        // Set.delete() returns true if the element was in the set
-        currentHandlers.delete(handler as EventHandler<FreemiusEventType>);
-
-        // Remove the entire entry if no handlers remain
-        if (currentHandlers.size === 0) {
-            this.eventHandlers.delete(type);
+            const existingHandlers = this.eventHandlers.get(type)!;
+            existingHandlers?.add(handler as WebhookEventHandler<WebhookEventType>);
         }
 
         return this;
     }
 
-    onMultiple<T extends FreemiusEventType>(handlers: Partial<Record<T, EventHandler<T>>>): this {
-        for (const [type, handler] of Object.entries(handlers) as [T, EventHandler<T>][]) {
-            if (handler) {
-                this.on(type, handler);
+    // Overload for single event type
+    off<T extends WebhookEventType>(type: T, handler: WebhookEventHandler<T>): this;
+    // Overload for array of event types
+    off<T extends WebhookEventType>(types: T[], handler: WebhookEventHandler<T>): this;
+    // Implementation
+    off<T extends WebhookEventType>(typeOrTypes: T | T[], handler: WebhookEventHandler<T>): this {
+        const types = Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes];
+
+        for (const type of types) {
+            const currentHandlers = this.eventHandlers.get(type);
+            if (!currentHandlers) {
+                continue;
+            }
+
+            // Set.delete() returns true if the element was in the set
+            currentHandlers.delete(handler as WebhookEventHandler<WebhookEventType>);
+
+            // Remove the entire entry if no handlers remain
+            if (currentHandlers.size === 0) {
+                this.eventHandlers.delete(type);
             }
         }
 
         return this;
     }
 
-    // Remove all handlers for a specific event type
-    removeAll<T extends FreemiusEventType>(type: T): this {
-        this.eventHandlers.delete(type);
+    // Remove all handlers for specific event type(s)
+    removeAll<T extends WebhookEventType>(typeOrTypes: T | T[]): this {
+        const types = Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes];
+
+        for (const type of types) {
+            this.eventHandlers.delete(type);
+        }
+
         return this;
     }
 
     // Get handler count for debugging
-    getHandlerCount<T extends FreemiusEventType>(type: T): number {
+    getHandlerCount<T extends WebhookEventType>(type: T): number {
         return this.eventHandlers.get(type)?.size ?? 0;
     }
 
@@ -77,24 +90,24 @@ export class WebhookListener {
     }
 
     // Get all registered event types
-    getRegisteredEventTypes(): FreemiusEventType[] {
+    getRegisteredEventTypes(): WebhookEventType[] {
         return Array.from(this.eventHandlers.keys());
     }
 
     // Check if a specific event type has any handlers
-    hasHandlers<T extends FreemiusEventType>(type: T): boolean {
+    hasHandlers<T extends WebhookEventType>(type: T): boolean {
         const handlers = this.eventHandlers.get(type);
         return handlers !== undefined && handlers.size > 0;
     }
 
     // Check if a specific handler is registered for an event type
-    hasHandler<T extends FreemiusEventType>(type: T, handler: EventHandler<T>): boolean {
+    hasHandler<T extends WebhookEventType>(type: T, handler: WebhookEventHandler<T>): boolean {
         const handlers = this.eventHandlers.get(type);
-        return handlers ? handlers.has(handler as EventHandler<FreemiusEventType>) : false;
+        return handlers ? handlers.has(handler as WebhookEventHandler<WebhookEventType>) : false;
     }
 
     // Get all handlers for a specific event type (useful for debugging)
-    getHandlers<T extends FreemiusEventType>(type: T): Set<EventHandler<FreemiusEventType>> {
+    getHandlers<T extends WebhookEventType>(type: T): Set<WebhookEventHandler<WebhookEventType>> {
         return this.eventHandlers.get(type) || new Set();
     }
 
@@ -150,7 +163,7 @@ export class WebhookListener {
             return { status: 400, success: false, error: 'Malformed JSON' };
         }
 
-        const eventType = evt.type as FreemiusEventType;
+        const eventType = evt.type as WebhookEventType;
         const eventHandlers = this.eventHandlers.get(eventType);
 
         if (!eventHandlers || eventHandlers.size === 0) {
@@ -161,8 +174,8 @@ export class WebhookListener {
         try {
             // Execute handlers with proper type casting
             const promises = Array.from(eventHandlers || []).map((handler) => {
-                const typedHandler = handler as EventHandler<typeof eventType>;
-                const typedEvent = evt as FreemiusEvent<typeof eventType>;
+                const typedHandler = handler as WebhookEventHandler<typeof eventType>;
+                const typedEvent = evt as WebhookEvent<typeof eventType>;
                 return typedHandler(typedEvent);
             });
 

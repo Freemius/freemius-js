@@ -1,5 +1,6 @@
 import { LicenseEntity } from '../../api/types';
 import { WebhookService } from '../../services/WebhookService';
+import { WebhookEventType } from '../../webhook/events';
 
 const webhookService = new WebhookService('your-secret-key');
 
@@ -26,6 +27,18 @@ listener
         // Update database
         await updateLicenseExpiration(event.objects.license, event.data.to);
     });
+
+// Register multiple events with a single handler
+const events: WebhookEventType[] = [
+    'license.created',
+    'license.updated',
+    'license.extended',
+    'license.plan.changed',
+    'license.shortened',
+];
+listener.on(events, async (event) => {
+    console.log(event.objects.license);
+});
 
 // Example Next.js route handler
 export async function POST(request: Request): Promise<Response> {

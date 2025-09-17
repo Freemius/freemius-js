@@ -123,10 +123,6 @@ export class PurchaseInfo implements PurchaseData {
         return true;
     }
 
-    get credit(): number {
-        return this.quota ?? 0;
-    }
-
     isSubscription(): boolean {
         return this.subscriptionId !== null;
     }

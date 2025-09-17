@@ -59,3 +59,8 @@ npm run build --workspace=@freemius/saas-kit
 # Development
 npm run dev --workspace=@freemius/saas-kit
 ```
+
+## Release
+
+We use changesets to manage versioning and releases. Please refer to the [RELEASE.md](RELEASE.md) file for detailed
+instructions on how to create a release.

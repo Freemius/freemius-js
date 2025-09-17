@@ -1,41 +1,23 @@
+import { WebhookEventType } from '@freemius/sdk';
 import { freemius } from '@/lib/freemius';
 import { deleteEntitlement, sendRenewalFailureEmail, syncLicenseFromWebhook } from '@/lib/user-entitlement';
 
 const listener = freemius.webhook.createListener();
 
-listener.on('license.created', async ({ objects: { license } }) => {
-    await syncLicenseFromWebhook(license);
-    console.log('License created:', license);
-});
+const licenseEvents: WebhookEventType[] = [
+    'license.created',
+    'license.extended',
+    'license.shortened',
+    'license.updated',
+    'license.cancelled',
+    'license.expired',
+    'license.plan.changed',
+];
 
-listener.on('license.extended', async ({ objects: { license } }) => {
-    await syncLicenseFromWebhook(license);
-    console.log('License extended:', license);
-});
-
-listener.on('license.shortened', async ({ objects: { license } }) => {
-    await syncLicenseFromWebhook(license);
-    console.log('License shortened:', license);
-});
-
-listener.on('license.updated', async ({ objects: { license } }) => {
-    await syncLicenseFromWebhook(license);
-    console.log('License updated:', license);
-});
-
-listener.on('license.cancelled', async ({ objects: { license } }) => {
-    await syncLicenseFromWebhook(license);
-    console.log('License cancelled:', license);
-});
-
-listener.on('license.expired', async ({ objects: { license } }) => {
-    await syncLicenseFromWebhook(license);
-    console.log('License expired:', license);
-});
-
-listener.on('license.plan.changed', async ({ objects: { license } }) => {
-    await syncLicenseFromWebhook(license);
-    console.log('License plan changed:', license);
+listener.on(licenseEvents, async ({ objects: { license } }) => {
+    if (license && license.id) {
+        await syncLicenseFromWebhook(license.id);
+    }
 });
 
 listener.on('license.deleted', async ({ data }) => {

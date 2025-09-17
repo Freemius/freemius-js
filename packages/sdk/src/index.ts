@@ -29,3 +29,4 @@ export type {
     CustomerPortalDataWithEmailOption,
     CustomerPortalDataWithUserOption,
 } from './customer-portal/PortalDataRepository';
+export type { WebhookEventDataMap, WebhookEventType, WebhookEvent, WebhookEventHandler } from './webhook/events';

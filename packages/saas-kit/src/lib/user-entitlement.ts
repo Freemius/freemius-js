@@ -8,7 +8,7 @@
  * 3. The user also has a `credits` field that tracks the user's credits.
  */
 import { prisma } from '@/lib/prisma';
-import { CheckoutRedirectInfo, LicenseEntity, PurchaseInfo, SubscriptionEntity, UserRetriever } from '@freemius/sdk';
+import { CheckoutRedirectInfo, PurchaseInfo, SubscriptionEntity, UserRetriever } from '@freemius/sdk';
 import { UserFsEntitlement, User } from '@generated/prisma';
 import { freemius } from './freemius';
 import { auth } from '@/lib/auth';
@@ -51,8 +51,8 @@ export const getFsUser: UserRetriever = async () => {
     return freemius.entitlement.getFsUser(entitlement, email);
 };
 
-export async function syncLicenseFromWebhook(fsLicense: LicenseEntity): Promise<void> {
-    const purchaseInfo = await freemius.purchase.retrievePurchase(fsLicense.id!);
+export async function syncLicenseFromWebhook(fsLicenseId: string): Promise<void> {
+    const purchaseInfo = await freemius.purchase.retrievePurchase(fsLicenseId);
     if (purchaseInfo) {
         await processPurchaseInfo(purchaseInfo);
     }
