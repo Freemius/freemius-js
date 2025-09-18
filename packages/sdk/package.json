@@ -1,7 +1,7 @@
 {
   "name": "@freemius/sdk",
-  "version": "0.0.1",
-  "description": "NodeJS SDK for integrating your SaaS with Freemius",
+  "version": "0.0.2",
+  "description": "JS SDK for integrating your SaaS with Freemius",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -42,9 +42,9 @@
   "author": "Freemius Inc",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Freemius/freemius-node/issues"
+    "url": "https://github.com/Freemius/freemius-js/issues"
   },
-  "homepage": "https://github.com/Freemius/freemius-node#readme",
+  "homepage": "http://freemius.com/help/documentation/saas-sdk/js-sdk/",
   "dependencies": {
     "openapi-fetch": "^0.14.0"
   },

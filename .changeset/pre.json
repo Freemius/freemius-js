@@ -1,9 +1,0 @@
-{
-  "mode": "pre",
-  "tag": "next",
-  "initialVersions": {
-    "@freemius/saas-kit": "0.1.0",
-    "@freemius/sdk": "0.0.1"
-  },
-  "changesets": []
-}
