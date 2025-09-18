@@ -11,14 +11,14 @@ export default async function Dashboard() {
         headers: await headers(),
     });
 
-    const checkout = freemius.checkout.create({
+    const checkout = await freemius.checkout.create({
         user: session?.user,
         isSandbox: process.env.NODE_ENV !== 'production',
     });
 
     return (
         <AppMain title="New Chat" isLoggedIn={!!session}>
-            <CheckoutWithConfettiProvider checkout={await checkout.serialize()}>
+            <CheckoutWithConfettiProvider checkout={checkout.serialize()}>
                 <AiApp examples={examples} />
             </CheckoutWithConfettiProvider>
         </AppMain>

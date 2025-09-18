@@ -53,7 +53,7 @@ export class CheckoutService {
      *
      * @example
      */
-    create(options: CheckoutBuilderOptions = {}): Checkout {
+    async create(options: CheckoutBuilderOptions = {}): Promise<Checkout> {
         const { user, isSandbox = false, withRecommendation = true, title, image, planId, quota, trial } = options;
 
         const builder = new Checkout(idToString(this.productId), this.publicKey, this.secretKey);

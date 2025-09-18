@@ -17,10 +17,10 @@ export default async function CreditsPage() {
         redirect('/login');
     }
 
-    const license = await getUserEntitlement(session.user.id);
+    const entitlement = await getUserEntitlement(session.user.id);
     const credits = await getCredits(session.user.id);
 
-    const checkout = freemius.checkout.create({
+    const checkout = await freemius.checkout.create({
         user: session?.user,
         isSandbox: process.env.NODE_ENV !== 'production',
     });
@@ -29,8 +29,8 @@ export default async function CreditsPage() {
         <AppMain title="Credits & Topups" isLoggedIn={true}>
             <AppContent>
                 <ErrorBoundary>
-                    <CheckoutWithConfettiProvider checkout={await checkout.serialize()}>
-                        <Credits credits={credits} hasLicense={!!license} />
+                    <CheckoutWithConfettiProvider checkout={checkout.serialize()}>
+                        <Credits credits={credits} hasLicense={!!entitlement} />
                     </CheckoutWithConfettiProvider>
                 </ErrorBoundary>
             </AppContent>

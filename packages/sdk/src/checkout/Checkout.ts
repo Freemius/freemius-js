@@ -422,7 +422,7 @@ export class Checkout {
      *
      * @returns The constructed CheckoutOptions object
      */
-    async getOptions(): Promise<CheckoutOptions> {
+    getOptions(): CheckoutOptions {
         return { ...this.options };
     }
 
@@ -431,7 +431,7 @@ export class Checkout {
      *
      * @note - This is async by purpose so that we can allow for future enhancements that might require async operations.
      */
-    async getLink(): Promise<string> {
+    getLink(): string {
         const checkoutOptions = convertCheckoutOptionsToQueryParams(this.options);
 
         const queryParams = buildFreemiusQueryFromOptions(checkoutOptions);
@@ -442,10 +442,10 @@ export class Checkout {
         return url.toString();
     }
 
-    async serialize(): Promise<CheckoutSerialized> {
+    serialize(): CheckoutSerialized {
         return {
-            options: await this.getOptions(),
-            link: await this.getLink(),
+            options: this.getOptions(),
+            link: this.getLink(),
             baseUrl: this.getBaseUrl(),
         };
     }
