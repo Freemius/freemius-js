@@ -12,9 +12,9 @@ Here are the primary packages in the mono repo:
 
 We also have various example applications and utilities that demonstrate how to use the SDK effectively.
 
-| Example Name | Location            | Description                                                                                                                                                                                                                                                                |
-| ------------ | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `nextjs-app` | `packages/saas-kit` | A simple SaaS application built in NextJS that demonstrates the basic usage of the SDK for any AI like app with credit system and subscription. We use the same package to develop the SaaS kit and the nextjs example for the time being. We might split it in the future |
+| Example Name | Location | Description       |
+| ------------ | -------- | ----------------- |
+|              |          | To be added later |
 
 The following dependencies are handled from the root `package.json`:
 
@@ -23,6 +23,15 @@ The following dependencies are handled from the root `package.json`:
 - TypeScript - For type checking and development.
 - Husky - For managing Git hooks.
 - Lint-staged - For running linters on staged files.
+
+## Principles
+
+Contribution Principles:
+
+- Optimize for real execution paths; do not introduce speculative abstractions.
+- Keep public API surface small and purposeful.
+- Prefer deletion over generalization when code paths become unused.
+- Include minimal tests / examples for new externally visible behavior.
 
 ## Development Scripts
 

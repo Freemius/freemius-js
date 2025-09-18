@@ -12760,6 +12760,8 @@ export interface operations {
                 sort?: 'id' | 'next_payment';
                 /** @description Search by subscription ID, external subscription ID or user email. */
                 search?: string;
+                /** @description When set to `true` enrich the subscription to include any cancellation discounts applied to the subscriptions. */
+                enrich_with_cancellation_discounts?: boolean;
             };
             header?: never;
             path: {

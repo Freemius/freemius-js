@@ -30,11 +30,12 @@ function detectPlatform(): string {
 
 export function createApiClient(baseUrl: string, bearerToken?: string) {
     const platform = detectPlatform();
+
     const client = createClient<paths>({
         baseUrl,
         headers: {
-            Authorization: bearerToken ? `Bearer ${bearerToken}` : undefined,
-            'User-Agent': `Freemius/JS-SDK/${version}/${platform}`,
+            Authorization: `Bearer ${bearerToken}`,
+            'User-Agent': `Freemius-JS-SDK/${version} (${platform})`,
         },
     });
 

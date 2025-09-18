@@ -18,20 +18,20 @@ export async function POST(request: Request) {
         );
     }
 
-    // We assume an active license is needed regardless of the credit balance.
-    const userLicense = await getUserEntitlement(session.user.id);
+    if (!(await hasCredits(session.user.id, 100))) {
+        // We assume an active license is needed regardless of the credit balance.
+        const entitlement = await getUserEntitlement(session.user.id);
 
-    if (!userLicense) {
-        return Response.json(
-            {
-                code: 'no_active_purchase',
-                message: 'You do not have an active license to use this feature.',
-            },
-            { status: 403 }
-        );
-    }
+        if (!entitlement) {
+            return Response.json(
+                {
+                    code: 'no_active_purchase',
+                    message: 'You do not have an active license to use this feature.',
+                },
+                { status: 403 }
+            );
+        }
 
-    if (!(await hasCredits(userLicense.userId, 100))) {
         return Response.json(
             {
                 code: 'insufficient_credits',
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
      * Here you would implement the AI asset generation and credit consumption logic.
      * For demonstration, we will just return a dummy response and deduct 100 credits.
      */
-    await deductCredits(userLicense.userId, 100);
+    await deductCredits(session.user.id, 100);
 
     const data = await request.json();
 

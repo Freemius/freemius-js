@@ -47,6 +47,15 @@ export function AIChat({ examples, onApiError }: ChatContentProps) {
 
             if (!response.ok) {
                 onApiError?.(data);
+
+                setDummyMessages((prev) => [
+                    ...prev,
+                    {
+                        role: 'assistant',
+                        content:
+                            'There was error generating the response.' + (data?.message ? ` (${data.message})` : ''),
+                    },
+                ]);
             } else {
                 // Add the generated message to the conversation
                 setDummyMessages((prev) => [
@@ -120,12 +129,14 @@ export function AIChat({ examples, onApiError }: ChatContentProps) {
                                     onChange={(e) => setText(e.target.value)}
                                     value={text}
                                     ref={textRef}
+                                    disabled={isLoading}
                                 />
                                 <PromptInputToolbar>
                                     <PromptInputSubmit
                                         className="absolute right-1 bottom-1"
                                         disabled={isLoading || text.trim().length === 0}
                                         status={isLoading ? 'streaming' : 'ready'}
+                                        aria-disabled={isLoading || text.trim().length === 0}
                                     />
                                 </PromptInputToolbar>
                             </PromptInput>

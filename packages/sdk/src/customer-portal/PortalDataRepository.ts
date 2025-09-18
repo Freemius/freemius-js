@@ -148,7 +148,7 @@ export class PortalDataRepository {
     } | null> {
         const [pricingData, subscriptions, payments, billing, coupons] = await Promise.all([
             this.api.product.retrievePricingData(),
-            this.api.user.retrieveSubscriptions(userId, { extended: true }),
+            this.api.user.retrieveSubscriptions(userId, { extended: true, enrich_with_cancellation_discounts: true }),
             this.api.user.retrievePayments(userId),
             this.api.user.retrieveBilling(userId),
             this.api.product.retrieveSubscriptionCancellationCoupon(),
@@ -301,7 +301,7 @@ export class PortalDataRepository {
      */
     isRenewalCancellationCouponApplicable(subscription: UserSubscriptionEntity): boolean {
         // If it was already applied, do not allow applying it again.
-        if (subscription.has_subscription_cancellation_discount) {
+        if (subscription.has_subscription_cancellation_discount || (subscription.total_gross ?? 0) <= 0) {
             return false;
         }
 

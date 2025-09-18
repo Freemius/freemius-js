@@ -1,6 +1,11 @@
 import { WebhookEventType } from '@freemius/sdk';
 import { freemius } from '@/lib/freemius';
-import { deleteEntitlement, sendRenewalFailureEmail, syncLicenseFromWebhook } from '@/lib/user-entitlement';
+import {
+    deleteEntitlement,
+    renewCreditsFromWebhook,
+    sendRenewalFailureEmail,
+    syncEntitlementFromWebhook,
+} from '@/lib/user-entitlement';
 
 const listener = freemius.webhook.createListener();
 
@@ -16,7 +21,13 @@ const licenseEvents: WebhookEventType[] = [
 
 listener.on(licenseEvents, async ({ objects: { license } }) => {
     if (license && license.id) {
-        await syncLicenseFromWebhook(license.id);
+        await syncEntitlementFromWebhook(license.id);
+    }
+});
+
+listener.on('license.extended', async ({ data }) => {
+    if (data.is_renewal) {
+        renewCreditsFromWebhook(data.license_id);
     }
 });
 

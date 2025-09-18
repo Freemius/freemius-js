@@ -31,6 +31,8 @@ export interface LicenseEventDataMap {
             to: string;
             /** Unique identifier for the license */
             license_id: string;
+            /** Determines if the license was renewed due to the renewal of the associated subscription */
+            is_renewal?: boolean;
         };
     };
     'license.shortened': {

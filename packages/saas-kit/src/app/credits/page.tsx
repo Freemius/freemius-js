@@ -30,7 +30,7 @@ export default async function CreditsPage() {
             <AppContent>
                 <ErrorBoundary>
                     <CheckoutWithConfettiProvider checkout={checkout.serialize()}>
-                        <Credits credits={credits} hasLicense={!!entitlement} />
+                        <Credits credits={credits} hasSubscription={!!entitlement} />
                     </CheckoutWithConfettiProvider>
                 </ErrorBoundary>
             </AppContent>

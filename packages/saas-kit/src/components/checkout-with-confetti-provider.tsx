@@ -14,10 +14,8 @@ export function useConfirmPurchase() {
 
     const handlePurchase = React.useCallback(
         async (data: PurchaseData) => {
-            const credits = data.quota ?? 0;
-
             console.log('purchaseData', data);
-            toast.success(`Purchase successful with ${credits} credits!`, {
+            toast.success(`Purchase successful`, {
                 icon: <IconCircleCheck className="w-6 h-6 text-grow" />,
                 description: 'You can now use the feature you just purchased.',
             });

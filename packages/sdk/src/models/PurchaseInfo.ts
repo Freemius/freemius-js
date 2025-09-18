@@ -97,7 +97,7 @@ export class PurchaseInfo implements PurchaseData {
     /**
      * A convenience method to convert the purchase info to a format suitable for database storage.
      */
-    toEntitlement<T extends Record<string, unknown>>(additionalData: T = {} as T): PurchaseEntitlementData & T {
+    toEntitlementRecord<T extends Record<string, unknown>>(additionalData: T = {} as T): PurchaseEntitlementData & T {
         return {
             ...additionalData,
             fsLicenseId: this.licenseId,

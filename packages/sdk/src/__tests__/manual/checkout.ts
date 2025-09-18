@@ -15,6 +15,9 @@ async function main() {
 
     const link = checkout.setAffiliate(1234).setTrial('paid').setCoupon({ code: 'SAVE10' }).getLink();
     console.log('Customized Checkout Link:', link);
+
+    const pricingData = await freemius.pricing.retrieve();
+    console.log('Pricing Data:', pricingData);
 }
 
 main();
