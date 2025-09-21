@@ -1,53 +1,88 @@
-# Freemius TypeScript SDK
+<div align="center">
 
-Official, minimal TypeScript/JavaScript server SDK for integrating Freemius into SaaS & application backends. Provides
-typed API access, hosted checkout helpers, webhook verification, purchase / license / entitlement retrieval, and
-lightweight utilities – without imposing a framework.
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="https://freemius.com/help/img/freemius-logo.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://freemius.com/help/img/freemius-logo-dark.svg">
+  <img alt="Freemius Logo" src="https://freemius.com/help/img/freemius-logo.svg" width="200">
+</picture>
+
+## [JavaScript SDK](https://freemius.com/help/documentation/saas-sdk/js-sdk/)
+
+Monetize your SaaS or app backend faster: one lightweight, fully typed SDK for Checkout creation, pricing + plans,
+licenses, subscriptions, purchases, entitlements, and secure webhooks. Built for real-world production flows.
+
+[![npm version](https://img.shields.io/npm/v/@freemius/sdk.svg?label=@freemius/sdk)](https://www.npmjs.com/package/@freemius/sdk)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?logo=typescript&logoColor=white)
+
+**[Get Started »](https://freemius.com/help/documentation/saas-sdk/js-sdk/)** ·
+**[Next.js Guide »](https://freemius.com/help/documentation/saas-sdk/framework/nextjs/)** ·
+**[React Starter Kit »](https://freemius.com/help/documentation/saas-sdk/react-starter/)**
+
+</div>
+
+---
+
+![Freemius Paywall Component](https://github.com/Freemius/freemius-js/raw/main/freemius-paywall.png)
+
+---
+
+Looking for a step‑by‑step walkthrough of backend checkout generation, secure purchase validation, local entitlement
+storage, webhook‑driven license lifecycle syncing, and feature gating logic? Check out the guides below.
+
+- [Next.js / React Starter Kit](https://freemius.com/help/documentation/saas-sdk/framework/nextjs/) Integration.
+- [Framework Agnostic](https://freemius.com/help/documentation/saas-sdk/js-sdk/integration/) Integration.
+
+We also have the [React Starter Kit](https://freemius.com/help/documentation/saas-sdk/react-starter/) you can use on
+your front-end to quickly render Checkout overlays, pricing tables, and a customer portal.
+
+## Why `@freemius/sdk`?
+
+- 🔐 Backend‑only & secure: built to keep your API / Secret keys off the client.
+- 🧠 Fully typed: rich IntelliSense for API filters, webhook payloads, pricing, licenses, subscriptions, payments, and
+  users.
+- 🛒 Frictionless Checkout builder: generate overlay options & hosted links, sandbox mode, redirect verification,
+  upgrade authorization.
+- 💳 Subscriptions & one‑off purchases: normalize purchase + entitlement logic with helpers (e.g.
+  `purchase.retrievePurchaseData()`, `entitlement.getActive()`).
+- 🧱 Framework friendly: works great with Next.js (App Router), Express, Fastify, Hono, Nuxt server routes, Workers,
+  etc.
+- 🧾 Licenses, billing & invoices: retrieve, paginate, iterate, and show billing data to your customers.
+- 🌐 Webhooks made simple: strongly typed listener + request processors for Fetch runtimes, Node HTTP, serverless, edge.
+- ⚡ Runtime agnostic: Node.js, Bun, Deno—ship the same code.
+- 🪶 Lightweight, modern ESM-first design (tree-shakeable patterns).
+- 🚀 Production patterns included: entitlement storage, retrieval & paywalls.
 
 ## Installation
 
 ```bash
-npm install @freemius/sdk
+npm install @freemius/sdk zod
 ```
 
 Requires Node.js 18+ (or an Edge runtime supporting Web Crypto + standard fetch APIs). See the
 [official documentation](https://freemius.com/help/documentation/saas-sdk/js-sdk/) for full capability reference.
 
-## Core Capabilities
+## 10 Seconds Initialization
 
-Focused, framework‑agnostic primitives for securely interacting with the Freemius platform:
-
-- [Typed API Client](https://freemius.com/help/documentation/saas-sdk/js-sdk/api/): Fine-tuned OpenAPI-derived API
-  classes to easily interact with the [Freemius REST API](https://freemius.com/help/documentation/api/).
-- [Checkout Utilities](https://freemius.com/help/documentation/saas-sdk/js-sdk/checkout/): Create Checkout URLs or
-  Options for the Overlay mode, sandbox mode, redirect result parsing etc.
-- [Webhook Processing](https://freemius.com/help/documentation/saas-sdk/js-sdk/webhooks/): HMAC‑SHA256 signature
-  verification + event listener abstraction
-- [Purchases & Entitlements](https://freemius.com/help/documentation/saas-sdk/js-sdk/purchases/): License retrieval,
-  entitlement state validation, minimal model helpers
-
-See the [full documentation](https://freemius.com/help/documentation/saas-sdk/js-sdk/) for all exported capabilities.
-
-## Initialization
-
-You must supply four credentials (obtainable via the Freemius Developer Dashboard):
+Go to the
+[Freemius Developer Dashboard](https://freemius.com/help/documentation/saas-sdk/js-sdk/installation/#retrieving-keys-from-the-developer-dashboard))
+and obtain the following:
 
 - `productId` – Numeric product identifier
 - `apiKey` – API key (used as bearer credential)
 - `secretKey` – Secret key used for signing (HMAC) and secure operations
 - `publicKey` – RSA public key for license / signature related verification flows
 
-Recommended environment variables (example):
+Store these in your environment variables, e.g. in a `.env` file:
 
-```
+```env
 FREEMIUS_PRODUCT_ID=12345
 FREEMIUS_API_KEY=...
 FREEMIUS_SECRET_KEY=...
-FREEMIUS_PUBLIC_KEY=-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----
+FREEMIUS_PUBLIC_KEY=...
 ```
 
-> Hint: You can get the environment variables from the
-> [Freemius Developer Dashboard](http://freemius.com/help/documentation/saas-sdk/js-sdk/installation/#retrieving-keys-from-the-developer-dashboard).
+Now initialize the SDK:
 
 ```ts
 import { Freemius } from '@freemius/sdk';
@@ -59,9 +94,6 @@ export const freemius = new Freemius({
     publicKey: process.env.FREEMIUS_PUBLIC_KEY!,
 });
 ```
-
-> **Edge runtimes**: ensure the secret material is not bundled client‑side; pass via secure runtime environment
-> injection.
 
 ### API Client
 
@@ -75,7 +107,9 @@ async function getUserByEmail(email: string) {
 
 See also `api.product`, `api.license`, `api.subscription`, `api.payment`, `api.user`, etc.
 
-### Checkout
+[Documentation »](http://freemius.com/help/documentation/saas-sdk/js-sdk/api/)
+
+### Checkout & Pricing
 
 Construct a [hosted checkout URL](http://freemius.com/help/documentation/checkout/hosted-checkout/) or
 [retrieve overlay options](http://freemius.com/help/documentation/checkout/freemius-checkout-buy-button/) (pair with
@@ -90,9 +124,21 @@ const hostedUrl = checkout.getLink(); // Redirect user or generate email link
 const overlayOptions = checkout.getOptions(); // Serialize & send to frontend for modal embed
 ```
 
+Retrieve pricing metadata (plans, currencies, etc.):
+
+```ts
+async function fetchPricing() {
+    return await freemius.pricing.retrieve();
+}
+```
+
+Use this to create your own pricing table on your site.
+
+[Documentation »](http://freemius.com/help/documentation/saas-sdk/js-sdk/checkout/)
+
 ### Webhooks
 
-Minimal Node HTTP example (raw body required for signature verification):
+Listen for and securely process webhook events. Example using Node.js HTTP server:
 
 ```ts
 import { createServer } from 'node:http';
@@ -118,17 +164,7 @@ server.listen(3000, () => {
 });
 ```
 
-### Pricing
-
-Retrieve pricing metadata (plans, currencies, etc.):
-
-```ts
-async function fetchPricing() {
-    return await freemius.pricing.retrieve();
-}
-```
-
-Use this to create your own pricing table on your site.
+[Documentation »](http://freemius.com/help/documentation/saas-sdk/js-sdk/webhooks/)
 
 ### Purchase / License Retrieval
 
@@ -140,16 +176,36 @@ async function retrievePurchase(licenseId: number) {
     if (!purchase) throw new Error('Purchase not found');
     return purchase;
 }
+
+const purchase = await retrievePurchase(123456);
+if (purchase) {
+    db.entitlement.insert(purchase.toEntitlementRecord());
+}
+
+async function getActiveEntitlement(userId: number) {
+    const entitlements = await db.entitlement.query({ userId, type: 'subscription' });
+
+    return freemius.entitlement.getActive(entitlements);
+}
 ```
+
+[Documentation »](http://freemius.com/help/documentation/saas-sdk/js-sdk/purchases/)
 
 ## Security & Operational Notes
 
-> Backend Use Only
+> **Backend Use Only**
 >
 > Never initialize the SDK in browser / untrusted contexts. The `secretKey` and `apiKey` are privileged credentials.
 
-## Next.js / React Starter Kit Integration
+Happy shipping. ⚡
 
-For an end‑to‑end reference (auth, UI components, portal flows, pricing tables), consult the
-[Next.js Integration Guide](https://freemius.com/help/documentation/saas-sdk/framework/nextjs/) and the accompanying
-Starter Kit repository section.
+## License
+
+MIT © Freemius Inc
+
+---
+
+Payments, tax handling, subscription lifecycle management, and licensing are abstracted so you can focus on product
+functionality rather than billing infrastructure.
+
+https://freemius.com

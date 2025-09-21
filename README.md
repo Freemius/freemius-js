@@ -2,15 +2,15 @@
 
 # Freemius JavaScript
 
-Type-safe Freemius integration toolkit: a production-focused TypeScript SDK plus a React / Next.js Starter Kit for
-implementing subscriptions, one‑off purchases, license & entitlement validation, and a secure self-service customer
-portal.
+Type-safe Freemius integration toolkit: a production-focused TypeScript/JavaScript SDK plus a React / Next.js Starter
+Kit for implementing subscriptions, one‑off purchases, license & entitlement validation, and a secure self-service
+customer portal.
 
 [![npm version](https://img.shields.io/npm/v/@freemius/sdk.svg?label=@freemius/sdk)](https://www.npmjs.com/package/@freemius/sdk)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?logo=typescript&logoColor=white)
 
-<a href="https://freemius.com">
+<a href="https://freemius.com/help/documentation/saas-sdk/js-sdk/">
 <picture>
   <source media="(prefers-color-scheme: light)" srcset="https://freemius.com/help/img/freemius-logo.svg">
   <source media="(prefers-color-scheme: dark)" srcset="https://freemius.com/help/img/freemius-logo-dark.svg">
@@ -25,6 +25,15 @@ portal.
 ![Freemius Paywall Component](./freemius-paywall.png)
 
 ---
+
+Looking for a step‑by‑step walkthrough of backend checkout generation, secure purchase validation, local entitlement
+storage, webhook‑driven license lifecycle syncing, and feature gating logic? Check out the guides below.
+
+- [Next.js / React Starter Kit](https://freemius.com/help/documentation/saas-sdk/framework/nextjs/) Integration.
+- [Framework Agnostic](https://freemius.com/help/documentation/saas-sdk/js-sdk/integration/) Integration.
+
+We also have the [React Starter Kit](https://freemius.com/help/documentation/saas-sdk/react-starter/) you can use on
+your front-end to quickly render Checkout overlays, pricing tables, and a customer portal.
 
 ## Support / Questions
 

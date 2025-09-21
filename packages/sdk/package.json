@@ -1,6 +1,6 @@
 {
   "name": "@freemius/sdk",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "JS SDK for integrating your SaaS with Freemius",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
