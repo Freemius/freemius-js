@@ -153,13 +153,13 @@ function buildRegistry(): void {
             // @ts-ignore
             $schema: 'https://ui.shadcn.com/schema/registry.json',
             homepage: 'https://shadcn.freemius.com',
-            name: 'saas-kit',
+            name: 'freemius-react-starter-kit',
             items: [
                 {
                     name: 'all',
                     author: 'Freemius Inc',
                     type: 'registry:ui',
-                    description: 'All components, hooks, icons, and utilities for saas-kit',
+                    description: 'All components, hooks, icons, and utilities for Freemius React Starter Kit',
                     dependencies: ['@freemius/checkout', '@freemius/sdk'],
                     registryDependencies: Array.from(allRegistryDependencies).sort(),
                     files,
