@@ -56,7 +56,7 @@ your front-end to quickly render Checkout overlays, pricing tables, and a custom
 ## Installation
 
 ```bash
-npm install @freemius/sdk zod
+npm install @freemius/sdk @freemius/checkout zod
 ```
 
 Requires Node.js 18+ (or an Edge runtime supporting Web Crypto + standard fetch APIs). See the
