@@ -1,5 +1,11 @@
 # @freemius/sdk
 
+## 0.0.6
+
+### Patch Changes
+
+- d83396f: Update readme and installation instruction
+
 ## 0.0.3
 
 ### Patch Changes
