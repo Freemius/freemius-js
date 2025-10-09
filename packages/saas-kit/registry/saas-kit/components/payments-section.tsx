@@ -52,11 +52,11 @@ export function PaymentsSection(props: { payments: PortalPayment[]; unit: Sellin
 
                         <div className="fs-saas-starter-payments-section__plan col-span-2 lg:col-span-1">
                             {payment.planTitle}{' '}
-                            {payment.quota ? (
+                            {payment.quota && payment.quota > 1 ? (
                                 <span className="text-disabled-foreground text-xs font-semibold">
                                     {locale.portal.payments.pricingTitle(
-                                        formatNumber(payment.quota ?? 0, locale.code),
-                                        payment.quota ?? 0,
+                                        formatNumber(payment.quota, locale.code),
+                                        payment.quota,
                                         props.unit
                                     )}
                                 </span>
