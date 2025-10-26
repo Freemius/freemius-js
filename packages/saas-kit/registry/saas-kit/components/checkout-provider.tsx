@@ -64,7 +64,7 @@ export function CheckoutProvider({
         async (purchaseData: CheckoutPurchaseData) => {
             const defaultSync: PurchaseSyncSuccess = async (purchaseData: CheckoutPurchaseData) => {
                 const url = getSanitizedUrl(endpoint);
-                if (!url || !purchaseData?.purchase?.license_id) {
+                if (!url || (!purchaseData?.purchase?.license_id && !purchaseData?.trial?.license_id)) {
                     return;
                 }
 
@@ -75,9 +75,7 @@ export function CheckoutProvider({
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        purchase: purchaseData.purchase,
-                    }),
+                    body: JSON.stringify(purchaseData),
                 });
 
                 if (!response.ok) {

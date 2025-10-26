@@ -21,9 +21,16 @@ export class PurchaseProcessor implements CheckoutAction {
 
     async processAction(request: Request): Promise<Response> {
         const purchaseSchema = zod.object({
-            purchase: zod.object({
-                license_id: zod.string(),
-            }),
+            purchase: zod
+                .object({
+                    license_id: zod.string(),
+                })
+                .optional(),
+            trial: zod
+                .object({
+                    license_id: zod.string(),
+                })
+                .optional(),
         });
 
         const contentType = request.headers.get('content-type');
@@ -45,9 +52,14 @@ export class PurchaseProcessor implements CheckoutAction {
             throw ActionError.validationFailed('Invalid request body format', parseResult.error.issues);
         }
 
-        const {
-            purchase: { license_id: licenseId },
-        } = parseResult.data;
+        const licenseId = parseResult.data.purchase?.license_id ?? parseResult.data.trial?.license_id;
+
+        if (!licenseId) {
+            throw ActionError.badRequest(
+                'License ID is required in the request body, either from purchase or from trial.'
+            );
+        }
+
         const purchase = await this.purchase.retrievePurchase(licenseId);
 
         if (!purchase) {

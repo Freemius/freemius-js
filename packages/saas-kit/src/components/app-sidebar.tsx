@@ -10,6 +10,7 @@ import {
     IconReceipt,
     IconShoppingBagPlus,
     IconShieldHeart,
+    IconFlask,
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { Loader2, SparkleIcon } from 'lucide-react';
@@ -55,6 +56,11 @@ const data = {
             title: 'Paywall Demo',
             url: '/paywall',
             icon: IconShieldHeart,
+        },
+        {
+            title: 'Custom Purchase Demo',
+            url: '/custom-checkout',
+            icon: IconFlask,
         },
     ],
     navFooterLoggedOut: [
