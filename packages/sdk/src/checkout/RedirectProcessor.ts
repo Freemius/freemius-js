@@ -75,19 +75,23 @@ export class RedirectProcessor implements CheckoutAction {
         const calculatedSignature = createHmac('sha256', this.secretKey).update(cleanUrl).digest('hex');
 
         // Compare signatures securely
-        const result = timingSafeEqual(Buffer.from(calculatedSignature), Buffer.from(signature));
+        try {
+            const result = timingSafeEqual(Buffer.from(calculatedSignature), Buffer.from(signature));
 
-        if (!result) {
+            if (!result) {
+                return null;
+            }
+
+            const params = Object.fromEntries(url.searchParams.entries());
+
+            if (!params.user_id || !params.plan_id || !params.pricing_id || !params.email) {
+                return null;
+            }
+
+            return new CheckoutRedirectInfo(params);
+        } catch {
             return null;
         }
-
-        const params = Object.fromEntries(url.searchParams.entries());
-
-        if (!params.user_id || !params.plan_id || !params.pricing_id || !params.email) {
-            return null;
-        }
-
-        return new CheckoutRedirectInfo(params);
     }
 
     // Helper to get the current absolute URL (removing "&signature=..." or "?signature=..." by string slicing)

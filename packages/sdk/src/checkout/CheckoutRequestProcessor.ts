@@ -39,13 +39,6 @@ export class CheckoutRequestProcessor implements RequestProcessor<CheckoutReques
     }
 
     async process(config: CheckoutRequestConfig, request: Request): Promise<Response> {
-        const url = new URL(request.url);
-        const action = url.searchParams.get('action');
-
-        if (!action) {
-            return Response.json({ error: 'Action parameter is required' }, { status: 400 });
-        }
-
         const actionHandlers: CheckoutAction[] = [
             this.getPricingRetriever(),
             this.getRedirectProcessor({
