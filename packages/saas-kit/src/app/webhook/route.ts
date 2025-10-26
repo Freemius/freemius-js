@@ -7,6 +7,15 @@ import {
     syncEntitlementFromWebhook,
 } from '@/lib/user-entitlement';
 
+/**
+ * @note In case the signature verification fails due to body alterations (like whitespace changes),
+ * you can enable the alternative authentication method that fetches the event directly from the Freemius API.
+ *
+ * @example
+ * ```typescript
+ * const listener = freemius.webhook.createListener({ authenticationMethod: WebhookAuthenticationMethod.Api });
+ * ```
+ */
 const listener = freemius.webhook.createListener();
 
 const licenseEvents: WebhookEventType[] = [

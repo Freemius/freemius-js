@@ -7,6 +7,7 @@ import { Subscription } from '../api/Subscription';
 import { User } from '../api/User';
 import { idToString } from '../api/parser';
 import { Payment } from '../api/Payment';
+import { WebhookEvent } from '../api/WebhookEvent';
 import { isTestServer } from '../utils/ops';
 
 const API_ENDPOINT_PRODUCTION = 'https://api.freemius.com/v1/';
@@ -30,6 +31,8 @@ export class ApiService {
 
     public readonly payment: Payment;
 
+    public readonly event: WebhookEvent;
+
     public readonly baseUrl: string;
 
     constructor(
@@ -48,6 +51,7 @@ export class ApiService {
         this.product = new Product(this.productId, this.client);
         this.subscription = new Subscription(this.productId, this.client);
         this.payment = new Payment(this.productId, this.client);
+        this.event = new WebhookEvent(this.productId, this.client);
     }
 
     /**

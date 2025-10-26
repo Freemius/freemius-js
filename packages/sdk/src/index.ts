@@ -3,9 +3,13 @@ export * from './contracts/portal';
 export * from './contracts/checkout';
 export * from './contracts/types';
 export * from './contracts/pricing';
+export * from './contracts/webhook';
 
 export * from './api/types';
 export * from './api/parser';
+
+export * from './errors/ActionError';
+export * from './errors/WebhookError';
 
 export * from './Freemius';
 

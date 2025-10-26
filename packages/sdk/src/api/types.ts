@@ -52,6 +52,7 @@ export type BillingUpdatePayload =
     operations['users/update-or-create-billing']['requestBody']['content']['application/json'];
 
 export type EventEntity = components['schemas']['EventLog'];
+export type EventFilterOptions = ApiEntitiesFilter<operations['events/list']['parameters']['query']>;
 
 export type InstallEntity = components['schemas']['Install'];
 

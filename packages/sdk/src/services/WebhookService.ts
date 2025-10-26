@@ -1,10 +1,22 @@
+import { WebhookAuthenticationMethod } from '../contracts/webhook';
 import { WebhookListener } from '../webhook/WebhookListener';
+import { ApiService } from './ApiService';
+
+export type WebhookListenerConfig = {
+    onError?: (error: unknown) => Promise<void>;
+    authenticationMethod?: WebhookAuthenticationMethod;
+};
 
 export class WebhookService {
-    constructor(private readonly secretKey: string) {}
+    constructor(
+        private readonly api: ApiService,
+        private readonly secretKey: string
+    ) {}
 
-    createListener(onError?: (error: unknown) => void): WebhookListener {
-        return new WebhookListener(this.secretKey, onError);
+    createListener(config: WebhookListenerConfig = {}): WebhookListener {
+        const { onError, authenticationMethod } = config;
+
+        return new WebhookListener(this.api, this.secretKey, onError, authenticationMethod);
     }
 
     createRequestProcessor(listener: WebhookListener): (request: Request) => Promise<Response> {

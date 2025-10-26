@@ -1,12 +1,12 @@
 import { LicenseEntity } from '../../api/types';
-import { WebhookService } from '../../services/WebhookService';
 import { WebhookEventType } from '../../webhook/events';
-
-const webhookService = new WebhookService('your-secret-key');
+import { freemius } from './fs';
 
 // Create a listener
-const listener = webhookService.createListener((error) => {
-    console.error('Webhook error:', error);
+const listener = freemius.webhook.createListener({
+    onError: async (error) => {
+        console.error('Webhook error:', error);
+    },
 });
 
 // Register handlers with excellent type safety
@@ -42,7 +42,7 @@ listener.on(events, async (event) => {
 
 // Example Next.js route handler
 export async function POST(request: Request): Promise<Response> {
-    return await webhookService.processFetch(listener, request);
+    return await freemius.webhook.processFetch(listener, request);
 }
 
 // Mock functions for the example

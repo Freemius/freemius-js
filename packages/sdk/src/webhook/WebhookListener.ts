@@ -1,25 +1,30 @@
 import crypto from 'crypto';
 import { WebhookEventHandler, WebhookEventType, WebhookEvent } from './events';
 import { EventEntity } from '../api/types';
+import { WebhookAuthenticationMethod, WebhookListenerResponse } from '../contracts/webhook';
+import { WebhookError } from '../errors/WebhookError';
+import { ApiService } from '../services/ApiService';
 
 export interface NormalizedRequest {
     headers: Record<string, string | string[] | undefined> | Headers;
     rawBody: string | Buffer; // MUST be the exact raw body Freemius sent
 }
 
-export type WebhookListenerResponse = {
-    status: number;
-} & ({ success: true } | { success: false; error: string });
-
 const SIGNATURE_HEADER = 'x-signature';
+
+const DEFAULT_ERROR_HANDLER = async (error: unknown) => {
+    console.error('Webhook processing error:', error);
+};
 
 // @todo - Add a method `onAny` to listen to all events with a single handler
 export class WebhookListener {
     private eventHandlers: Map<WebhookEventType, Set<WebhookEventHandler<WebhookEventType>>> = new Map();
 
     constructor(
+        private readonly api: ApiService,
         private readonly secretKey: string,
-        private readonly onError: (error: unknown) => void = console.error
+        private readonly onError: (error: unknown) => Promise<void> = DEFAULT_ERROR_HANDLER,
+        private readonly authenticationMethod: WebhookAuthenticationMethod = WebhookAuthenticationMethod.SignatureHeader
     ) {}
 
     // Overload for single event type
@@ -142,28 +147,66 @@ export class WebhookListener {
      * Returns an object you can map to your framework's response easily.
      */
     async process(input: NormalizedRequest): Promise<WebhookListenerResponse> {
+        try {
+            const event =
+                this.authenticationMethod === WebhookAuthenticationMethod.SignatureHeader
+                    ? await this.authenticateAndGetEventFromInput(input)
+                    : await this.authenticateAndGetEventFromApi(input);
+
+            return this.processEvent(event);
+        } catch (error) {
+            if (error instanceof WebhookError) {
+                return error.toResponse();
+            }
+
+            return { status: 500, success: false, error: 'Internal Server Error' };
+        }
+    }
+
+    private async authenticateAndGetEventFromInput(input: NormalizedRequest): Promise<EventEntity> {
         const sig = this.getHeader(SIGNATURE_HEADER, input.headers);
 
         if (!this.verifySignature(input.rawBody, sig)) {
-            return { status: 401, success: false, error: 'Invalid signature' };
+            throw new WebhookError('Invalid signature', 401);
         }
 
-        let evt: EventEntity;
+        return this.parseEventFromInput(input);
+    }
+
+    private async authenticateAndGetEventFromApi(input: NormalizedRequest): Promise<EventEntity> {
+        const jsonPayload = this.parseEventFromInput(input);
+
+        if (!jsonPayload.id) {
+            throw new WebhookError('Invalid payload');
+        }
+
+        const event = await this.api.event.retrieve(jsonPayload.id);
+
+        if (!event) {
+            throw new WebhookError('Event not found', 404);
+        }
+
+        return event;
+    }
+
+    private parseEventFromInput(input: NormalizedRequest): EventEntity {
         try {
             const parsed = JSON.parse(
                 typeof input.rawBody === 'string' ? input.rawBody : input.rawBody.toString('utf8')
             );
 
             if (!parsed || typeof parsed.type !== 'string') {
-                return { status: 400, success: false, error: 'Invalid payload' };
+                throw new WebhookError('Invalid payload');
             }
 
-            evt = parsed as EventEntity;
+            return parsed as EventEntity;
         } catch {
-            return { status: 400, success: false, error: 'Malformed JSON' };
+            throw new WebhookError('Malformed JSON');
         }
+    }
 
-        const eventType = evt.type as WebhookEventType;
+    private async processEvent(event: EventEntity): Promise<WebhookListenerResponse> {
+        const eventType = event.type as WebhookEventType;
         const eventHandlers = this.eventHandlers.get(eventType);
 
         if (!eventHandlers || eventHandlers.size === 0) {
@@ -175,14 +218,14 @@ export class WebhookListener {
             // Execute handlers with proper type casting
             const promises = Array.from(eventHandlers || []).map((handler) => {
                 const typedHandler = handler as WebhookEventHandler<typeof eventType>;
-                const typedEvent = evt as WebhookEvent<typeof eventType>;
+                const typedEvent = event as WebhookEvent<typeof eventType>;
                 return typedHandler(typedEvent);
             });
 
             // Execute handlers in parallel for better performance
             await Promise.all(promises);
         } catch (error) {
-            this.onError?.(error as Error);
+            await this.onError?.(error as Error);
             return { status: 500, success: false, error: 'Internal Server Error' };
         }
 
