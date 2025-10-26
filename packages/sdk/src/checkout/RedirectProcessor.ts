@@ -89,7 +89,8 @@ export class RedirectProcessor implements CheckoutAction {
             }
 
             return new CheckoutRedirectInfo(params);
-        } catch {
+        } catch (e) {
+            console.error('Error getting redirection information:', e);
             return null;
         }
     }

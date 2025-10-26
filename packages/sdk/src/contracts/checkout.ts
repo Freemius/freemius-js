@@ -6,6 +6,7 @@ import { BILLING_CYCLE, CURRENCY } from './types';
  * Contains user, license, and payment details for the completed checkout.
  */
 export interface CheckoutRedirectData {
+    // #region Common Fields (for both free trials and other kinds of purchases)
     /**
      * ID of the Freemius user associated with the checkout.
      */
@@ -23,9 +24,9 @@ export interface CheckoutRedirectData {
      */
     pricing_id: string;
     /**
-     * Currency of the purchase (ISO code).
+     * Indicates the type of action performed during checkout.
      */
-    currency: CURRENCY;
+    action: 'payment_method_update' | 'license_update' | 'trial' | 'purchase';
     /**
      * ID of the Freemius license, if available.
      */
@@ -38,13 +39,24 @@ export interface CheckoutRedirectData {
      * Quota/Units associated with the license, if available.
      */
     quota: number | null;
+    // #endregion
+
+    //#region Trial Fields (Free or Paid)
     /**
-     * Indicates the type of action performed during checkout, if applicable.
-     * Can be 'payment_method_update' or 'license_update'.
-     *
-     * If null it means the checkout was a standard purchase.
+     * Indicates if the trial is free or paid. Null if not a trial.
      */
-    action: 'payment_method_update' | 'license_update' | null;
+    trial: 'free' | 'paid' | null;
+    /**
+     * End date of the trial period, if applicable.
+     */
+    trial_ends_at: Date | null;
+    //#endregion
+
+    // #region Purchase Fields
+    /**
+     * Currency of the purchase (ISO code).
+     */
+    currency: CURRENCY;
     /**
      * Total amount charged for the purchase.
      */
@@ -53,18 +65,6 @@ export interface CheckoutRedirectData {
      * Tax amount applied to the purchase.
      */
     tax: number;
-    /**
-     * Indicates a subscription purchase.
-     * If present, the following fields are required:
-     * - type: 'subscription'
-     * - subscription_id
-     * - billing_cycle
-     *
-     * If not present, the purchase is a one-off and the following fields are required:
-     * - type: 'one-off'
-     * - payment_id
-     */
-    type: 'subscription' | 'one-off';
     /**
      * ID of the Freemius subscription associated with the license (for subscriptions only).
      */
@@ -77,6 +77,22 @@ export interface CheckoutRedirectData {
      * ID of the payment for the one-off purchase (for one-off only).
      */
     payment_id: string | null;
+    // #endregion
+
+    /**
+     * Indicates a subscription purchase.
+     * If present, the following fields are required:
+     * - type: 'subscription'
+     * - subscription_id
+     * - billing_cycle
+     *
+     * If not present, the purchase is a one-off and the following fields are required:
+     * - type: 'one-off'
+     * - payment_id
+     *
+     * If null, indicates this is a free trial purchase and the final type of purchase is not applicable.
+     */
+    type: 'subscription' | 'one-off' | null;
 }
 
 export type CheckoutBuilderUserOptions =
