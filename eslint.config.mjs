@@ -20,6 +20,7 @@ export default tseslint.config(
             'packages/saas-kit/generated/**/*',
             'packages/saas-kit/.next/**/*',
             'packages/saas-kit/src/components/ai-elements/**/*',
+            'packages/saas-kit/next-env.d.ts',
         ],
     },
     // React settings for auto-detection
@@ -45,7 +46,7 @@ export default tseslint.config(
         },
         settings: {
             next: {
-                rootDir: 'examples/nextjs-app/',
+                rootDir: 'packages/saas-kit/',
             },
         },
     },
