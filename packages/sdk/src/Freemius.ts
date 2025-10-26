@@ -39,7 +39,7 @@ export class Freemius {
         this.auth = new AuthService(productId, secretKey);
         this.pricing = new PricingService(this.api);
         this.purchase = new PurchaseService(this.api);
-        this.checkout = new CheckoutService(productId, publicKey, secretKey, this.purchase, this.pricing);
+        this.checkout = new CheckoutService(this.api, productId, publicKey, secretKey, this.purchase, this.pricing);
         this.customerPortal = new CustomerPortalService(this.api, this.checkout, this.auth, this.purchase);
         this.webhook = new WebhookService(this.api, secretKey);
     }

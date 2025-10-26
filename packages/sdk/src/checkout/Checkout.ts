@@ -4,15 +4,17 @@ import {
     convertCheckoutOptionsToQueryParams,
     buildFreemiusQueryFromOptions,
 } from '@freemius/checkout';
-import { createHash } from 'crypto';
 import { isTestServer, splitName } from '../utils/ops';
 import { CheckoutBuilderUserOptions } from '../contracts/checkout';
+import { FSId } from '../api/types';
 
 export type CheckoutSerialized = {
     options: CheckoutOptions;
     link: string;
     baseUrl: string;
 };
+
+export type CheckoutLicenseAuthorization = { licenseId: FSId; authorization: string };
 
 /**
  * A builder class for constructing checkout parameters. This class provides a fluent
@@ -22,20 +24,6 @@ export type CheckoutSerialized = {
  * The final `getOptions()` method returns the constructed `CheckoutOptions` object.
  */
 export class Checkout {
-    static createSandboxToken(
-        productId: string,
-        secretKey: string,
-        publicKey: string
-    ): NonNullable<CheckoutPopupParams['sandbox']> {
-        const timestamp = Math.floor(Date.now() / 1000).toString();
-        const token = `${timestamp}${productId}${secretKey}${publicKey}checkout`;
-
-        return {
-            ctx: timestamp,
-            token: createHash('md5').update(token).digest('hex'),
-        };
-    }
-
     private options: CheckoutOptions;
 
     constructor(
@@ -49,12 +37,11 @@ export class Checkout {
     /**
      * Enables sandbox mode for testing purposes.
      *
-     * @returns A new builder instance with sandbox configuration
      */
-    setSandbox(): Checkout {
+    setSandbox(sandbox: NonNullable<CheckoutPopupParams['sandbox']>): Checkout {
         this.options = {
             ...this.options,
-            sandbox: Checkout.createSandboxToken(this.productId, this.secretKey!, this.publicKey!),
+            sandbox,
         };
 
         return this;
@@ -66,7 +53,6 @@ export class Checkout {
      * @param user User object with email and optional name fields. The shape matches the session from `better-auth` or next-auth packages. Also handles `null` or `undefined` gracefully.
      * @param readonly If true, the user information will be read-only in the checkout session.
      *
-     * @returns A new builder instance with user configuration
      */
     setUser(user: CheckoutBuilderUserOptions, readonly: boolean = true): Checkout {
         if (!user) {
@@ -97,7 +83,6 @@ export class Checkout {
      * Applies recommended UI settings for better user experience.
      * This includes fullscreen mode, upsells, refund badge, and reviews display.
      *
-     * @returns A new builder instance with recommended UI settings
      */
     setRecommendations(): Checkout {
         this.options = {
@@ -116,7 +101,6 @@ export class Checkout {
      * Sets the plan ID for the checkout.
      *
      * @param planId The plan ID to purchase
-     * @returns A new builder instance with plan ID set
      */
     setPlan(planId: string | number): Checkout {
         this.options = {
@@ -131,7 +115,6 @@ export class Checkout {
      * Sets the number of licenses to purchase.
      *
      * @param count Number of licenses
-     * @returns A new builder instance with license count set
      */
     setQuota(count: number): Checkout {
         this.options = {
@@ -165,7 +148,6 @@ export class Checkout {
      *
      * @param coupon The coupon code to apply
      * @param hideUI Whether to hide the coupon input field from users
-     * @returns A new builder instance with coupon configuration
      */
     setCoupon(options: { code: string; hideUI?: boolean }): Checkout {
         const { code: coupon, hideUI = false } = options;
@@ -183,7 +165,6 @@ export class Checkout {
      * Enables trial mode for the checkout.
      *
      * @param mode Trial type - true/false for plan default, or specific 'free'/'paid' mode
-     * @returns A new builder instance with trial configuration
      */
     setTrial(mode: 'free' | 'paid' | boolean = true): Checkout {
         this.options = {
@@ -198,7 +179,6 @@ export class Checkout {
      * Configures the visual layout and appearance of the checkout.
      *
      * @param options Appearance configuration options
-     * @returns A new builder instance with appearance configuration
      */
     setAppearance(options: {
         layout?: 'vertical' | 'horizontal' | null;
@@ -233,7 +213,6 @@ export class Checkout {
      * Configures discount display settings.
      *
      * @param options Discount configuration options
-     * @returns A new builder instance with discount configuration
      */
     setDiscounts(options: {
         annual?: boolean;
@@ -264,7 +243,6 @@ export class Checkout {
      *
      * @param selector Type of billing cycle selector to show
      * @param defaultCycle Default billing cycle to select
-     * @returns A new builder instance with billing cycle configuration
      */
     setBillingCycle(
         defaultCycle: 'monthly' | 'annual' | 'lifetime',
@@ -286,7 +264,6 @@ export class Checkout {
      * Sets the language/locale for the checkout.
      *
      * @param locale Language setting - 'auto', 'auto-beta', or specific locale like 'en_US'
-     * @returns A new builder instance with locale configuration
      */
     setLanguage(locale: 'auto' | 'auto-beta' | string = 'auto'): Checkout {
         this.options = {
@@ -301,7 +278,6 @@ export class Checkout {
      * Configures review and badge display settings.
      *
      * @param options Review and badge configuration
-     * @returns A new builder instance with reviews and badges configuration
      */
     setSocialProofing(options: {
         showReviews?: boolean;
@@ -333,7 +309,6 @@ export class Checkout {
      * @param currency Primary currency or 'auto' for automatic detection
      * @param defaultCurrency Default currency when using 'auto'
      * @param showInlineSelector Whether to show inline currency selector
-     * @returns A new builder instance with currency configuration
      */
     setCurrency(
         currency: 'usd' | 'eur' | 'gbp' | 'auto',
@@ -355,7 +330,6 @@ export class Checkout {
      *
      * @param cancelUrl URL for back button when in page mode
      * @param cancelIcon Custom cancel icon URL
-     * @returns A new builder instance with navigation configuration
      */
     setCancelButton(cancelUrl?: string, cancelIcon?: string): Checkout {
         this.options = { ...this.options };
@@ -374,7 +348,6 @@ export class Checkout {
      * Associates purchases with an affiliate account.
      *
      * @param userId Affiliate user ID
-     * @returns A new builder instance with affiliate configuration
      */
     setAffiliate(userId: number): Checkout {
         this.options = {
@@ -389,7 +362,6 @@ export class Checkout {
      * Sets a custom image/icon for the checkout.
      *
      * @param imageUrl Secure HTTPS URL to the image
-     * @returns A new builder instance with custom image
      */
     setImage(imageUrl: string): Checkout {
         this.options = {
@@ -401,12 +373,13 @@ export class Checkout {
     }
 
     /**
-     * Configures the checkout for license renewal.
+     * Configures the checkout for license renewal or upgrade by the license key.
+     *
+     * @note - This is less secure since it exposes the license key to the client. Use only in authenticated contexts.
      *
      * @param licenseKey The license key to renew
-     * @returns A new builder instance configured for renewal
      */
-    setLicenseRenewal(licenseKey: string): Checkout {
+    setLicenseUpgradeByKey(licenseKey: string): Checkout {
         this.options = {
             ...this.options,
             license_key: licenseKey,
@@ -416,9 +389,22 @@ export class Checkout {
     }
 
     /**
-     * Builds and returns the final checkout options to be used with the `@freemius/checkout` package.
+     * Configures the checkout for license upgrade using an authorization token.
      *
-     * @note - This is async by purpose so that we can allow for future enhancements that might require async operations.
+     * @param params The license upgrade authorization parameters
+     */
+    setLicenseUpgradeByAuth(params: CheckoutLicenseAuthorization): Checkout {
+        this.options = {
+            ...this.options,
+            license_id: params.licenseId,
+            authorization: params.authorization,
+        };
+
+        return this;
+    }
+
+    /**
+     * Builds and returns the final checkout options to be used with the `@freemius/checkout` package.
      *
      * @returns The constructed CheckoutOptions object
      */
@@ -428,8 +414,6 @@ export class Checkout {
 
     /**
      * Generates a checkout link based on the current builder state.
-     *
-     * @note - This is async by purpose so that we can allow for future enhancements that might require async operations.
      */
     getLink(): string {
         const checkoutOptions = convertCheckoutOptionsToQueryParams(this.options);

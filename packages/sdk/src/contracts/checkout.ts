@@ -145,6 +145,12 @@ export type CheckoutBuilderOptions = {
      * If not provided, the checkout will not have a trial period.
      */
     trial?: CheckoutOptions['trial'];
+    /**
+     * Optional license ID for license upgrade scenarios.
+     *
+     * When provided, the checkout will be configured for upgrading the specified license. Use this to generate upgrade links for existing users.
+     */
+    licenseId?: string;
 };
 
 /**
