@@ -18,20 +18,20 @@ export async function POST(request: Request) {
         );
     }
 
+    // We assume an active license is needed regardless of the credit balance.
+    const entitlement = await getUserEntitlement(session.user.id);
+
+    if (!entitlement) {
+        return Response.json(
+            {
+                code: 'no_active_purchase',
+                message: 'You do not have an active license to use this feature.',
+            },
+            { status: 403 }
+        );
+    }
+
     if (!(await hasCredits(session.user.id, 100))) {
-        // We assume an active license is needed regardless of the credit balance.
-        const entitlement = await getUserEntitlement(session.user.id);
-
-        if (!entitlement) {
-            return Response.json(
-                {
-                    code: 'no_active_purchase',
-                    message: 'You do not have an active license to use this feature.',
-                },
-                { status: 403 }
-            );
-        }
-
         return Response.json(
             {
                 code: 'insufficient_credits',

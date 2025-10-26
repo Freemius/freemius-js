@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation';
 
 export function useConfirmPurchase() {
     const [isExploding, setIsExploding] = React.useState<boolean>(false);
-    const router = useRouter();
 
     const handlePurchase = React.useCallback(
         async (data: PurchaseData) => {
@@ -20,9 +19,8 @@ export function useConfirmPurchase() {
                 description: 'You can now use the feature you just purchased.',
             });
             setIsExploding(true);
-            router.refresh();
         },
-        [setIsExploding, router]
+        [setIsExploding]
     );
 
     const handleError = React.useCallback((error: unknown) => {
@@ -42,6 +40,7 @@ export default function CheckoutWithConfettiProvider(props: {
 }) {
     const { checkout, children } = props;
     const { isExploding, setIsExploding, handleError, handlePurchase } = useConfirmPurchase();
+    const router = useRouter();
 
     return (
         <CheckoutProvider
@@ -58,7 +57,10 @@ export default function CheckoutWithConfettiProvider(props: {
                         duration={3000}
                         particleCount={250}
                         width={1600}
-                        onComplete={() => setIsExploding(false)}
+                        onComplete={() => {
+                            setIsExploding(false);
+                            router.refresh();
+                        }}
                         zIndex={1000}
                     />
                 </div>
