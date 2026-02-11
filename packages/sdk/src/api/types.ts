@@ -33,6 +33,8 @@ export type UserSubscriptionFilterOptions = ApiEntitiesFilter<
 export type UserLicenseFilterOptions = ApiEntitiesFilter<operations['users/list-licenses']['parameters']['query']>;
 export type UserPaymentFilterOptions = ApiEntitiesFilter<operations['users/list-payments']['parameters']['query']>;
 export type UserPluginEntity = components['schemas']['UserPluginEnriched'];
+export type UserCustomerPortalResult =
+    operations['products/generate-portal-login-link']['responses'][201]['content']['application/json'];
 
 export type LicenseEntity = components['schemas']['License'];
 export type LicenseFilterOptions = ApiEntitiesFilter<operations['licenses/list']['parameters']['query']>;

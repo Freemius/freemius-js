@@ -14,6 +14,7 @@ import {
     BillingUpdatePayload,
     UserSubscriptionWithDiscounts,
     SubscriptionDiscountEntity,
+    UserCustomerPortalResult,
 } from './types';
 
 const USER_FIELDS = 'email,first,last,picture,is_verified,id,created,updated,is_marketing_allowed';
@@ -194,6 +195,40 @@ export class User extends ApiBase<UserEntity, UserFilterOptions> {
         });
 
         if (!this.isGoodResponse(response.response) || !response.data || !response.data) {
+            return null;
+        }
+
+        return response.data;
+    }
+
+    async retrieveHostedCustomerPortal(userId: FSId): Promise<UserCustomerPortalResult | null> {
+        const response = await this.client.POST(`/products/{product_id}/portal/login.json`, {
+            params: {
+                path: { product_id: this.productId },
+            },
+            body: {
+                id: idToString(userId),
+            },
+        });
+
+        if (!this.isGoodResponse(response.response) || !response.data) {
+            return null;
+        }
+
+        return response.data;
+    }
+
+    async retrieveHostedCustomerPortalByEmail(email: string): Promise<UserCustomerPortalResult | null> {
+        const response = await this.client.POST(`/products/{product_id}/portal/login.json`, {
+            params: {
+                path: { product_id: this.productId },
+            },
+            body: {
+                email,
+            },
+        });
+
+        if (!this.isGoodResponse(response.response) || !response.data) {
             return null;
         }
 

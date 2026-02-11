@@ -98,6 +98,15 @@ async function main() {
 
     const cancellationCoupon = await freemius.api.product.retrieveSubscriptionCancellationCoupon();
     console.log(cancellationCoupon);
+
+    // Customer Portal
+    const customerPortalLink = await freemius.api.user.retrieveHostedCustomerPortal(4060);
+    console.log(customerPortalLink);
+
+    const customerPortalByEmail = await freemius.api.user.retrieveHostedCustomerPortalByEmail(
+        'user-1759746115736-2@example.com'
+    );
+    console.log(customerPortalByEmail);
 }
 
 main();

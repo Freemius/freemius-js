@@ -563,49 +563,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    '/developers/{developer_id}/products/{product_id}/emails/{email_id}.json': {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /**
-                 * @description The ID of the product.
-                 * @example 1234
-                 */
-                product_id: components['parameters']['product_id'];
-                /**
-                 * @description The ID of the developer.
-                 * @example 1234
-                 */
-                developer_id: components['parameters']['developer_id'];
-                /** @description The ID of the email. */
-                email_id: string;
-            };
-            cookie?: never;
-        };
-        /**
-         * Retrieve an email template
-         * @description Retrieve a specific email template by ID.
-         *     > This is an experimental feature, please don't use it.
-         *
-         *     > Only a developer can access email templates.
-         */
-        get: operations['products/retrieve-email-template'];
-        /**
-         * Update an email template
-         * @description Update a specific email template by ID.
-         *     > This is an experimental feature, please don't use it.
-         *
-         *     > Only a developer can update email templates.
-         */
-        put: operations['products/update-email-template'];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     '/products/{product_id}/events/{event_id}.json': {
         parameters: {
             query?: never;
@@ -2556,6 +2513,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    '/products/{product_id}/portal/login.json': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate portal login link
+         * @description Generate a direct login link for a user in the context of the store of the product. The login link is valid for 5 minutes from generation. Either user ID or email must be provided.
+         */
+        post: operations['products/generate-portal-login-link'];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/products/{product_id}/pricing.json': {
         parameters: {
             query?: never;
@@ -2770,7 +2753,7 @@ export interface paths {
         get: operations['subscriptions/retrieve'];
         /**
          * Update a subscription
-         * @description Update a subscription's auto-renewal status and activate a cancellation coupon.
+         * @description Update a subscription to activate a cancellation coupon.
          */
         put: operations['subscriptions/update'];
         post?: never;
@@ -3376,7 +3359,7 @@ export interface paths {
         put?: never;
         /**
          * Create a review
-         * @description Creat a review associated with a license. If you want to create/import reviews which are not associated with a license or from a different system, please use the Review endpoint under `products/{product_id}/reviews.json`.
+         * @description Create a review associated with a license. If you want to create/import reviews which are not associated with a license or from a different system, please use the Review endpoint under `products/{product_id}/reviews.json`.
          */
         post: operations['licenses/create-review'];
         delete?: never;
@@ -4186,30 +4169,6 @@ export interface components {
             user_type: 'all' | 'new' | 'current' | 'previous' | 'customer' | 'migrated';
             source?: components['schemas']['Migration']['source'];
         };
-        /** @description Class CouponEnriched */
-        CouponEnriched: components['schemas']['Coupon'] & {
-            /** @description If the discount type is `dollar`, then this field will hold values of absolute discount amount per supported currency. */
-            discounts?: {
-                /**
-                 * Format: float
-                 * @description The discount amount in absolute value for USD currency.
-                 * @example 10.5
-                 */
-                usd?: number | null;
-                /**
-                 * Format: float
-                 * @description The discount amount in absolute value for EUR currency.
-                 * @example 10.5
-                 */
-                eur?: number | null;
-                /**
-                 * Format: float
-                 * @description The discount amount in absolute value for GBP currency.
-                 * @example 10.5
-                 */
-                gbp?: number | null;
-            };
-        };
         /** @description Represents a link between coupons to various special entities. Example: Affiliate coupon tracking, cart abandonment recovery of a product. */
         CouponEntity: {
             id?: components['schemas']['CommonProperties']['id'];
@@ -4249,7 +4208,17 @@ export interface components {
             redemptions?: components['schemas']['Coupon']['redemptions'];
             discount?: components['schemas']['Coupon']['discount'];
             discount_type?: components['schemas']['Coupon']['discount_type'];
-            discounts?: components['schemas']['CouponEnriched']['allOf']['1']['discounts'];
+            /**
+             * @description The discount amount for each currency
+             * @example {
+             *       "usd": 10,
+             *       "eur": 9,
+             *       "gbp": 8
+             *     }
+             */
+            discounts?: {
+                [key: string]: number;
+            };
             has_renewals_discount?: components['schemas']['Coupon']['has_renewals_discount'];
         };
         /** @description Class Customer
@@ -5078,9 +5047,18 @@ export interface components {
             /** @description Money-back guarantee in days. */
             money_back_period?: number;
             refund_policy?: components['schemas']['CommonEnums']['RefundPolicy'];
+            /** @description Indicates whether the product follows a consumptive usage. Use this if your product includes one-off or consumptive usage like AI credits, API usage etc. It affects how the refund policy is generated for your product. Check our [documentation](https://freemius.com/help/documentation/selling-with-freemius/refund-policy/) to learn more.
+             *
+             *     > This is applicable for SaaS products only. */
+            is_consumptive_usage?: boolean;
             /** @description Renewals discount that will be applied to the chosen plan. */
             annual_renewals_discount?: number | null;
             renewals_discount_type?: components['schemas']['CommonEnums']['RenewalsDiscountType'];
+            /**
+             * @description Number of days to allow proration when upgrading from one lifetime license to another. Can be a number greater than `30` or `null` for unlimited.
+             * @example 30
+             */
+            lifetime_license_proration_days?: number | null;
             /** @description A flag that controls the visibility of add-ons in the in-dashboard add-ons marketplace. Defaults to true. Only applicable if the product is an add-on. */
             is_released?: boolean;
             /** @description A flag that controls whether the SDK should be required or not during deployment of a version. It defaults to `true`. */
@@ -5115,6 +5093,8 @@ export interface components {
              */
             earnings?: number;
             type?: components['schemas']['CommonEnums']['ProductType'];
+            /** @description The alias type of the product. For example, 'extension', 'chrome extension', 'desktop app'. */
+            type_alias?: string;
             /** @description Determines whether the product is categorized as a static product (for example, a widget or a template). */
             is_static?: boolean;
         };
@@ -7182,100 +7162,6 @@ export interface operations {
             404: components['responses']['404'];
         };
     };
-    'products/retrieve-email-template': {
-        parameters: {
-            query?: {
-                /**
-                 * @description Comma separated list of fields to return in the response. If not specified, all fields are returned.
-                 * @example id,name,slug
-                 */
-                fields?: components['parameters']['fields'];
-            };
-            header?: never;
-            path: {
-                /**
-                 * @description The ID of the product.
-                 * @example 1234
-                 */
-                product_id: components['parameters']['product_id'];
-                /**
-                 * @description The ID of the developer.
-                 * @example 1234
-                 */
-                developer_id: components['parameters']['developer_id'];
-                /** @description The ID of the email. */
-                email_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The email template. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    'application/json': components['schemas']['EmailTemplate'];
-                };
-            };
-            400: components['responses']['400'];
-            401: components['responses']['401'];
-            402: components['responses']['402'];
-            404: components['responses']['404'];
-        };
-    };
-    'products/update-email-template': {
-        parameters: {
-            query?: {
-                /**
-                 * @description Comma separated list of fields to return in the response. If not specified, all fields are returned.
-                 * @example id,name,slug
-                 */
-                fields?: components['parameters']['fields'];
-            };
-            header?: never;
-            path: {
-                /**
-                 * @description The ID of the product.
-                 * @example 1234
-                 */
-                product_id: components['parameters']['product_id'];
-                /**
-                 * @description The ID of the developer.
-                 * @example 1234
-                 */
-                developer_id: components['parameters']['developer_id'];
-                /** @description The ID of the email. */
-                email_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                'application/json': {
-                    subject?: components['schemas']['EmailTemplate']['subject'];
-                    html?: components['schemas']['EmailTemplate']['html'];
-                    plain?: components['schemas']['EmailTemplate']['plain'];
-                };
-            };
-        };
-        responses: {
-            /** @description The updated email template. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    'application/json': components['schemas']['EmailTemplate'];
-                };
-            };
-            400: components['responses']['400'];
-            401: components['responses']['401'];
-            402: components['responses']['402'];
-            404: components['responses']['404'];
-        };
-    };
     'events/retrieve': {
         parameters: {
             query?: {
@@ -7604,6 +7490,7 @@ export interface operations {
                     refund_policy?: components['schemas']['Plugin']['refund_policy'];
                     annual_renewals_discount?: components['schemas']['Plugin']['annual_renewals_discount'];
                     renewals_discount_type?: components['schemas']['Plugin']['renewals_discount_type'];
+                    lifetime_license_proration_days?: components['schemas']['Plugin']['lifetime_license_proration_days'];
                     is_pricing_visible?: components['schemas']['Plugin']['is_pricing_visible'];
                     default_plan_id?: components['schemas']['Plugin']['default_plan_id'];
                     /**
@@ -9325,6 +9212,8 @@ export interface operations {
                     last_name?: string;
                     /** @description Email address of the user (only needed when activating a ghost license). */
                     user_email?: string;
+                    /** @description Whether to allow license activation if the plans of the product has not been released yet. Useful for testing purpose only. */
+                    allow_unreleased_plan_activation?: boolean;
                 };
             };
         };
@@ -10792,6 +10681,57 @@ export interface operations {
             };
         };
     };
+    'products/generate-portal-login-link': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                'application/json': {
+                    /**
+                     * Format: int64
+                     * @description The ID of the user. Either id or email is required.
+                     */
+                    id?: string;
+                    /**
+                     * Format: email
+                     * @description The email of the user. Either id or email is required.
+                     */
+                    email?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Portal login link generated successfully. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /** @description The generated portal session token. */
+                        token?: string;
+                        /**
+                         * Format: uri
+                         * @description The complete portal login URL with the token.
+                         */
+                        link?: string;
+                    };
+                };
+            };
+            400: components['responses']['400'];
+            404: components['responses']['404'];
+        };
+    };
     'products/retrieve-pricing-table-data': {
         parameters: {
             query?: {
@@ -11437,9 +11377,7 @@ export interface operations {
         requestBody: {
             content: {
                 'application/json': {
-                    /** @description Logs an event that confirms the user requested that the subscription will continue to auto-renew. */
-                    auto_renew?: boolean;
-                    /** @description An optional subscription cancellation coupon ID. The coupon must be set as a special "Cancellation Coupon" in the Freemius Developer Dashboard. If provided the discount will be applied to the next renewals. */
+                    /** @description The subscription cancellation coupon ID. The coupon must be set as a special "Cancellation Coupon" in the Freemius Developer Dashboard. The discount will be applied to the next renewals. */
                     coupon_id?: number;
                 };
             };
@@ -12378,7 +12316,7 @@ export interface operations {
                     send_verification_email?: boolean;
                     is_marketing_allowed?: components['schemas']['User']['is_marketing_allowed'];
                     /** @description (optional) If `true`, no emails will be sent to users nor events will be logged. */
-                    is_migration?: string;
+                    is_migration?: boolean;
                     source?: components['schemas']['Migration']['source_external_id'];
                 };
             };
