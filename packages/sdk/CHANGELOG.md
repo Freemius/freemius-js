@@ -1,5 +1,11 @@
 # @freemius/sdk
 
+## 0.2.0
+
+### Minor Changes
+
+- d533fc5: Added API to generate magic link for the hosted customer portal
+
 ## 0.1.0
 
 ### Minor Changes
