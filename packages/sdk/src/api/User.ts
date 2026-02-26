@@ -234,4 +234,26 @@ export class User extends ApiBase<UserEntity, UserFilterOptions> {
 
         return response.data;
     }
+
+    async retrieveInvoice(userId: FSId, paymentId: FSId): Promise<Blob | null> {
+        const response = await this.client.GET(
+            `/products/{product_id}/users/{user_id}/payments/{payment_id}/invoice.pdf`,
+            {
+                params: {
+                    path: {
+                        product_id: this.productId,
+                        user_id: this.getIdForPath(userId),
+                        payment_id: this.getIdForPath(paymentId),
+                    },
+                },
+                parseAs: 'blob',
+            }
+        );
+
+        if (!this.isGoodResponse(response.response) || !response.data) {
+            return null;
+        }
+
+        return response.data;
+    }
 }

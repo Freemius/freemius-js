@@ -10,7 +10,7 @@ import { Payment } from '../api/Payment';
 import { WebhookEvent } from '../api/WebhookEvent';
 import { isTestServer } from '../utils/ops';
 
-const API_ENDPOINT_PRODUCTION = 'https://api.freemius.com/v1/';
+const API_ENDPOINT_PRODUCTION = 'https://fast-api.freemius.com/v1/';
 const API_ENDPOINT_TEST = 'http://api.freemius-local.com:8080/v1/';
 
 /**

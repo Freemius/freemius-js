@@ -3399,6 +3399,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    '/products/{product_id}/users/{user_id}/payments/{payment_id}/invoice.pdf': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the User.
+                 * @example 1234
+                 */
+                user_id: components['parameters']['user_id'];
+                /**
+                 * @description The ID of the payment.
+                 * @example 1234
+                 */
+                payment_id: components['parameters']['payment_id'];
+            };
+            cookie?: never;
+        };
+        /**
+         * Download invoice
+         * @description Download invoice of a payment of a user. Use this endpoint to securely download the invoice of a payment belonging to a user. This is useful for implementing your own Customer Portal with download links to invoices.
+         */
+        get: operations['users/download-invoice'];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/products/{product_id}/users/{user_id}/subscriptions.json': {
         parameters: {
             query?: never;
@@ -12658,6 +12694,52 @@ export interface operations {
                     };
                 };
             };
+            401: components['responses']['401'];
+            402: components['responses']['402'];
+            404: components['responses']['404'];
+        };
+    };
+    'users/download-invoice': {
+        parameters: {
+            query?: {
+                /**
+                 * @description Comma separated list of fields to return in the response. If not specified, all fields are returned.
+                 * @example id,name,slug
+                 */
+                fields?: components['parameters']['fields'];
+            };
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the User.
+                 * @example 1234
+                 */
+                user_id: components['parameters']['user_id'];
+                /**
+                 * @description The ID of the payment.
+                 * @example 1234
+                 */
+                payment_id: components['parameters']['payment_id'];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PDF invoice */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/pdf': unknown;
+                };
+            };
+            400: components['responses']['400'];
             401: components['responses']['401'];
             402: components['responses']['402'];
             404: components['responses']['404'];
