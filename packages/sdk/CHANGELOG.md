@@ -1,5 +1,13 @@
 # @freemius/sdk
 
+## 0.3.0
+
+### Minor Changes
+
+- afd82c3: - Update API spec
+    - New endpoint to securely download user payment invoice
+    - Add tests and examples for vibe coding platforms
+
 ## 0.2.0
 
 ### Minor Changes
