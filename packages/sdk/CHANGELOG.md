@@ -1,5 +1,12 @@
 # @freemius/sdk
 
+## 0.3.1
+
+### Patch Changes
+
+- ce82d5f: Remove the unused `upgradeUrl` field from the Customer Portal `PortalSubscription` contract (it was not
+  returned at runtime).
+
 ## 0.3.0
 
 ### Minor Changes
