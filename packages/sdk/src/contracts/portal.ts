@@ -20,7 +20,6 @@ export interface PortalSubscription {
     checkoutUpgradeAuthorization?: string | null;
     quota: number | null;
     paymentMethod: PaymentMethod | null;
-    upgradeUrl?: string;
     isTrial: boolean;
     trialEnds: Date | null;
     isFreeTrial: boolean;
