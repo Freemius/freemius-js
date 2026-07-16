@@ -1,5 +1,13 @@
 # @freemius/sdk
 
+## 0.4.0
+
+### Minor Changes
+
+- 9ba1e3e: Add `freemius.api.license.update()` for updating license properties such as expiration, quota, feature
+  restrictions, white-labeling, user assignment, and subscription renewal behavior, with a fully typed payload derived
+  from the Freemius API schema.
+
 ## 0.3.1
 
 ### Patch Changes
