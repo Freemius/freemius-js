@@ -38,6 +38,9 @@ export type UserCustomerPortalResult =
 
 export type LicenseEntity = components['schemas']['License'];
 export type LicenseFilterOptions = ApiEntitiesFilter<operations['licenses/list']['parameters']['query']>;
+export type LicenseUpdatePayload = NonNullable<
+    operations['licenses/update']['requestBody']
+>['content']['application/json'];
 
 export type PaymentEntity = components['schemas']['Payment'];
 export type PaymentFilterOptions = ApiEntitiesFilter<operations['payments/list']['parameters']['query']>;

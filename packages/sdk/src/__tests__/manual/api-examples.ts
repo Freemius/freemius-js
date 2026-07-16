@@ -1,26 +1,38 @@
 import { freemius } from './fs';
 
-async function main() {
-    // Product
+async function runProductOperations() {
     const product = await freemius.api.product.retrieve();
     console.log(product);
 
-    // Licenses
-    const license = await freemius.api.license.retrieve(123);
+    const pricingData = await freemius.api.product.retrievePricingData();
+    console.log(pricingData);
+
+    const cancellationCoupon = await freemius.api.product.retrieveSubscriptionCancellationCoupon();
+    console.log(cancellationCoupon);
+}
+
+async function runLicenseOperations() {
+    const license = await freemius.api.license.retrieve(889127);
     console.log(license);
 
-    // Getting all licenses
     const licenses = [];
     for await (const license of freemius.api.license.iterateAll({ filter: 'active' })) {
         licenses.push(license);
     }
     console.table(licenses);
 
-    // Subscriptions
+    const updatedLicense = await freemius.api.license.update(889127, {
+        expiration: '2028-12-31 23:59:59',
+        update_subscription_renewal_date: false,
+    });
+
+    console.log(updatedLicense);
+}
+
+async function runSubscriptionOperations() {
     const subscription = await freemius.api.subscription.retrieve(123);
     console.log(subscription);
 
-    // Getting first 20 subscriptions with annual billing cycle
     const subscriptions = await freemius.api.subscription.retrieveMany({ filter: 'active' }, { count: 20, offset: 20 });
     console.table(subscriptions);
 
@@ -34,8 +46,9 @@ async function main() {
     await freemius.api.subscription.applyRenewalCoupon(allSubscriptions[0]!.id!, coupon![0]!.id!, true);
 
     await freemius.api.subscription.cancel(allSubscriptions[0]!.id!, 'Log cancellation reason from SDK', [1]);
+}
 
-    // Users
+async function runUserOperations() {
     const user = freemius.api.user.retrieve(123);
     console.log(user);
 
@@ -48,18 +61,19 @@ async function main() {
     }
     console.table(allUsers);
 
-    // Search by email
     const userByEmail = await freemius.api.user.retrieveByEmail('xyz@example.com');
     console.log(userByEmail);
+}
 
-    // Billing
+async function runBillingOperations() {
     const billing = await freemius.api.user.retrieveBilling(123);
     console.log(billing);
 
     const updatedBilling = await freemius.api.user.updateBilling(123, { business_name: 'Foo Inc', tax_id: '12345' });
     console.log(updatedBilling);
+}
 
-    // Purchases
+async function runPurchaseOperations() {
     const userLicenses = await freemius.api.user.retrieveLicenses(123);
     console.table(userLicenses);
 
@@ -68,8 +82,9 @@ async function main() {
 
     const userPayments = await freemius.api.user.retrievePayments(123);
     console.table(userPayments);
+}
 
-    // Payments
+async function runPaymentOperations() {
     const payment = await freemius.api.payment.retrieve(123);
     console.log(payment);
 
@@ -91,15 +106,9 @@ async function main() {
         },
     });
     console.log(response);
+}
 
-    // Product
-    const pricingData = await freemius.api.product.retrievePricingData();
-    console.log(pricingData);
-
-    const cancellationCoupon = await freemius.api.product.retrieveSubscriptionCancellationCoupon();
-    console.log(cancellationCoupon);
-
-    // Customer Portal
+async function runCustomerPortalOperations() {
     const customerPortalLink = await freemius.api.user.retrieveHostedCustomerPortal(4060);
     console.log(customerPortalLink);
 
@@ -107,6 +116,17 @@ async function main() {
         'user-1759746115736-2@example.com'
     );
     console.log(customerPortalByEmail);
+}
+
+async function main() {
+    await runProductOperations();
+    await runLicenseOperations();
+    await runSubscriptionOperations();
+    await runUserOperations();
+    await runBillingOperations();
+    await runPurchaseOperations();
+    await runPaymentOperations();
+    await runCustomerPortalOperations();
 }
 
 main();

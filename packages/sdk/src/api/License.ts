@@ -1,6 +1,6 @@
 import { PagingOptions } from '../contracts/types';
 import { ApiBase } from './ApiBase';
-import { LicenseEntity, LicenseFilterOptions, SubscriptionEntity, FSId } from './types';
+import { LicenseEntity, LicenseFilterOptions, SubscriptionEntity, FSId, LicenseUpdatePayload } from './types';
 
 export class License extends ApiBase<LicenseEntity, LicenseFilterOptions> {
     async retrieve(licenseId: FSId) {
@@ -82,5 +82,23 @@ export class License extends ApiBase<LicenseEntity, LicenseFilterOptions> {
         }
 
         return response.data.settings.authorization as string;
+    }
+
+    async update(licenseId: FSId, updateData: LicenseUpdatePayload): Promise<LicenseEntity | null> {
+        const response = await this.client.PUT(`/products/{product_id}/licenses/{license_id}.json`, {
+            params: {
+                path: {
+                    license_id: this.getIdForPath(licenseId),
+                    product_id: this.productId,
+                },
+            },
+            body: updateData,
+        });
+
+        if (!this.isGoodResponse(response.response) || !response.data || !response.data.id) {
+            return null;
+        }
+
+        return response.data;
     }
 }
