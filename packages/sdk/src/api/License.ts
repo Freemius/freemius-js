@@ -1,6 +1,14 @@
 import { PagingOptions } from '../contracts/types';
 import { ApiBase } from './ApiBase';
-import { LicenseEntity, LicenseFilterOptions, SubscriptionEntity, FSId, LicenseUpdatePayload } from './types';
+import {
+    LicenseEntity,
+    LicenseFilterOptions,
+    SubscriptionEntity,
+    FSId,
+    LicenseUpdatePayload,
+    LicenseCheckoutUpgradePayload,
+    LicenseCheckoutUpgradeResult,
+} from './types';
 
 export class License extends ApiBase<LicenseEntity, LicenseFilterOptions> {
     async retrieve(licenseId: FSId) {
@@ -64,7 +72,10 @@ export class License extends ApiBase<LicenseEntity, LicenseFilterOptions> {
         return subscriptionResponse.data;
     }
 
-    async retrieveCheckoutUpgradeAuthorization(licenseId: FSId): Promise<string | null> {
+    async retrieveCheckoutUpgrade(
+        licenseId: FSId,
+        payload: LicenseCheckoutUpgradePayload = {}
+    ): Promise<LicenseCheckoutUpgradeResult | null> {
         const response = await this.client.POST(`/products/{product_id}/licenses/{license_id}/checkout/link.json`, {
             params: {
                 path: {
@@ -72,16 +83,26 @@ export class License extends ApiBase<LicenseEntity, LicenseFilterOptions> {
                     license_id: this.getIdForPath(licenseId),
                 },
             },
-            body: {
-                is_payment_method_update: true,
-            },
+            body: payload,
         });
 
-        if (!this.isGoodResponse(response.response) || !response.data || !response.data.settings) {
+        if (!this.isGoodResponse(response.response) || !response.data) {
             return null;
         }
 
-        return response.data.settings.authorization as string;
+        return response.data;
+    }
+
+    async retrieveCheckoutUpgradeAuthorization(licenseId: FSId): Promise<string | null> {
+        const checkoutUpgrade = await this.retrieveCheckoutUpgrade(licenseId, {
+            is_payment_method_update: true,
+        });
+
+        if (!checkoutUpgrade?.settings?.authorization) {
+            return null;
+        }
+
+        return checkoutUpgrade.settings.authorization as string;
     }
 
     async update(licenseId: FSId, updateData: LicenseUpdatePayload): Promise<LicenseEntity | null> {

@@ -41,6 +41,11 @@ export type LicenseFilterOptions = ApiEntitiesFilter<operations['licenses/list']
 export type LicenseUpdatePayload = NonNullable<
     operations['licenses/update']['requestBody']
 >['content']['application/json'];
+export type LicenseCheckoutUpgradePayload = NonNullable<
+    operations['licenses/generate-upgrade-link']['requestBody']
+>['content']['application/json'];
+export type LicenseCheckoutUpgradeResult =
+    operations['licenses/generate-upgrade-link']['responses'][201]['content']['application/json'];
 
 export type PaymentEntity = components['schemas']['Payment'];
 export type PaymentFilterOptions = ApiEntitiesFilter<operations['payments/list']['parameters']['query']>;
