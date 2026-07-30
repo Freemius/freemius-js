@@ -27,6 +27,13 @@ async function runLicenseOperations() {
     });
 
     console.log(updatedLicense);
+
+    const licenseUpgrade = await freemius.api.license.retrieveCheckoutUpgrade(889127, {
+        plan_id: '16805',
+        billing_cycle: 'monthly',
+    });
+
+    console.log(licenseUpgrade);
 }
 
 async function runSubscriptionOperations() {
