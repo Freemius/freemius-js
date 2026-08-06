@@ -2,7 +2,7 @@
 '@freemius/sdk': minor
 ---
 
-New API method to generate license upgrade flow
+New API method to generate a license upgrade flow
 
 Previously we only exposed the `freemius.api.license.retrieveCheckoutUpgradeAuthorization` method, which returned a
 license upgrade authorization token. This token was then used to create a checkout flow for license upgrades.
