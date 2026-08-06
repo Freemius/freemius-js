@@ -1,5 +1,27 @@
 # @freemius/sdk
 
+## 0.5.0
+
+### Minor Changes
+
+- 85dcb08: New API method to generate a license upgrade flow
+
+    Previously we only exposed the `freemius.api.license.retrieveCheckoutUpgradeAuthorization` method, which returned a
+    license upgrade authorization token. This token was then used to create a checkout flow for license upgrades.
+
+    Now we have added a new method `freemius.api.license.retrieveCheckoutUpgrade` that returns the full
+    [API Response](https://freemius.com/help/api/licenses/generate-upgrade-link/) for the license upgrade flow,
+    including the checkout link and config for the
+    [overlay checkout](https://freemius.com/help/documentation/checkout/integration/overlay-checkout/).
+
+- 37aab48: Checkout builder now supports proper types for currency and language
+
+    Previously the `setCurrency` method only supported 'usd', 'eur', 'gbp' or 'auto' as currency values, and the
+    `setLanguage` method only supported 'auto', 'auto-beta' or any string as language value.
+
+    Now they have been updated to support proper types for currency and language, including the new
+    `CheckoutCurrencyWithAuto` and `CheckoutLocaleValue` types.
+
 ## 0.4.0
 
 ### Minor Changes
