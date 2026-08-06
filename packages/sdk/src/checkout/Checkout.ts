@@ -3,6 +3,9 @@ import {
     CheckoutPopupParams,
     convertCheckoutOptionsToQueryParams,
     buildFreemiusQueryFromOptions,
+    CheckoutCurrency,
+    CheckoutCurrencyWithAuto,
+    CheckoutLocaleValue,
 } from '@freemius/checkout';
 import { isTestServer, splitName } from '../utils/ops';
 import { CheckoutBuilderUserOptions } from '../contracts/checkout';
@@ -90,7 +93,7 @@ export class Checkout {
             fullscreen: true,
             show_refund_badge: true,
             show_reviews: true,
-            locale: 'auto',
+            language: 'auto',
             currency: 'auto',
         };
 
@@ -265,7 +268,7 @@ export class Checkout {
      *
      * @param locale Language setting - 'auto', 'auto-beta', or specific locale like 'en_US'
      */
-    setLanguage(locale: 'auto' | 'auto-beta' | string = 'auto'): Checkout {
+    setLanguage(locale: CheckoutLocaleValue = 'auto'): Checkout {
         this.options = {
             ...this.options,
             language: locale,
@@ -311,8 +314,8 @@ export class Checkout {
      * @param showInlineSelector Whether to show inline currency selector
      */
     setCurrency(
-        currency: 'usd' | 'eur' | 'gbp' | 'auto',
-        defaultCurrency: 'usd' | 'eur' | 'gbp' = 'usd',
+        currency: CheckoutCurrencyWithAuto,
+        defaultCurrency: CheckoutCurrency = 'usd',
         showInlineSelector: boolean = true
     ): Checkout {
         this.options = {
