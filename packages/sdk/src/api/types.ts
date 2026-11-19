@@ -8,6 +8,21 @@ export type ApiAuthParams = {
 
 export type FSId = string | number | bigint;
 
+export type MigrationSource = NonNullable<components['schemas']['Migration']['source_external_id']>;
+export const MigrationSource = {
+    FREEMIUS: 'freemius',
+    OTHER: 'others',
+    EASY_DIGITAL_DOWNLOADS: 'edd',
+    WOOCOMMERCE: 'woo',
+    GUMROAD: 'gumroad',
+    CODECANYON: 'cc',
+    THEMEFOREST: 'tf',
+    APPSUMO: 'appsumo',
+    SENDOWL: 'sendowl',
+    WHMCS: 'whmcs',
+    LEMON_SQUEEZY: 'ls',
+} as const satisfies Record<string, MigrationSource>;
+
 export type SubscriptionEntity = components['schemas']['Subscription'];
 export type SubscriptionFilterOptions = ApiEntitiesFilter<operations['subscriptions/list']['parameters']['query']>;
 export type UserSubscriptionEntity = NonNullable<
@@ -25,6 +40,10 @@ export type SubscriptionRenewalCouponResult =
     operations['subscriptions/update']['responses'][200]['content']['application/json'];
 
 export type UserEntity = components['schemas']['User'];
+export type UserMigrationPayload = Omit<
+    operations['users/create']['requestBody']['content']['application/json'],
+    'source' | 'is_migration'
+>;
 export type UserFilterOptions = ApiEntitiesFilter<operations['users/list']['parameters']['query']>;
 export type UserBillingEntity = components['schemas']['Billing'];
 export type UserSubscriptionFilterOptions = ApiEntitiesFilter<
@@ -37,6 +56,15 @@ export type UserCustomerPortalResult =
     operations['products/generate-portal-login-link']['responses'][201]['content']['application/json'];
 
 export type LicenseEntity = components['schemas']['License'];
+export type LicenseMigrationPayload = Omit<
+    operations['plans/create-license']['requestBody']['content']['application/json'],
+    'source'
+> & {
+    plan_id: FSId;
+    pricing_id: FSId;
+};
+export type LicenseMigrationResult =
+    operations['plans/create-license']['responses'][201]['content']['application/json'];
 export type LicenseFilterOptions = ApiEntitiesFilter<operations['licenses/list']['parameters']['query']>;
 export type LicenseUpdatePayload = NonNullable<
     operations['licenses/update']['requestBody']

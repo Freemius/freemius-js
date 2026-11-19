@@ -8,9 +8,31 @@ import {
     LicenseUpdatePayload,
     LicenseCheckoutUpgradePayload,
     LicenseCheckoutUpgradeResult,
+    LicenseMigrationPayload,
+    LicenseMigrationResult,
+    MigrationSource,
 } from './types';
 
 export class License extends ApiBase<LicenseEntity, LicenseFilterOptions> {
+    async migrate(source: MigrationSource, payload: LicenseMigrationPayload): Promise<LicenseMigrationResult | null> {
+        const { plan_id, pricing_id, ...body } = payload;
+        const { response, data } = await this.client.POST(
+            '/products/{product_id}/plans/{plan_id}/pricing/{pricing_id}/licenses.json',
+            {
+                params: {
+                    path: {
+                        product_id: this.productId,
+                        plan_id: this.getIdForPath(plan_id),
+                        pricing_id: this.getIdForPath(pricing_id),
+                    },
+                },
+                body: { ...body, source },
+            }
+        );
+
+        return this.isGoodResponse(response) && data?.id ? data : null;
+    }
+
     async retrieve(licenseId: FSId) {
         const licenseResponse = await this.client.GET(`/products/{product_id}/licenses/{license_id}.json`, {
             params: {

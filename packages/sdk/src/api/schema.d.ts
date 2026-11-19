@@ -197,6 +197,228 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    '/products/{product_id}/aff/{affiliate_program_id}/affiliates/{affiliate_id}.json': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the affiliate.
+                 * @example 1234
+                 */
+                affiliate_id: components['parameters']['affiliate_id'];
+                /**
+                 * @description The ID of the affiliate program.
+                 * @example 1234
+                 */
+                affiliate_program_id: components['parameters']['affiliate_program_id'];
+            };
+            cookie?: never;
+        };
+        /**
+         * Retrieve an affiliate
+         * @description Retrieve a specific affiliate by ID.
+         */
+        get: operations['affiliates/retrieve'];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    '/products/{product_id}/aff/{affiliate_program_id}/affiliates.json': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the affiliate program.
+                 * @example 1234
+                 */
+                affiliate_program_id: components['parameters']['affiliate_program_id'];
+            };
+            cookie?: never;
+        };
+        /**
+         * List all affiliates
+         * @description Retrieve the affiliates collection associated with the product affiliate program.
+         */
+        get: operations['affiliates/list'];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    '/products/{product_id}/aff/{affiliate_program_id}.json': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the affiliate program.
+                 * @example 1234
+                 */
+                affiliate_program_id: components['parameters']['affiliate_program_id'];
+            };
+            cookie?: never;
+        };
+        /**
+         * Retrieve the program terms
+         * @description Retrieve a specific product affiliation program terms details.
+         */
+        get: operations['affiliates/retrieve-program-terms'];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    '/products/{product_id}/aff.json': {
+        parameters: {
+            query: {
+                /**
+                 * @description The type of the program to retrieve.
+                 * @example affiliation
+                 */
+                type: string;
+            };
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+            };
+            cookie?: never;
+        };
+        /**
+         * Retrieve the program details
+         * @description Retrieves the product's affiliation program details.
+         */
+        get: operations['affiliates/retrieve-program-details'];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    '/products/{product_id}/affiliate_payments/{affiliate_payment_id}.json': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the payment of an affiliate.
+                 * @example 1234
+                 */
+                affiliate_payment_id: components['parameters']['affiliate_payment_id'];
+            };
+            cookie?: never;
+        };
+        /**
+         * Retrieve a payment
+         * @description Retrieve a specific affiliate payment by its ID.
+         */
+        get: operations['affiliates/retrieve-payment'];
+        /**
+         * Update a payment
+         * @description Update a specific affiliate payment by its ID.
+         */
+        put: operations['affiliates/update-payment'];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    '/products/{product_id}/affiliate_payments.json': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+            };
+            cookie?: never;
+        };
+        /**
+         * List all payments
+         * @description Retrieve the payment collection associated with the product affiliate program.
+         */
+        get: operations['affiliates/list-payments'];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    '/products/{product_id}/affiliates/{affiliate_id}/coupon.json': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the affiliate.
+                 * @example 1234
+                 */
+                affiliate_id: components['parameters']['affiliate_id'];
+            };
+            cookie?: never;
+        };
+        /**
+         * Retrieve a coupon
+         * @description Retrieve the coupon associated with the affiliate of the product.
+         */
+        get: operations['affiliates/retrieve-coupon'];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/products/{product_id}/carts/{cart_id}/events.json': {
         parameters: {
             query?: never;
@@ -640,7 +862,7 @@ export interface paths {
         };
         /**
          * Retrieve a feature
-         * @description Retrieve a product's feature. In case of WordPress products, this is used automatically for the [in-dashboard pricing page](https://freemius.com/wordpress/checkout/).
+         * @description Retrieve a product's feature.
          */
         get: operations['products/retrieve-feature'];
         /**
@@ -1686,6 +1908,41 @@ export interface paths {
          * @description Activate a license and if needed, create an install with the given properties.
          *
          *     > No Authorization header is required. If the provided license doesn't have an associated user, the endpoint will require the `first_name`, `last_name`, and `user_email` parameters to create a new user and associate it with the license.
+         *
+         *     This endpoint can return the following error codes:
+         *
+         *     - `license_expired`: License has already expired.
+         *     - `invalid_license_key`: License key is invalid (e.g., does not match any record).
+         *     - `license_error`: General error while validating the license.
+         *     - `license_utilized`: License quota has reached maximum capacity.
+         *     - `license_activated`: License is already activated on the given install. This usually indicates your app is out of sync with Freemius. You may accept the license and grant premium features. If needed, re-establish the connection by calling the [deactivation endpoint](../licenses/deactivate) and activating again.
+         *
+         *     All errors include a descriptive message from the API, which you may choose to display to the user. For example:
+         *
+         *     - `license_expired`: Your license has expired on 2025-01-01 (id = 12345).
+         *     - `invalid_license_key`: Invalid license key.
+         *     - `license_error`: License activation is not authorized for the site(s) listed below. Please follow the provided link to whitelist the site(s) from the User Dashboard.
+         *     - `license_activated`: License is already activated on install 12345.
+         *     - `license_utilized`: Your license quota of 1234 production site(s) has been reached. If you believe this is a mistake, please contact support at example@freemius.com.
+         *
+         *     You can get the error code from the `response.error.code`. For example
+         *
+         *     ```js
+         *     fetch(activationEndpoint).then((response) => {
+         *         return response.json();
+         *     }).then((data) => {
+         *         if (data.error) {
+         *             // Error detected
+         *             const errorCode = data.error.code;
+         *             const errorMessage = data.error.message;
+         *             // handleError(errorCode, errorMessage);
+         *         } else {
+         *             // Operation successful
+         *         }
+         *     }).catch((error) => {
+         *         // Handle network error
+         *     });
+         *     ```
          */
         post: operations['licenses/activate'];
         delete?: never;
@@ -2497,13 +2754,14 @@ export interface paths {
         put?: never;
         /**
          * Create a license
-         * @description Create a new license for the plan and pricing. Please note that:
-         *     1. Either `period` or `expires_at` or `is_block_features` must be set.
-         *     2. If you create a license with `is_block_features` set to `false` and do not specify `period` and `expires_at`, the license will never expire or block features and will continue to work for lifetime.
-         *     3. If you specify an email address, the user must have already activated a license or installed your product before. If your user has not activated a license, then please don't use the field and when they activate the license we will collect their email and register the user with Freemius.
-         *     4. Use the `source` parameter only when creating migrated licenses from a legacy system.
+         * @description Create a new license for the plan and pricing.
          *
-         *     More information about every other parameters can be found below.
+         *     - Provide at least one of `period`, `expires_at`, or `is_block_features`.
+         *     - When both `period` and `expires_at` are supplied, `period` determines the expiration. To preserve a expiration date, send `expires_at` and omit `period`.
+         *     - Setting `is_block_features` to `false` and omitting `period` and `expires_at` creates a lifetime license.
+         *     - Use the `source` parameter only when creating migrated licenses from a legacy system.
+         *
+         *     To learn more about migrating users and licenses from other platforms, see our [documentation](https://freemius.com/help/documentation/migration/).
          *
          */
         post: operations['plans/create-license'];
@@ -2554,7 +2812,7 @@ export interface paths {
         };
         /**
          * Retrieve the pricing table data
-         * @description Retrieve the plugin's full features & pricing data for a pricing table. This is used by our official [pricing page app](https://github.com/Freemius/pricing-page/) inside the WordPress SDK.
+         * @description Retrieve the plugin's full features & pricing data for a pricing table. Used by our [JS SDK](https://freemius.com/help/documentation/saas-sdk/react-starter/components/#subscription-plans-table), and [WordPress SDK](https://freemius.com/help/documentation/wordpress-sdk/wp-admin-in-dashboard-upgrading/) to create pricing components and pages.
          */
         get: operations['products/retrieve-pricing-table-data'];
         put?: never;
@@ -2789,7 +3047,7 @@ export interface paths {
         /**
          * List all subscriptions
          * @description Retrieve the subscription collecttion associated with your product.
-         *     > Subscriptions are created when someone purchases your product using the [Freemius Checkout](https://freemius.com/wordpress/checkout/).
+         *     > Subscriptions are created when someone purchases your product using the [Freemius Checkout](https://freemius.com/checkout/).
          *
          *     ### Searching and filtering
          *     There are various parameters to help you search and/or filter subscription.
@@ -2882,7 +3140,11 @@ export interface paths {
          */
         put: operations['deployments/update'];
         post?: never;
-        delete?: never;
+        /**
+         * Delete a deployment
+         * @description Delete a specific deployed version of the product. This applies to WordPress products only. Use this endpoint to remove a deployment from your customers.
+         */
+        delete: operations['deployments/delete'];
         options?: never;
         head?: never;
         patch?: never;
@@ -3223,7 +3485,9 @@ export interface paths {
          *     ## Migrating users from other platforms
          *
          *     Freemius allows to migrate your users from other platforms. To do so, you need to set the `is_migration` parameter to `true`. This will prevent any emails from being sent to the users and will not log any events.
-         *     Once migrated the user can use their existing licenses to activate your product.
+         *     Once you migrate users and their licenses your users can activate their licenses through the Freemius API.
+         *
+         *     To learn more about migrating users and licenses from other platforms, see our [documentation](https://freemius.com/help/documentation/migration/).
          */
         post: operations['users/create'];
         delete?: never;
@@ -3488,7 +3752,9 @@ export interface paths {
         put?: never;
         /**
          * Create a checkout token
-         * @description Create a 1 min long token that represents the details of the user for setting the user context in a checkout session. Please read our [documentation](https://freemius.com/help/documentation/selling-with-freemius/freemius-checkout-buy-button/#user_token_in_checkout_new) to learn how to use it.
+         * @description Create a 1 min long token that represents the details of the user for setting the user context in a checkout session. Please read our [documentation](https://freemius.com/help/documentation/checkout/features/pre-populate-user-info/) to learn how to use it.
+         *
+         *     **NOTE**: If you don't have the user ID beforehand, then please refer to opening the checkout in [readonly user mode](https://freemius.com/help/documentation/saas/saas-integration/#prefill-logged-in-user-information), where you can supply the user name and email address.
          */
         post: operations['users/create-checkout-token'];
         delete?: never;
@@ -3837,6 +4103,12 @@ export interface components {
              * @example https://www.example.com
              */
             url?: string;
+            /**
+             * Format: int64
+             * @description The ID of the associated affiliate visit. This value is `null` when the payment is attributed through an affiliate coupon rather than a tracked visit.
+             * @example 12345
+             */
+            affiliate_visit_id_nullable?: string | null;
         };
         /** @description Some request body schemas that are common to many endpoints. */
         CommonRequestSchemas: {
@@ -4879,7 +5151,7 @@ export interface components {
             user_id?: components['schemas']['CommonProperties']['user_id'];
             install_id?: components['schemas']['CommonProperties']['install_id_nullable'];
             plan_id?: components['schemas']['CommonProperties']['plan_id'];
-            pricing_id?: components['schemas']['CommonProperties']['pricing_id_nullable'];
+            pricing_id?: components['schemas']['CommonProperties']['pricing_id'];
             license_id?: components['schemas']['CommonProperties']['license_id'];
             ip?: components['schemas']['CommonProperties']['ip_nullable'];
             country_code?: components['schemas']['CommonProperties']['country_code'];
@@ -4910,6 +5182,12 @@ export interface components {
             refund_reason?: string | null;
             subscription_id?: components['schemas']['CommonProperties']['subscription_id_nullable'];
             /**
+             * Format: int64
+             * @description The ID of the presentment payment.
+             * @example 123456
+             */
+            payment_presentment_id?: string;
+            /**
              * Format: float
              * @description The payment amount (not including taxes).
              * @example 2075.45
@@ -4935,6 +5213,32 @@ export interface components {
              */
             is_renewal: boolean;
             type?: components['schemas']['CommonEnums']['PaymentType'];
+        };
+        /** @description Presentment part of the Payment, with gross and vat in the FX currency, along with exchange rate and conversion fee. */
+        PaymentPresentment: {
+            id?: components['schemas']['CommonProperties']['id'];
+            created?: components['schemas']['CommonProperties']['created'];
+            updated?: components['schemas']['CommonProperties']['updated'];
+            currency?: components['schemas']['CommonEnums']['Currency'];
+            /**
+             * Format: float
+             * @description The payment amount (not including taxes, in FX currency).
+             * @example 2075.45
+             */
+            gross?: number;
+            vat?: components['schemas']['CommonProperties']['vat'];
+            /**
+             * Format: float
+             * @description The fee that the gateway took for conversion of FX currency (in USD).
+             * @example 2.99
+             */
+            conversion_fee?: number;
+            /**
+             * Format: float
+             * @description The gateway exchange rate to convert the currency.
+             * @example 0.123456
+             */
+            exchange_rate?: number;
         };
         /** @description A plan defines the features available to the users. It can have different set of pricing per billing cycle, quota, currency etc. */
         Plan: {
@@ -5018,6 +5322,21 @@ export interface components {
          * @description A **product** is a software that is being sold on Freemius. It can be a WordPress plugin, theme, SaaS, or any other software that is being sold on Freemius.
          */
         Plugin: {
+            /**
+             * @description The selling unit label of the product. For example, 'site', 'user', 'language', 'credit', etc. This is used in the pricing page and in the license key information to indicate the unit of the license key. If not set, it defaults to 'site' for plugins and themes, 'unit' for SaaS products, and 'activation' for Apps.
+             * @example site
+             */
+            selling_unit_label?: string;
+            /**
+             * @description Indicates whether the customer portal login link is included in the after-purchase emails.
+             * @example true
+             */
+            enable_after_purchase_email_login_link?: boolean;
+            /**
+             * @description Indicates whether Freemius will enforce single active susbcription per user. This is available for SaaS products only.
+             * @example false
+             */
+            restrict_single_subscription_per_user?: boolean;
             /**
              * @description The secret key associated with the entity for authorization.
              * @example sk_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
@@ -5459,12 +5778,12 @@ export interface components {
              */
             data?: string;
         };
-        /** @description A subscription is created when a user uses [Freemius Checkout](https://freemius.com/wordpress/checkout/) to purchase or subscribe to a plan of a product. */
+        /** @description A subscription is created when a user uses [Freemius Checkout](https://freemius.com/checkout/) to purchase or subscribe to a plan of a product. */
         Subscription: {
             user_id?: components['schemas']['CommonProperties']['user_id'];
             install_id?: components['schemas']['CommonProperties']['install_id_nullable'];
             plan_id?: components['schemas']['CommonProperties']['plan_id'];
-            pricing_id?: components['schemas']['CommonProperties']['pricing_id_nullable'];
+            pricing_id?: components['schemas']['CommonProperties']['pricing_id'];
             license_id?: components['schemas']['CommonProperties']['license_id'];
             ip?: components['schemas']['CommonProperties']['ip_nullable'];
             country_code?: components['schemas']['CommonProperties']['country_code'];
@@ -5737,11 +6056,16 @@ export interface components {
             /** @description Whether the affiliate is using custom terms. */
             is_using_custom_terms?: boolean;
             /**
+             * @description The ID of the rewards terms.
+             * @example 1234
+             */
+            rewards_terms_id?: number | null;
+            /**
              * @description The status of the affiliate signup.
-             * @default \Freemius\Entities\Affiliation\Affiliate::STATE_PENDING
+             * @default pending
              * @enum {string}
              */
-            status: 'pending' | 'rejected' | 'suspended' | 'active';
+            status: 'pending' | 'active' | 'blocked' | 'rejected' | 'suspended';
             /**
              * @description The domain of the affiliate.
              * @example https://awesome-products.com
@@ -5759,6 +6083,11 @@ export interface components {
              */
             pending_referrals?: number;
             /**
+             * @description The number of approved referrals.
+             * @example 1234
+             */
+            referrals?: number;
+            /**
              * @description The number of visits through the affiliate link.
              * @example 1234
              */
@@ -5768,6 +6097,226 @@ export interface components {
              * @example 1234
              */
             unique_visits?: number;
+        };
+        /** @description An affiliate is individual or businesses that promotes and sells products or services in exchange for a commission on each sale. */
+        AffiliateEnriched: components['schemas']['Affiliate'] & {
+            /**
+             * @description Associated user's email.
+             * @example jane@example.com
+             */
+            email?: string;
+            /**
+             * @description Associated user's first name.
+             * @example Jane
+             */
+            first?: string;
+            /**
+             * @description Associated user's last name.
+             * @example Doe
+             */
+            last?: string;
+            /**
+             * @description Associated user's profile picture.
+             * @example https://example.com/profile-picture.jpg
+             */
+            picture?: string;
+        };
+        /** @description Class AffiliatePayment */
+        AffiliatePayment: components['schemas']['AffiliatePurchase'] & {
+            plugin_id?: components['schemas']['CommonProperties']['plugin_id'];
+            payment_id?: components['schemas']['CommonProperties']['payment_id_nullable'];
+            /**
+             * @description The earnings attributed to an affiliate for a qualifying purchase or payment.
+             * @example 12
+             */
+            commission?: number;
+            /**
+             * @description The status of the payment.
+             * @default pending
+             * @enum {string}
+             */
+            status: 'pending' | 'rejected' | 'paid' | 'unpaid';
+        };
+        AffiliatePaymentEnriched: components['schemas']['AffiliatePayment'] & {
+            affiliate_visit_id?: components['schemas']['CommonProperties']['affiliate_visit_id_nullable'];
+            currency?: components['schemas']['CommonEnums']['Currency'];
+            visited_at?: components['schemas']['CommonProperties']['created'];
+            /**
+             * Format: float
+             * @description The associated payment amount (not including taxes).
+             * @example 2075.45
+             */
+            gross?: number;
+            /**
+             * @description The title of the associated plan.
+             * @example Basic Plan
+             */
+            plan_title?: string;
+            environment?: components['schemas']['CommonProperties']['environment'];
+            billing_cycle?: components['schemas']['CommonEnums']['BillingCycle'];
+            /**
+             * @description The first name of the associated affiliate.
+             * @example John
+             */
+            first?: string;
+            /**
+             * @description The last name of the associated affiliate.
+             * @example Doe
+             */
+            last?: string;
+        };
+        /** @description A customer purchase that has been attributed to an affiliate. */
+        AffiliatePurchase: {
+            id?: components['schemas']['CommonProperties']['id'];
+            created?: components['schemas']['CommonProperties']['created'];
+            updated?: components['schemas']['CommonProperties']['updated'];
+            user_id?: components['schemas']['CommonProperties']['user_id'];
+            referred_user_id?: components['schemas']['CommonProperties']['user_id'];
+            affiliate_id?: components['schemas']['CommonProperties']['user_id'];
+            affiliate_visit_id?: components['schemas']['CommonProperties']['affiliate_visit_id_nullable'];
+            install_id?: components['schemas']['CommonProperties']['install_id_nullable'];
+        };
+        /** @description A product's affiliation program terms. */
+        AffiliateTerms: {
+            id?: components['schemas']['CommonProperties']['id'];
+            created?: components['schemas']['CommonProperties']['created'];
+            updated?: components['schemas']['CommonProperties']['updated'];
+            /**
+             * Format: boolean
+             * @description Whether the affiliation program is active and can be used.
+             */
+            is_active?: boolean;
+            /**
+             * Format: string
+             * @description The type of the affiliation program.
+             * @default affiliation
+             * @enum {string}
+             */
+            type: 'affiliation' | 'rewards';
+            /**
+             * @description The reward type of the affiliation program.
+             * @default payout
+             * @enum {string}
+             */
+            reward_type: 'payout' | 'credit';
+            /**
+             * @description The attribution type of the referral. For `first`, the referral will be attributed to the first visited source containing the affiliation link that was clicked.
+             * @default first
+             * @enum {string}
+             */
+            referral_attribution: 'first' | 'last';
+            /**
+             * Format: int64
+             * @description The number of days the referral cookie is valid. `0` for session cookie, and `null` for non-expiring cookie (until cookies are cleaned).
+             * @default 30
+             * @example 0
+             */
+            cookie_days: number | null;
+            /**
+             * Format: int64
+             * @description The commission amount.
+             * @default 20
+             * @example 20
+             */
+            commission: number;
+            /**
+             * @description The commission type of the affiliation program.
+             * @default percentage
+             * @enum {string}
+             */
+            commission_type: 'percentage' | 'dollar';
+            /**
+             * Format: int64
+             * @description The number of days the affiliate will get paid for all renewals after the initial upgrade/purchase. `0` for only the first payment, and `null` for all renewals. For greater than `0`, affiliate will get paid for all renewals x `commission_renewals_days` days after the initial upgrade/purchase.
+             * @default 0
+             * @example 0
+             */
+            commission_renewals_days: number | null;
+            /**
+             * Format: int64
+             * @description The commission amount for the initial installation.
+             * @default null
+             * @example 100
+             */
+            install_commission: number | null;
+            /**
+             * Format: string
+             * @description The default checkout link of the product.
+             * @example https://checkout.freemius.com/product/12196
+             */
+            default_url?: string;
+            /**
+             * @description The type of customer to get the referral commission.
+             * @default all
+             * @enum {string}
+             */
+            reward_customer_type: 'new_user' | 'new_customer' | 'all';
+            /**
+             * Format: int64
+             * @description The number of days an affiliate will get paid for all customer payments after the initial payment. `0` for only on directly affiliated links, and `null` for all customers' lifetime payments.
+             * @default 0
+             * @example 0
+             */
+            future_payments_days: number | null;
+            /**
+             * Format: boolean
+             * @description Whether to allow referrals from social sites.
+             * @example true
+             */
+            is_social_allowed?: boolean;
+            /**
+             * Format: boolean
+             * @description Whether to allow conversions without HTTP referrer header at all.
+             * @example true
+             */
+            is_app_allowed?: boolean;
+            /**
+             * Format: boolean
+             * @description Whether to allow referrals from any site.
+             * @example true
+             */
+            is_any_site_allowed?: boolean;
+            /**
+             * Format: boolean
+             * @description Whether to show the affiliation program only to users who are already affiliates of the product. If `true`, the affiliation program will be hidden from users who are not affiliates of the product.
+             * @default false
+             */
+            is_hidden: boolean;
+        };
+        /** @description A terms of an affiliation. */
+        AffiliateTermsEnriched: components['schemas']['AffiliateTerms'] & {
+            /**
+             * @description The commission rates in all currencies.
+             * @example {
+             *       "usd": 10,
+             *       "eur": 9,
+             *       "gbp": 8
+             *     }
+             */
+            commissions?: {
+                [key: string]: number;
+            };
+        };
+        /** @description The affiliation program terms of a product. */
+        PluginAffiliateTermsEnriched: components['schemas']['AffiliateTerms'] & {
+            commissions?: components['schemas']['AffiliateTermsEnriched']['allOf']['1']['commissions'];
+            plugin_affiliate_terms_id?: components['schemas']['CommonProperties']['id'];
+            plugin_id?: components['schemas']['CommonProperties']['plugin_id'];
+            /**
+             * @description Refers to who can be an affiliate.
+             * @default selected
+             * @enum {string}
+             */
+            moderation: 'selected' | 'customers' | 'all';
+            /**
+             * Format: int64
+             * @description The number of pending affiliate applications that product owners need to review.
+             * @example 1234
+             */
+            pending_count?: number;
+            /** @description The status of a product user who has applied for the affiliate program. */
+            status?: string | null;
+            plugin_title?: components['schemas']['Plugin']['title'];
         };
         AuthToken: {
             /**
@@ -5864,7 +6413,7 @@ export interface components {
                 'application/json': components['schemas']['ApiError'];
             };
         };
-        /** @description Unauthorized access error. The request requires [authentication](/api/section/bearer-token-auth/) but was not provided or the provided authentication does not satisfy the required permissions. */
+        /** @description Unauthorized access error. The request requires [authentication](https://freemius.com/help/api/#bearer-token-authentication) but was not provided or the provided authentication does not satisfy the required permissions. */
         401: {
             headers: {
                 [name: string]: unknown;
@@ -6009,6 +6558,21 @@ export interface components {
          * @example 1234
          */
         event_id: number;
+        /**
+         * @description The ID of the affiliate.
+         * @example 1234
+         */
+        affiliate_id: number;
+        /**
+         * @description The ID of the affiliate program.
+         * @example 1234
+         */
+        affiliate_program_id: number;
+        /**
+         * @description The ID of the payment of an affiliate.
+         * @example 1234
+         */
+        affiliate_payment_id: number;
         /**
          * @description Comma separated list of fields to return in the response. If not specified, all fields are returned.
          * @example id,name,slug
@@ -6365,6 +6929,341 @@ export interface operations {
             401: components['responses']['401'];
             402: components['responses']['402'];
             404: components['responses']['404'];
+        };
+    };
+    'affiliates/retrieve': {
+        parameters: {
+            query?: {
+                /**
+                 * @description Comma separated list of fields to return in the response. If not specified, all fields are returned.
+                 * @example id,name,slug
+                 */
+                fields?: components['parameters']['fields'];
+            };
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the affiliate.
+                 * @example 1234
+                 */
+                affiliate_id: components['parameters']['affiliate_id'];
+                /**
+                 * @description The ID of the affiliate program.
+                 * @example 1234
+                 */
+                affiliate_program_id: components['parameters']['affiliate_program_id'];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The retrieved affiliate. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['AffiliateEnriched'];
+                };
+            };
+            400: components['responses']['400'];
+            401: components['responses']['401'];
+            402: components['responses']['402'];
+            404: components['responses']['404'];
+        };
+    };
+    'affiliates/list': {
+        parameters: {
+            query?: {
+                /**
+                 * @description The number of records to return.
+                 * @example 10
+                 */
+                count?: components['parameters']['count'];
+                /**
+                 * @description The number of records to skip before starting to return records. Default is 0.
+                 * @example 10
+                 */
+                offset?: components['parameters']['offset'];
+                /** @description Filter affiliates by status. */
+                filter?: 'all' | 'active' | 'pending';
+                /** @description Search affiliates by user ID, affiliate ID, or partial name/email address.
+                 *     > **Caution**: An email address needs to be URL-encoded. */
+                search?: string;
+                /** @description Sort affiliates by criteria. */
+                sort?: 'newest' | 'highest_gross';
+            };
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the affiliate program.
+                 * @example 1234
+                 */
+                affiliate_program_id: components['parameters']['affiliate_program_id'];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The collection of affiliates associated with the product affiliate program. All affiliates are listed under the `affiliates` key. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        affiliates?: components['schemas']['AffiliateEnriched'][];
+                    };
+                };
+            };
+            400: components['responses']['400'];
+            401: components['responses']['401'];
+            402: components['responses']['402'];
+        };
+    };
+    'affiliates/retrieve-program-terms': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the affiliate program.
+                 * @example 1234
+                 */
+                affiliate_program_id: components['parameters']['affiliate_program_id'];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The retrieved affiliate program. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['PluginAffiliateTermsEnriched'];
+                };
+            };
+            400: components['responses']['400'];
+            401: components['responses']['401'];
+            402: components['responses']['402'];
+            404: components['responses']['404'];
+        };
+    };
+    'affiliates/retrieve-program-details': {
+        parameters: {
+            query: {
+                /**
+                 * @description The type of the program to retrieve.
+                 * @example affiliation
+                 */
+                type: string;
+            };
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The retrieved product affiliate program details. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['PluginAffiliateTermsEnriched'];
+                };
+            };
+            400: components['responses']['400'];
+            401: components['responses']['401'];
+            402: components['responses']['402'];
+            404: components['responses']['404'];
+        };
+    };
+    'affiliates/retrieve-payment': {
+        parameters: {
+            query?: {
+                /**
+                 * @description Comma separated list of fields to return in the response. If not specified, all fields are returned.
+                 * @example id,name,slug
+                 */
+                fields?: components['parameters']['fields'];
+            };
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the payment of an affiliate.
+                 * @example 1234
+                 */
+                affiliate_payment_id: components['parameters']['affiliate_payment_id'];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The retrieved affiliate payment. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['AffiliatePaymentEnriched'];
+                };
+            };
+            400: components['responses']['400'];
+            401: components['responses']['401'];
+            402: components['responses']['402'];
+            404: components['responses']['404'];
+        };
+    };
+    'affiliates/update-payment': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the payment of an affiliate.
+                 * @example 1234
+                 */
+                affiliate_payment_id: components['parameters']['affiliate_payment_id'];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                'application/json': {
+                    /**
+                     * @default pending
+                     * @enum {string}
+                     */
+                    status?: 'pending' | 'rejected';
+                };
+            };
+        };
+        responses: {
+            /** @description The updated affiliate payment. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['AffiliatePaymentEnriched'];
+                };
+            };
+            400: components['responses']['400'];
+            401: components['responses']['401'];
+            402: components['responses']['402'];
+            404: components['responses']['404'];
+        };
+    };
+    'affiliates/list-payments': {
+        parameters: {
+            query?: {
+                /**
+                 * @description The number of records to return.
+                 * @example 10
+                 */
+                count?: components['parameters']['count'];
+                /**
+                 * @description The number of records to skip before starting to return records. Default is 0.
+                 * @example 10
+                 */
+                offset?: components['parameters']['offset'];
+                /** @description Filter affiliate payments by status. */
+                status?: 'paid' | 'pending' | 'rejected' | 'unpaid';
+            };
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The collection of affiliate payments associated with the product affiliate program. All payments are listed under the `referrals` key. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        referrals?: components['schemas']['AffiliatePaymentEnriched'][];
+                    };
+                };
+            };
+            400: components['responses']['400'];
+            401: components['responses']['401'];
+            402: components['responses']['402'];
+        };
+    };
+    'affiliates/retrieve-coupon': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the affiliate.
+                 * @example 1234
+                 */
+                affiliate_id: components['parameters']['affiliate_id'];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The coupon associated with the affiliate of the product. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Coupon'];
+                };
+            };
+            400: components['responses']['400'];
+            401: components['responses']['401'];
+            402: components['responses']['402'];
         };
     };
     'carts/retrieve-events': {
@@ -7469,6 +8368,8 @@ export interface operations {
                  * @example id,name,slug
                  */
                 fields?: components['parameters']['fields'];
+                /** @description Whether to return an enriched product response with additional properties relevant for the frontend. */
+                is_enriched?: boolean;
             };
             header?: never;
             path: {
@@ -7534,7 +8435,7 @@ export interface operations {
                      * @enum {integer}
                      */
                     accepted_payments?: 0 | 1;
-                    /** @description `True` to expose license key to customers upon purchase/subscription. (Available for 'SaaS' products only) */
+                    /** @description `True` to expose license key to customers upon purchase/subscription. (Available for 'SaaS' and 'App' products only) */
                     expose_license_key?: boolean;
                     /** @description `True` to include in the after-purchase emails the customer portal login link. */
                     enable_after_purchase_email_login_link?: boolean;
@@ -9266,6 +10167,8 @@ export interface operations {
                         user_public_key?: components['schemas']['User']['public_key'];
                         plugin_id?: components['schemas']['Plugin']['id'];
                         license_plan_name?: components['schemas']['Plan']['name'];
+                        license_plan_id?: components['schemas']['License']['plan_id'];
+                        license_pricing_id?: components['schemas']['License']['pricing_id'];
                         is_marketing_allowed?: components['schemas']['User']['is_marketing_allowed'];
                         install_id?: components['schemas']['Install']['id'];
                         install_secret_key?: components['schemas']['Install']['secret_key'];
@@ -10691,13 +11594,19 @@ export interface operations {
                     period?: components['schemas']['Subscription']['billing_cycle'];
                     is_block_features?: components['schemas']['License']['is_block_features'];
                     expires_at?: components['schemas']['License']['expiration'];
-                    /** @description (optional) License owner email. */
+                    /**
+                     * Format: email
+                     * @description Email address of a user linked to the product, including users imported through the user creation endpoint with `is_migration` set to `true`. For products owned by a trusted developer, this endpoint can also create or link a user by email.
+                     */
                     email?: string;
                     /** @description (optional) If the module type is `bundle` and `existing_install_id` is a valid ID of an install that is using a product of the bundle, a child license will automatically be created and activated for the install. */
                     existing_install_id?: string;
                     /** @description (optional) Whether to email the license key and download link to the user. */
                     send_email?: boolean;
-                    source?: components['schemas']['License']['source'];
+                    /** @description Use this field when importing a license. Supply a numeric migration source ID or a source name. */
+                    source?:
+                        | components['schemas']['Migration']['source']
+                        | components['schemas']['Migration']['source_external_id'];
                     /** @description (optional) Predefined license key - this can be used when duplicating a license of another product into another product. */
                     license_key?: string;
                 };
@@ -10705,13 +11614,17 @@ export interface operations {
         };
         responses: {
             /** @description The license created successfully. */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': {
-                        license?: components['schemas']['License'];
+                    'application/json': components['schemas']['License'] & {
+                        /**
+                         * Format: int64
+                         * @description The parent bundle license ID, returned when a child license is created for the supplied `existing_install_id`.
+                         */
+                        parent_license_id?: string;
                     };
                 };
             };
@@ -11719,6 +12632,33 @@ export interface operations {
             404: components['responses']['404'];
         };
     };
+    'deployments/delete': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the product.
+                 * @example 1234
+                 */
+                product_id: components['parameters']['product_id'];
+                /**
+                 * @description The ID of the product version.
+                 * @example 1234
+                 */
+                tag_id: components['parameters']['tag_id'];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: components['responses']['204'];
+            400: components['responses']['400'];
+            401: components['responses']['401'];
+            402: components['responses']['402'];
+            404: components['responses']['404'];
+        };
+    };
     'deployments/download': {
         parameters: {
             query?: {
@@ -12330,17 +13270,20 @@ export interface operations {
         requestBody: {
             content: {
                 'application/json': {
-                    /** @description Valid email address. */
-                    email?: string;
+                    /**
+                     * Format: email
+                     * @description Valid email address.
+                     */
+                    email: string;
                     /** @description Valid password. Must have at least 8 characters. */
                     password?: string;
                     /** @description (optional) IPv4 or IPv6 Address */
                     ip?: string;
-                    /** @description (optional) Full name property. If not specified, `first` and `last` must be provided instead. */
+                    /** @description Full name. When provided, it takes precedence over `first` and `last`. */
                     name?: string;
-                    /** @description (optional) First name. `Required` if no valid `name` was provided. */
+                    /** @description First name. */
                     first?: string;
-                    /** @description (optional) Last name. `Required` if no valid `name` was provided. */
+                    /** @description Last name. */
                     last?: string;
                     /** @description (optional) Profile picture URL. */
                     picture?: string;
@@ -12348,10 +13291,16 @@ export interface operations {
                     is_verified?: boolean;
                     /** @description (optional) URL address that the user will be auto forwarded to after email confirmation is clicked. */
                     after_email_confirm_url?: string;
-                    /** @description (optional) Defaults to TRUE. If `false`, email verification message will NOT be sent after registration. */
+                    /**
+                     * @description Set to `true` to send a verification email when creating a new, unverified user. This also applies during migration.
+                     * @default false
+                     */
                     send_verification_email?: boolean;
                     is_marketing_allowed?: components['schemas']['User']['is_marketing_allowed'];
-                    /** @description (optional) If `true`, no emails will be sent to users nor events will be logged. */
+                    /**
+                     * @description Set to `true` when importing a user. If the user is already linked to the product, the endpoint returns that user.
+                     * @default false
+                     */
                     is_migration?: boolean;
                     source?: components['schemas']['Migration']['source_external_id'];
                 };

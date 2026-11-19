@@ -15,11 +15,22 @@ import {
     UserSubscriptionWithDiscounts,
     SubscriptionDiscountEntity,
     UserCustomerPortalResult,
+    MigrationSource,
+    UserMigrationPayload,
 } from './types';
 
 const USER_FIELDS = 'email,first,last,picture,is_verified,id,created,updated,is_marketing_allowed';
 
 export class User extends ApiBase<UserEntity, UserFilterOptions> {
+    async migrate(source: MigrationSource, payload: UserMigrationPayload): Promise<UserEntity | null> {
+        const { response, data } = await this.client.POST('/products/{product_id}/users.json', {
+            params: { path: { product_id: this.productId } },
+            body: { ...payload, source, is_migration: true },
+        });
+
+        return this.isGoodResponse(response) && data?.id ? data : null;
+    }
+
     async retrieve(userId: FSId) {
         const userResponse = await this.client.GET(`/products/{product_id}/users/{user_id}.json`, {
             params: {
